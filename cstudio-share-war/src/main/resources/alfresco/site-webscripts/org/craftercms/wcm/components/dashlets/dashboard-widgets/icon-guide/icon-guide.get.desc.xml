@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Icon Guide</shortname>
+  <description>Icon Guide Widget</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/icon-guide</url>
+  <!-- family>dashlet</family -->
+</webscript>

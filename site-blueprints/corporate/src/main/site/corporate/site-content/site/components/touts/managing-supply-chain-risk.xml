@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<objectGroupId>4724</objectGroupId>
+	<objectId>47247425-906b-e8e8-e60f-a5968902c8e8</objectId>
+	<file-name>managing-supply-chain-risk.xml</file-name>
+	<folder-name/>
+	<internal-name>Managing Supply Chain Risk</internal-name>
+	<headline>Managing Supply Chain Risk</headline>
+	<subhead>5 proactive procurement strategies to deploy now.</subhead>
+	<image>/static-assets/images/touts/carousel-img-2.png</image>
+	<segments>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segments>
+</component>

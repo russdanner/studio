@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<objectGroupId>9ff6</objectGroupId>
+	<objectId>9ff6b03a-a9dc-371a-620e-c80cf54c20fa</objectId>
+	<file-name>metrics-for-a-safer-environment.xml</file-name>
+	<folder-name/>
+	<internal-name>Metrics for a Safer Environment</internal-name>
+	<headline>metrics for a safer environment</headline>
+	<subhead/>
+	<image>/static-assets/images/touts/chart.png</image>
+	<segments>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segments>
+</component>

@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Approve Schedule - get dependencies</shortname>
+  <description>Approve Schedule - get dependencies</description>
+  <url>/ui/workflow-actions/schedule-to-go-live-dependencies?site={site}</url>
+</webscript>

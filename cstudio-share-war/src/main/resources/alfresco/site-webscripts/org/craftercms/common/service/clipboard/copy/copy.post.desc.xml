@@ -1,0 +1,8 @@
+<webscript>
+ <shortname>Clipboard COPY service</shortname>
+ <description>Clipboard COPY service</description>
+ <url>/cstudio/services/clipboard/copy</url>
+ <format default="json">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+</webscript>

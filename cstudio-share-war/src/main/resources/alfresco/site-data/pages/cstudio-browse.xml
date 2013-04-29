@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-browse</id>
+	<page-type>cstudio-browse</page-type>
+	<title>Crafter Studio Browse</title>
+	<title-id>page.cstudio-browse.title</title-id>
+	<description>Crafter Studio Browse</description>
+	<description-id>page.cstudio-browse.description
+	</description-id>
+	<template-instance>cstudio-browse</template-instance>
+	<authentication>user</authentication>
+</page>

@@ -1,0 +1,40 @@
+Instructions:
+* Who modifies this file: The build manager
+* The release notes show what changes relate to which tag.  
+* A tag may have multiple builds due to some patch.
+  This is the build number which is assigned sequentially from Hudson.
+
+Process:
+* When you make a Tag create an entry in this file.
+  * New items go at the top of the file. 
+
+* For each build of a tag, check in this file with the changes for that build
+  * Hudson will detect the changes
+  * The changes Hudson detects come from SVN and are the check-in comments
+    * The comment should include a JIRA Bug ID and a description of what was fixed
+    * Descriptions should be meaningful to both business and technical staff
+    * If check-in notes are not adequate speak with the developer responsible.
+  * This file should be checked in to Trunk as well as the tag
+
+* When releasing a tag to the business (in staging) please send them a notice via email and
+  attach this file letting them know which the tag #
+ 
+
+Tag: 1.1.1 / build 3
+==================
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+
+Tag: 1.1.1 / build 2
+==================
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+
+Tag: 1.1.0 / build 1
+==================
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+EMO-##### SVN comment which is relevant to both technical and business audience.
+

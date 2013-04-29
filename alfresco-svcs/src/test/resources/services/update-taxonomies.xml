@@ -1,0 +1,12 @@
+{"taxonomies":[
+                {"children":[],"created":false,"deleted":false,"id":301,"name":"English","nodeRef":"workspace://SpacesStore/c7c2c583-445f-4e8b-addf-08bee94d67a0","type":"cstudio-core-web:language","updated":false,"order":1},
+                {"children":[],"created":false,"deleted":true,"id":302,"name":"Spanish","nodeRef":"workspace://SpacesStore/6616650a-7810-447d-a757-bb0d652b8d74","type":"cstudio-core-web:language","updated":false,"order":2},
+                {"children":[],"created":false,"deleted":false,"id":303,"name":"German","nodeRef":"workspace://SpacesStore/a4af9c1e-2e34-465e-b434-36d9ece6805b","type":"cstudio-core-web:language","updated":false,"order":3},
+                {"children":[],"created":false,"deleted":false,"id":304,"name":"French","nodeRef":"workspace://SpacesStore/e99bb179-eb5e-4dcb-b03a-0e8657a977e8","type":"cstudio-core-web:language","updated":false,"order":4},
+                {"children":[],"created":false,"deleted":false,"id":305,"name":"Russian","nodeRef":"workspace://SpacesStore/39b17d3c-7401-4e86-8224-bbce16092a1c","type":"cstudio-core-web:language","updated":false,"order":5},
+                {"children":[],"created":false,"deleted":false,"id":306,"name":"Chinese","nodeRef":"workspace://SpacesStore/2e3f1482-671a-407b-a9c8-b67187de86f2","type":"cstudio-core-web:language","updated":false,"order":6},
+                {"children":[],"created":false,"deleted":false,"id":307,"name":"Simplified Chinese","nodeRef":"workspace://SpacesStore/cf930759-a696-47cd-b7e8-d802297dca5c","type":"cstudio-core-web:language","updated":false,"order":7},
+                {"children":[],"created":false,"deleted":false,"id":308,"name":"Japanese","nodeRef":"workspace://SpacesStore/f4bc7915-2e89-4ccd-9bd0-473e3fcb5924","type":"cstudio-core-web:language","updated":false,"order":8},
+                {"children":[],"created":false,"deleted":false,"id":320,"name":"Hindi","nodeRef":"workspace://SpacesStore/7b2a42c2-ad6c-4103-a40c-4c06d4196746","type":"cstudio-core-web:language","updated":false,"order":9},
+                {"children":[],"created":false,"deleted":false,"id":309,"name":"Korean","nodeRef":"workspace://SpacesStore/c4eb4964-94cd-46e0-a23e-92ff0d2d7c01","type":"cstudio-core-web:language","updated":false,"order":10}]}]
+}

@@ -1,0 +1,9 @@
+<webscript>
+ <shortname>wcm search</shortname>
+ <description>the webscript for showing the wcm search</description>
+ <url>/cstudio/wcm/components/search</url>
+ <format default="html">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+  <!-- family>dashlet</family -->
+</webscript>

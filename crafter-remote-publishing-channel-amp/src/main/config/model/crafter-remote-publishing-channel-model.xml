@@ -1,0 +1,70 @@
+<model name="cstudio-publishing-remote:publishingmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Crafter CMS Publishing Remote Content Model</description>
+    <author>Crafter Software</author>
+    <published>2011-04-01</published>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+        <import uri="http://www.alfresco.org/model/publishing/1.0" prefix="pub" />
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://cstudio.com/model/publishing/remote/1.0" prefix="cstudio-publishing-remote" />
+    </namespaces>
+
+    <types>
+
+        <type name="cstudio-publishing-remote:DeliveryChannel">
+            <title>Crafter CMS Remote Deployment Channel</title>
+            <description>Node type used to represent Crafter Studio remote deployment channels</description>
+            <parent>pub:DeliveryChannel</parent>
+            <mandatory-aspects>
+                <aspect>cstudio-publishing-remote:DeliveryChannelAspect</aspect>
+            </mandatory-aspects>
+        </type>
+
+    </types>
+
+    <aspects>
+        <aspect name="cstudio-publishing-remote:DeliveryChannelAspect">
+            <title>Crafter CMS Remote Deployment Publishing Channel Aspect</title>
+            <description>Applied to a node that represents Crafter CMS Remote Deployment Publishing Channel</description>
+            <properties>
+                <property name="cstudio-publishing-remote:enabled">
+                    <title>Enabled</title>
+                    <type>d:boolean</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="cstudio-publishing-remote:server">
+                    <title>Remote Deployment Receiver Server</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="cstudio-publishing-remote:port">
+                    <title>Remote Deployment Receiver Port</title>
+                    <type>d:int</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="cstudio-publishing-remote:password">
+                    <title>Remote Deployment Receiver Password</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="cstudio-publishing-remote:target">
+                    <title>Remote Deployment Receiver Target</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="cstudio-publishing-remote:publishMetadata">
+                    <title>Publish Metadata</title>
+                    <type>d:boolean</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

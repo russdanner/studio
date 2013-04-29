@@ -1,0 +1,5 @@
+<webscript>
+    <shortname>Do Delete</shortname>
+    <description>Items deletion View for administrators</description>
+    <url>/ui/workflow-actions/delete?site={site}</url>
+</webscript>

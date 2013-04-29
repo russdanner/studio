@@ -1,0 +1,13 @@
+org.craftercms.cstudio.loadtesting.tests.RunCreateSite
+org.craftercms.cstudio.loadtesting.tests.RunLoadDashboardTimed
+org.craftercms.cstudio.loadtesting.tests.RunGetLiveItems
+org.craftercms.cstudio.loadtesting.tests.RunGetScheduledItems
+org.craftercms.cstudio.loadtesting.tests.RunAll
+org.craftercms.cstudio.loadtesting.tests.RunGetUserActivities
+org.craftercms.cstudio.loadtesting.tests.RunGetSiteNav
+org.craftercms.cstudio.loadtesting.tests.RunLoadDashboard
+org.craftercms.cstudio.loadtesting.tests.RunCopyPaste
+org.craftercms.cstudio.loadtesting.tests.RunCpAll
+org.craftercms.cstudio.loadtesting.tests.RunWriteContent
+org.craftercms.cstudio.loadtesting.tests.RunAllTimed
+org.craftercms.cstudio.loadtesting.tests.RunGetGoLiveItems

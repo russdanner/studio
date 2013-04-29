@@ -1,0 +1,19 @@
+{
+	"workflows":[
+							{
+					"topLevelItem":"/site/website/products_services/index.xml",
+					"sendMail":"true",
+					"isNow":"false",
+					"scheduledDate":"2010-02-20T17:40:00",
+					"items":[
+									"/www/avm_webapps/ROOT/site/components/advertisements/ad-include-300.xml",   
+									"/www/avm_webapps/ROOT/site/website/products_services/upgrade.xml",   
+									"/www/avm_webapps/ROOT/site/components/advertisements/top-ad.xml",   
+									"/www/avm_webapps/ROOT/static-assets/images/product_related_5.jpg",   
+									"/www/avm_webapps/ROOT/site/website/products_services/index.xml"
+									   
+							]
+				}
+				   
+			]
+}

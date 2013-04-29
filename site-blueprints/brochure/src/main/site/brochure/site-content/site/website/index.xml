@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+	<placeInNav>true</placeInNav>
+	<orderDefault_f>1000</orderDefault_f>
+	<display-template>/templates/web/entry.ftl</display-template>
+	<content-type>/page/entry</content-type>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<file-name>index.xml</file-name>
+	<internal-name>Home</internal-name>
+	<title>ACME</title>
+	<meta-description>example</meta-description>
+	<meta-keywords>example</meta-keywords>
+	<shoutBoxes>
+		<item>
+            <key>/site/components/what-we-do.xml</key>
+            <value>What We Do</value>
+            <include>/site/components/what-we-do.xml</include>
+		</item>
+		<item>
+            <key>/site/components/award-winning.xml</key>
+            <value>Award Winning</value>
+            <include>/site/components/award-winning.xml</include>
+		</item>
+		<item>
+            <key>/site/components/xr9000-101.xml</key>
+            <value>XR9000</value>
+            <include>/site/components/xr9000-101.xml</include>
+		</item>
+    </shoutBoxes>
+	<entryPromos>	<item>	<image>/static-assets/images/slider_photo.jpg</image>
+	<caption_html>&lt;p&gt;To remain competitive and functioning at peak efficiency, organizations like yours can't afford to waste valuable resources on outdated, inefficient, or improperly&lt;br /&gt;implemented communications equipment.&lt;/p&gt;</caption_html>
+	</item>	<item>	<image>/static-assets/images/slider_photo3.jpg</image>
+	<caption_html>&lt;p&gt;When you call ACME Customer Care, you speak directly to our representatives - not to automated prompts or recordings. Our highly trained professionals provide&lt;br /&gt;exceptional customer support and deliver one of the highest levels of first-call resolution in the industry.&lt;/p&gt;</caption_html>
+	</item>	<item>	<image>/static-assets/images/slider_photo2.jpg</image>
+	<caption_html>&lt;p&gt;We're the best your money can buy.&amp;nbsp; Hands Down.&lt;/p&gt;</caption_html>
+	</item></entryPromos>
+	<body>Hello World!</body>
+	<objectGroupId>ffdf</objectGroupId>
+	<objectId>ffdffde6-8632-437d-d05d-7f79cb4be355</objectId>
+	<folder-name/>
+	<lastModifiedBy/>
+	<lastModifiedDate/>
+	<styles/>
+	<javascripts/>
+</page>

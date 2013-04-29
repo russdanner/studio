@@ -1,0 +1,8 @@
+<webscript>
+ <shortname>Clipboard PASTE service</shortname>
+ <description>Clipboard PASTE service</description>
+ <url>/cstudio/services/clipboard/paste</url>
+ <format default="json">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+</webscript>

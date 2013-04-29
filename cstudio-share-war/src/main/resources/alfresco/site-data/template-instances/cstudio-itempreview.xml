@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<template-instance>
+	<template-type>org/alfresco/cstudio-item-details</template-type>
+	<properties></properties>
+	<components>
+
+		<!-- WebPreview -->
+		<component>
+			<region-id>web-preview</region-id>
+			<sub-components>
+				<sub-component id="default">
+					<url>/components/preview/web-preview</url>
+					<properties>
+						<nodeRef>{nodeRef}</nodeRef>
+					</properties>
+				</sub-component>
+			</sub-components>
+		</component>
+
+
+	</components>
+</template-instance>

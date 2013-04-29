@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CStudio Dashboard Title Component</shortname>
+  <description>CStudio Dashboard Title component used across the whole application</description>
+  <url>/components/title/cstudio-dashboard-title</url>
+</webscript>

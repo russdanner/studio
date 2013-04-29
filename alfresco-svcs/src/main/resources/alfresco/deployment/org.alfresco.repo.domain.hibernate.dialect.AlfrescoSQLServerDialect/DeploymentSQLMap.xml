@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL MAP 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="deployment">
+
+    <typeAlias alias="deploymentItem"
+               type="org.craftercms.cstudio.alfresco.deployment.DeploymentItemDAO" />
+
+    <typeAlias alias="deploymentBatch"
+               type="org.craftercms.cstudio.alfresco.deployment.DeploymentBatchDAO" />
+
+    <cacheModel id="deploymentCache" type="LRU" readOnly="false">
+        <flushInterval hours="24" />
+        <flushOnExecute statement="deployment.insertDeploymentBatch" />
+        <flushOnExecute statement="deployment.insertDeploymentBatchItem" />
+        <flushOnExecute statement="deployment.startNewDeploymentAttempt" />
+        <flushOnExecute statement="deployment.updateBatchStatus" />
+        <flushOnExecute statement="deployment.updateItemDeployedDate" />
+        <flushOnExecute statement="deployment.markBatchReady" />
+        <flushOnExecute statement="deployment.rollbackInProgressStates" />
+        <flushOnExecute statement="deployment.updateBatchSizeQueue" />
+        <flushOnExecute statement="deployment.updateBatchSizeDeploymentItems" />
+        <flushOnExecute statement="deployment.updateBatchSizeDeleteItems" />
+        <property name="cache-size" value="1000" />
+    </cacheModel>
+
+    <resultMap id="deploymentBatchResult" class="deploymentBatch">
+        <result property="id" column="id" />
+        <result property="site" column="site_id" />
+        <result property="batchId" column="batch_id" />
+        <result property="batchSize" column="batch_size" />
+        <result property="ready" column="ready_flag" />
+        <result property="state" column="state_flag" />
+        <result property="submissionComment" column="submission_comment" />
+        <result property="goliveDatetime" column="golive_datetime" />
+        <result property="submitDatetime" column="submit_datetime" />
+        <result property="lastAttemptTime" column="last_attempted_time" />
+        <result property="numberOfRetries" column="number_of_retries" />
+        <result property="clusterNodeId" column="cluster_node_id" />
+    </resultMap>
+
+    <resultMap id="deploymentItemResult" class="deploymentItem">
+        <result property="id" column="id" />
+        <result property="site" column="site_id" />
+        <result property="path" column="path" />
+        <result property="endpoint" column="endpoint" />
+        <result property="user" column="username" />
+        <result property="deployedDate" column="deployed_date" />
+        <result property="batchId" column="batch_id" />
+        <result property="batchOrder" column="batch_order" />
+        <result property="batchSize" column="batch_size" />
+    </resultMap>
+
+	<resultMap id="partialDeploymentItemResult" class="deploymentItem">
+		<result property="site" column="site_id" />
+		<result property="path" column="path" />
+		<result property="user" column="username" />
+		<result property="goLiveDate" column="golive_datetime" />
+	</resultMap>
+	
+	<select id="checkIfWITExists" resultClass="java.util.HashMap">
+		select * from sys.columns where Name = N'type' and Object_ID = Object_ID(N'[dbo].cstudio_deploymentworkitem')
+	</select>
+	
+    <select id="checkTableExistsWQ" resultClass="java.util.HashMap">
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkqueue]') AND type in (N'U');
+    </select>
+
+    <select id="checkIfWQSCExists" resultClass="java.util.HashMap">
+        select * from sys.columns where Name = N'submission_comment' and Object_ID = Object_ID(N'[dbo].[cstudio_deploymentworkqueue]')
+    </select>
+
+    <insert id="createTableWQ">
+        CREATE  TABLE [dbo].[cstudio_deploymentworkqueue] (
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [site_id] [NVARCHAR](50) NOT NULL ,
+        [batch_id] [NVARCHAR](255) NOT NULL ,
+        [batch_size] [INT] NOT NULL ,
+        [ready_flag] [INT] NOT NULL DEFAULT 0 ,
+        [state_flag] [VARCHAR](100) NOT NULL ,
+        [submission_comment] [NVARCHAR](4000) ,
+        [golive_datetime] [DATETIME] ,
+        [submit_datetime] [DATETIME] ,
+        [last_attempted_time] [DATETIME] ,
+        [number_of_retries] [INT] DEFAULT 0 ,
+        [cluster_node_id] [VARCHAR](100) ,
+        CONSTRAINT [PK_cstudio_deploymentworkqueue] PRIMARY KEY CLUSTERED (id);
+    </insert>
+
+    <insert id="addWQBatchIndex">
+        CREATE NONCLUSTERED UNIQUE INDEX [cstudio_deploymentworkqueue_batch_unique] ON [dbo].[cstudio_deploymentworkqueue] ( [batch_id] );
+    </insert>
+
+    <select id="checkWQBatchIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkqueue]') AND name = N'cstudio_deploymentworkqueue_batch_unique';
+    </select>
+
+    <insert id="addWQSiteIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkqueue_site_idx] ON [dbo].[cstudio_deploymentworkqueue] ( [site_id] );
+    </insert>
+
+    <select id="checkWQSiteIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkqueue]') AND name = N'cstudio_deploymentworkqueue_site_idx';
+    </select>
+
+    <insert id="addWQReadyIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkqueue_ready_idx] ON [dbo].[cstudio_deploymentworkqueue] ( [ready_flag] );
+    </insert>
+
+    <select id="checkWQReadyIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkqueue]') AND name = N'cstudio_deploymentworkqueue_ready_idx';
+    </select>
+
+    <insert id="addWQStateIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkqueue_state_idx] ON [dbo].[cstudio_deploymentworkqueue] ( [state_flag] );
+    </insert>
+
+    <select id="checkWQStateIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkqueue]') AND name = N'cstudio_deploymentworkqueue_state_idx';
+    </select>
+
+    <select id="checkTableExistsWI" resultClass="java.util.HashMap">
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND type in (N'U');
+    </select>
+
+    <insert id="createTableWI">
+        CREATE TABLE [dbo].[cstudio_deploymentworkitem] (
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [site_id] [varchar](50) NOT NULL,
+        [path] [varchar](2000) NOT NULL,
+        [endpoint] [varchar](255) NOT NULL,
+        [username] [varchar](50) NOT NULL,
+        [deployed_date] [datetime] DEFAULT NULL,
+        [batch_id] [varchar](255) NOT NULL,
+        [batch_order] [int] NOT NULL DEFAULT '0',
+        [batch_size] [int] NOT NULL DEFAULT '0',
+        CONSTRAINT [PK_cstudio_deploymentworkitem] PRIMARY KEY CLUSTERED (id);
+        KEY `` (``),
+        KEY `cstudio_deploymentworkitem_endpoint_idx` (``),
+        KEY `cstudio_deploymentworkitem_username_idx` (``),
+        KEY `cstudio_deploymentworkitem_batch_idx` (``),
+        KEY `cstudio_deploymentworkitem_sitepath_idx` ((250))
+        );
+        );
+    </insert>
+
+    <insert id="addWISiteIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkitem_site_idx] ON [dbo].[cstudio_deploymentworkitem] ( [site_id] );
+    </insert>
+
+    <select id="checkWISiteIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND name = N'cstudio_deploymentworkitem_site_idx';
+    </select>
+
+    <insert id="addWISitePathIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkitem_sitepath_idx] ON [dbo].[cstudio_deploymentworkitem] ( [site_id], [path] );
+    </insert>
+
+    <select id="checkWISitePathIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND name = N'cstudio_deploymentworkitem_sitepath_idx';
+    </select>
+
+    <insert id="addWIEndpointIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkitem_endpoint_idx] ON [dbo].[cstudio_deploymentworkitem] ( [endpoint] );
+    </insert>
+
+    <select id="checkWIEndpointIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND name = N'cstudio_deploymentworkitem_endpoint_idx';
+    </select>
+
+    <insert id="addWIUserIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkitem_username_idx] ON [dbo].[cstudio_deploymentworkitem] ( [username] );
+    </insert>
+
+    <select id="checkWIUserIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND name = N'cstudio_deploymentworkitem_username_idx';
+    </select>
+
+    <insert id="addWIBatchIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentworkitem_batch_idx] ON [dbo].[cstudio_deploymentworkitem] ( [batch_id] );
+    </insert>
+
+    <select id="checkWIBatchIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentworkitem]') AND name = N'cstudio_deploymentworkitem_batch_idx';
+    </select>
+
+    <select id="checkTableExistsWDI" resultClass="java.util.HashMap">
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND type in (N'U');
+    </select>
+
+    <insert id="createTableWDI">
+        CREATE TABLE [dbo].[cstudio_deploymentdeleteitem] (
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [site_id] [varchar](50) NOT NULL,
+        [path] [varchar](2000) NOT NULL,
+        [endpoint] [varchar](255) NOT NULL,
+        [username] [varchar](50) NOT NULL,
+        [deployed_date] [datetime] DEFAULT NULL,
+        [batch_id] [varchar](255) NOT NULL,
+        [batch_order] [int] NOT NULL DEFAULT '0',
+        [batch_size] [int] NOT NULL DEFAULT '0',
+        CONSTRAINT [PK_cstudio_deploymentdeleteitem] PRIMARY KEY CLUSTERED (id);
+        KEY `` (``),
+        KEY `cstudio_deploymentdeleteitem_endpoint_idx` (``),
+        KEY `cstudio_deploymentdeleteitem_username_idx` (``),
+        KEY `cstudio_deploymentdeleteitem_batch_idx` (``),
+        KEY `cstudio_deploymentdeleteitem_sitepath_idx` ((250))
+        );
+        );
+    </insert>
+
+    <insert id="addWDISiteIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentdeleteitem_site_idx] ON [dbo].[cstudio_deploymentdeleteitem] ( [site_id] );
+    </insert>
+
+    <select id="checkWDISiteIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND name = N'cstudio_deploymentdeleteitem_site_idx';
+    </select>
+
+    <insert id="addWDISitePathIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentdeleteitem_sitepath_idx] ON [dbo].[cstudio_deploymentdeleteitem] ( [site_id], [path] );
+    </insert>
+
+    <select id="checkWDISitePathIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND name = N'cstudio_deploymentdeleteitem_sitepath_idx';
+    </select>
+
+    <insert id="addWDIEndpointIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentdeleteitem_endpoint_idx] ON [dbo].[cstudio_deploymentdeleteitem] ( [endpoint] );
+    </insert>
+
+    <select id="checkWDIEndpointIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND name = N'cstudio_deploymentdeleteitem_endpoint_idx';
+    </select>
+
+    <insert id="addWDIUserIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentdeleteitem_username_idx] ON [dbo].[cstudio_deploymentdeleteitem] ( [username] );
+    </insert>
+
+    <select id="checkWDIUserIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND name = N'cstudio_deploymentdeleteitem_username_idx';
+    </select>
+
+    <insert id="addWDIBatchIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymentdeleteitem_batch_idx] ON [dbo].[cstudio_deploymentdeleteitem] ( [batch_id] );
+    </insert>
+
+    <select id="checkWDIBatchIndex" resultClass="java.util.HashMap" cacheModel="deploymentCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentdeleteitem]') AND name = N'cstudio_deploymentdeleteitem_batch_idx';
+    </select>
+
+    <select id="getDeploymentBatch" resultMap="deploymentBatchResult" cacheModel="deploymentCache">
+        SELECT *
+        FROM cstudio_deploymentworkqueue
+        WHERE batch_id = #batch_id#
+    </select>
+
+    <select id="getDeploymentBatchItems" resultMap="deploymentItemResult" cacheModel="deploymentCache">
+        SELECT *
+        FROM cstudio_deploymentworkitem
+        WHERE batch_id = #batch_id#
+    </select>
+
+    <select id="getDeploymentBatchDeleteItems" resultMap="deploymentItemResult" cacheModel="deploymentCache">
+        SELECT *
+        FROM cstudio_deploymentdeleteitem
+        WHERE batch_id = #batch_id#
+    </select>
+
+    <update id="startNewDeploymentAttempt" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET
+        last_attempted_time = GETDATE(),
+        number_of_retries = number_of_retries + 1,
+        state_flag = #state_flag#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <insert id="insertDeploymentBatch" parameterClass="java.util.HashMap">
+        INSERT INTO cstudio_deploymentworkqueue
+        (site_id, batch_id, batch_size, ready_flag, state_flag, submission_comment, golive_datetime, submit_datetime, last_attempted_time, number_of_retries, cluster_node_id)
+        VALUES
+        (#site_id#, #batch_id#, #batch_size#, 0, #state_flag#, #submission_comment#, #golive_datetime#, GETDATE(), null, 0, null)
+    </insert>
+
+    <insert id="insertDeploymentBatchItem" parameterClass="java.util.HashMap">
+        INSERT INTO cstudio_deploymentworkitem
+        (site_id, path, endpoint, username, deployed_date, batch_id, batch_order, batch_size,type)
+        VALUES (#site_id#, #path#, #endpoint#, #username#, null, #batch_id#, #batch_order#, #batch_size#,#type#)
+    </insert>
+
+    <insert id="insertDeploymentBatchDeleteItem" parameterClass="java.util.HashMap">
+        INSERT INTO cstudio_deploymentdeleteitem
+        (site_id, path, endpoint, username, deployed_date, batch_id, batch_order, batch_size)
+        VALUES (#site_id#, #path#, #endpoint#, #username#, null, #batch_id#, #batch_order#, #batch_size#)
+    </insert>
+
+    <select id="getDeploymentWorkQueue" resultMap="deploymentBatchResult" cacheModel="deploymentCache">
+        SELECT id, site_id, batch_id, batch_size, ready_flag, state_flag, golive_datetime, submit_datetime, last_attempted_time, number_of_retries, cluster_node_id, submission_comment
+        FROM
+        (SELECT ROW_NUMBER() over (partition BY site_id order by golive_datetime) rn,
+        id, site_id, batch_id, batch_size, ready_flag, state_flag, golive_datetime, submit_datetime, last_attempted_time, number_of_retries, cluster_node_id, submission_comment
+        FROM cstudio_deploymentworkqueue
+        WHERE ready_flag = 1
+        AND GETDATE() > golive_datetime
+        <dynamic prepend=" AND state_flag IN ">
+            <iterate property="undeployed_states"  open="(" close=")" conjunction=",">
+                #undeployed_states[]#
+            </iterate>
+        </dynamic>
+        AND site_id NOT    IN
+        ( SELECT DISTINCT(site_id)
+        FROM cstudio_deploymentworkqueue
+        <dynamic prepend=" WHERE state_flag IN ">
+            <iterate property="in_progress_states"  open="(" close=")" conjunction=",">
+                #in_progress_states[]#
+            </iterate>
+        </dynamic>
+        )
+        ) as query
+        WHERE query.rn = 1
+    </select>
+
+    <update id="markBatchQueued" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET
+        state_flag = #state_flag#,
+        ready_flag = 0,
+        cluster_node_id = #cluster_node_id#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="updateBatchStatus" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET state_flag = #state_flag#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="updateItemDeployedDate" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkitem
+        SET deployed_date = GETDATE()
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="updateDeleteItemDeployedDate" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentdeleteitem
+        SET deployed_date = GETDATE()
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="rollbackInProgressStates" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET
+        state_flag = #state_flag#,
+        ready_flag = 1,
+        cluster_node_id = null
+        WHERE cluster_node_id = #cluster_node_id#
+        <dynamic prepend=" AND state_flag IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+    </update>
+
+    <update id="markBatchReady" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET ready_flag = 1
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <select id="getAffectedPaths" parameterClass="java.util.HashMap" resultClass="java.lang.String" cacheModel="deploymentCache">
+        SELECT distinct(path)
+        FROM cstudio_deploymentworkitem
+        WHERE batch_id = #batch_id#
+    </select>
+
+    <select id="getBatchEndpoints" parameterClass="java.util.HashMap" resultClass="java.lang.String" cacheModel="deploymentCache">
+        select distinct(endpoint) from
+        (SELECT distinct(endpoint)
+        FROM cstudio_deploymentworkitem
+        WHERE batch_id = #batch_id#
+        union
+        SELECT distinct(endpoint)
+        FROM cstudio_deploymentdeleteitem
+        WHERE batch_id = #batch_id#) as u
+    </select>
+    
+    
+	<select id="getScheduledItems" resultMap="partialDeploymentItemResult"
+		cacheModel="deploymentCache">
+		SELECT DISTINCT di.path,di.username,di.site_id,dw.golive_datetime FROM
+		cstudio_deploymentworkitem di
+		INNER JOIN cstudio_deploymentworkqueue dw
+		ON dw.batch_id=di.batch_id
+		WHERE dw.site_id=#site_id#
+		<dynamic prepend=" AND dw.state_flag IN ">
+			<iterate property="undeployed_states" open="(" close=")"
+				conjunction=",">
+				#undeployed_states[]#
+			</iterate>
+		</dynamic>
+		AND dw.golive_datetime > GETDATE()
+		ORDER BY dw.golive_datetime DESC,di.path
+	</select>
+
+	<select id="getDeploymentHistoryALL" resultMap="deploymentItemResult"
+		cacheModel="deploymentCache">
+
+        SELECT TOP (#limit#) di1.*
+        FROM cstudio_deploymentworkitem as di1 INNER JOIN (
+        SELECT di2.site_id, di2.path, di2.endpoint, MAX(di2.deployed_date) as deployed_date
+        FROM cstudio_deploymentworkitem as di2,cstudio_deploymentworkqueue as dw
+        WHERE dw.batch_id=di2.batch_id
+        AND dw.site_id = #site_id#
+        AND dw.state_flag IN (#deployed_states#)
+        AND dw.golive_datetime BETWEEN #from_date# AND #to_date#
+        GROUP BY di2.site_id, di2.path, di2.endpoint, convert(varchar(10), di2.deployed_date)) as di3
+        ON di1.path = di3.path and di1.endpoint = di3.endpoint and di1.deployed_date = di3.deployed_date
+        WHERE di1.site_id = #site_id#
+        ORDER BY di1.deployed_date desc
+
+	</select>
+	
+	<select id="getDeploymentHistory" resultMap="deploymentItemResult"
+		cacheModel="deploymentCache">
+        SELECT TOP (#limit#) di1.*
+        FROM cstudio_deploymentworkitem as di1 INNER JOIN (
+        SELECT di2.site_id, di2.path, di2.endpoint, MAX(di2.deployed_date) as deployed_date
+        FROM cstudio_deploymentworkitem as di2,cstudio_deploymentworkqueue as dw
+        WHERE dw.batch_id=di2.batch_id
+        AND dw.site_id = #site_id#
+        AND dw.state_flag IN (#deployed_states#)
+        AND dw.golive_datetime BETWEEN #from_date# AND #to_date#
+        GROUP BY di2.site_id, di2.path, di2.endpoint, convert(varchar(10), di2.deployed_date)) as di3
+        ON di1.path = di3.path and di1.endpoint = di3.endpoint and di1.deployed_date = di3.deployed_date
+        WHERE di1.site_id = #site_id# AND di1.type=#filter#
+        ORDER BY di1.deployed_date desc
+	</select>
+	
+
+    <select id="getBatchSize" parameterClass="java.lang.String"
+            resultClass="java.lang.Integer" cacheModel="deploymentCache">
+        select count(1) from
+        (SELECT id
+        FROM cstudio_deploymentworkitem
+        WHERE batch_id = #batch_id#
+        union
+        SELECT id
+        FROM cstudio_deploymentdeleteitem
+        WHERE batch_id = #batch_id#) as u
+    </select>
+
+    <update id="updateBatchSizeQueue" parameterClass="java.util.HashMap">
+        UPDATE
+        cstudio_deploymentworkqueue
+        SET batch_size = #batch_size#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="updateBatchSizeDeploymentItems" parameterClass="java.util.HashMap">
+        UPDATE
+        cstudio_deploymentworkitem
+        SET batch_size = #batch_size#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="updateBatchSizeDeleteItems" parameterClass="java.util.HashMap">
+        UPDATE
+        cstudio_deploymentdeleteitem
+        SET batch_size = #batch_size#
+        WHERE batch_id = #batch_id#
+    </update>
+
+    <update id="cancelScheduledBatchesForPath" parameterClass="java.util.HashMap">
+        UPDATE cstudio_deploymentworkqueue
+        SET ready_flag = 0
+        WHERE batch_id IN (
+        SELECT batch_id FROM cstudio_deploymentworkitem
+        WHERE site_id = #site_id#
+        AND path = #path#
+        )
+        AND state_flag=#state_flag#
+    </update>
+
+    <select id="getCanceledBatchesForPath" parameterClass="java.util.HashMap"
+            resultMap="deploymentBatchResult" cacheModel="deploymentCache">
+        SELECT wq.*
+        FROM cstudio_deploymentworkitem dwi, cstudio_deploymentworkqueue wq
+        WHERE wq.state_flag=#state_flag#
+        AND dwi.batch_id = wq.batch_id
+        AND dwi.site_id = #site_id#
+        AND dwi.path = #path#
+
+    </select>
+
+    <delete id="deleteBatch" parameterClass="java.lang.String">
+        DELETE FROM cstudio_deploymentworkqueue
+        WHERE batch_id = #batch_id#
+    </delete>
+
+    <delete id="deleteBatchItems" parameterClass="java.lang.String">
+        DELETE FROM cstudio_deploymentworkitem
+        WHERE batch_id = #batch_id#
+    </delete>
+
+    <delete id="deleteBatchDeleteItems" parameterClass="java.lang.String">
+        DELETE FROM cstudio_deploymentdeleteitem
+        WHERE batch_id = #batch_id#
+    </delete>
+</sqlMap>

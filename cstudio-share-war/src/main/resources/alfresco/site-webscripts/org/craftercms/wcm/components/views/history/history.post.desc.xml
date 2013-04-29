@@ -1,0 +1,5 @@
+<webscript>
+    <shortname>History &amp; Diff</shortname>
+    <description>History and version comparison view</description>
+    <url>/ui/workflow-actions/history-and-diff?site={site}</url>
+</webscript>

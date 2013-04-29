@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Clear Caches</shortname>
+  <description>Clear Caches</description>
+  <url>/cstudio/services/clear-caches</url>
+</webscript>

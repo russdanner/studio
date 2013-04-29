@@ -1,0 +1,10 @@
+<component>
+	<scope>page</scope>
+	<region-id>component-1-1</region-id>
+	<source-id>site/${siteid}/cstudio-site-analytics</source-id>
+	<url>/cstudio/components/dashlets/dashboard-widgets/analytics-dashboard</url>
+	<properties>
+		<regionId>component-1-1</regionId>
+		<widgetName>Analytics Dashboard</widgetName>
+	</properties>
+</component>

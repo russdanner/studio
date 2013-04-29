@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Clean up HTML Markup</shortname>
+  <description>Clean up HTML Markup</description>
+  <url>/cstudio/services/content/cleanhtml</url>
+</webscript>

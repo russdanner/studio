@@ -1,0 +1,29 @@
+{"sendEmail":"true",
+ "items":[
+          {"uri":"/site/website/products_services/index.xml",
+		   "isNow":"false",
+		   "scheduledDate":"2010-02-20T17:40:00",
+ 		   "components":[
+                         {"uri":"/site/components/advertisements/ad-include-300.xml",
+                		  "assets":[{"uri":"/static-assets/images/product_related_5.jpg"}],
+               			  "components":[],
+                		  "children":[]
+                		 }
+               			],
+ 			"assets":[],
+ 			"children":[
+             			{"uri":"/site/website/products_services/upgrade.xml",
+              			 "components":[{
+              			 				"uri":"/site/components/advertisements/top-ad.xml",
+                             			"assets":[{"uri":"/static-assets/images/product_related_5.jpg"}],
+                             			"children":[],
+                             			"components":[]
+                             			}
+                            		  ],
+              			  "assets":[],
+              			  "children":[]
+             			}
+            		  ]
+		  }
+		]
+}

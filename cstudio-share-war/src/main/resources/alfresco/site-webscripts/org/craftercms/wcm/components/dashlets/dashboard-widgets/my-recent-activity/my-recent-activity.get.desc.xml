@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Recently Made Live</shortname>
+  <description>Recently Made Live</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/my-recent-activity</url>
+  <!-- family>dashlet</family -->
+</webscript>

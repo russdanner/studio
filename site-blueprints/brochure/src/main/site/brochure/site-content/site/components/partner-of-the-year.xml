@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<objectGroupId>c665</objectGroupId>
+	<objectId>c6658647-6556-0ecf-973f-0a5636d2439d</objectId>
+	<file-name>partner-of-the-year.xml</file-name>
+	<internal-name>Partner of the Year</internal-name>
+	<heading>Partner of the Year!</heading>
+	<subhead>Global Integrity wins again!</subhead>
+	<image>/static-assets/images/partner_section_thumb1.jpeg</image>
+	<body_html>&lt;p&gt;For 3 years running Global Integrity has been a leading partner for ACME.com.&amp;nbsp; From sales to service Global Integrity has done a fantastic job!&amp;nbsp;&lt;/p&gt;</body_html>
+	<folder-name/>
+	<link/>
+	<thumb/>
+	<segment>	<item>	<key>Partner</key>
+	<value>Partner</value>
+	</item></segment>
+</component>

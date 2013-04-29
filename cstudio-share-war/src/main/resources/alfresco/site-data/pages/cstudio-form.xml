@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-form</id>
+	<page-type>cstudio-form</page-type>
+	<title>Crafter Studio Form</title>
+	<description>Crafter Studio Form</description>
+	<template-instance>cstudio-form</template-instance>
+	<authentication>user</authentication>
+</page>

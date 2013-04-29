@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<objectGroupId>6427</objectGroupId>
+	<objectId>6427331e-d4a2-790f-0fbc-7a745e3c0e7a</objectId>
+	<file-name>xr9000-101.xml</file-name>
+	<internal-name>XR9000 Shout Box</internal-name>
+	<heading>ACME XR9000 101</heading>
+	<subhead>Master the solution, conquer your needs</subhead>
+	<thumb>/static-assets/images/icon3.gif</thumb>
+	<image>/static-assets/images/home_section_thumb3.jpg</image>
+	<link>/products</link>
+	<body_html>&lt;p&gt;Get the resources you need to understand how ACME XR9000 works and experience the benefits for yourself.&lt;/p&gt;</body_html>
+	<segment>	<item>	<key>Anonymous</key>
+	<value>Anonymous</value>
+	</item>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segment>
+	<folder-name/>
+</component>

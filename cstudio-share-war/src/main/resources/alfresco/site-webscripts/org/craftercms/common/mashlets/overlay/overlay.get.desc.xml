@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Crafter Preview overlay</shortname>
+  <description>Crafter Preview overlay</description>
+  <url>/cstudio/wcm/preview/overlay/{site}?context={context}</url>
+</webscript>

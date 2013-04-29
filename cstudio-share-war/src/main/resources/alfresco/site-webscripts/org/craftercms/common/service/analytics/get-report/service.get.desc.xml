@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Query Analytics</shortname>
+  <description>Query the analytics system for report results</description>
+  <url>/cstudio/services/analytics/get-report</url>
+  <format default="json">argument</format>
+</webscript>

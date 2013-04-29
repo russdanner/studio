@@ -1,0 +1,8 @@
+<webscript>
+ <shortname>Clipboard GET ITEMS service</shortname>
+ <description>Clipboard GET ITEMS service</description>
+ <url>/cstudio/services/clipboard/getItems</url>
+ <format default="json">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+</webscript>

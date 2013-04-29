@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<levelDescriptor
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <css-group xsi:nil="true">
+      <css>/static-assets/css/style.css</css>
+    </css-group>
+    <!--script-group xsi:nil="true">
+      <script>/static-assets/scripts/prototype.js</script>
+      <script>/static-assets/scripts/crafter-scripts.js</script>
+    </script-group-->
+  <merge-strategy>inherit-levels</merge-strategy>
+ </levelDescriptor>

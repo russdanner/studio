@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<objectGroupId>6d42</objectGroupId>
+	<objectId>6d424801-916d-7d2b-07a4-0524f57866ce</objectId>
+	<file-name>award-winning.xml</file-name>
+	<internal-name>Award Winning Shout Box</internal-name>
+	<heading>Award Winning Service</heading>
+	<subhead>Industry Leadership</subhead>
+	<thumb>/static-assets/images/icon2.gif</thumb>
+	<image>/static-assets/images/home_section_thumb2.jpg</image>
+	<link>/services</link>
+	<body_html>&lt;p&gt;Today, ACME delivers award winning solutions and unmatched service to business-class customers across the globe.&lt;/p&gt;</body_html>
+	<segment>	<item>	<key>Anonymous</key>
+	<value>Anonymous</value>
+	</item>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segment>
+	<folder-name/>
+</component>

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-gallery-search</id>
+	<page-type>cstudio-gallery-search</page-type>
+	<title>Crafter Studio Gallery Search</title>
+	<title-id>page.cstudio-gallery-search.title</title-id>
+	<description>Crafter Studio Gallery Search</description>
+	<description-id>page.cstudio-gallery-search.description</description-id>
+	<template-instance>cstudio-gallery-search</template-instance>
+	<authentication>user</authentication>
+</page>

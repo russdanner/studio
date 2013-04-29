@@ -1,0 +1,8 @@
+<webscript>
+ <shortname>Clipboard CUT service</shortname>
+ <description>Clipboard CUT service</description>
+ <url>/cstudio/services/clipboard/cut</url>
+ <format default="json">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+</webscript>

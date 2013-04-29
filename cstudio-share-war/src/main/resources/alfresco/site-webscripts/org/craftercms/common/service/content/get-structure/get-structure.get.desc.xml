@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Read structure from cache or the repository</shortname>
+  <description>Read structure from cache or the repository</description>
+  <url>/cstudio/services/content/get-structure/{project}/sandboxes/{sandbox}/assets/www/avm_webapps/ROOT/{path}</url>
+</webscript>

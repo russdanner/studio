@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>My Notifications</shortname>
+  <description>My Notifications</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/my-notifications</url>
+  <!-- family>dashlet</family -->
+</webscript>

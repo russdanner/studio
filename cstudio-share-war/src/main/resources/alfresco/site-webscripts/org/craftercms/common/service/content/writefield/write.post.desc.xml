@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Writes Content of a given field</shortname>
+  <description>Writes Content of a given field</description>
+  <url>/cstudio/services/content/writefield</url>
+</webscript>

@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Read Content from cache or the repository</shortname>
+  <description>Read Content from cache or the repository</description>
+  <url>/cstudio/services/content/get-content/{storeId}/{contentPath}/content</url>
+</webscript>

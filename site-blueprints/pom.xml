@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.craftercms</groupId>
+	<artifactId>crafter-studio-super-pom</artifactId>
+	<version>2.2.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>Crafter Studio Sites</name>
+	<description>Crafter Studio Sites</description>
+
+	<modules>
+		<module>brochure</module>
+		<module>empty</module>
+		<module>minimal</module>
+		<module>corporate</module>
+    </modules>
+
+</project>

@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>CStudio Web Form</shortname>
+  <description>CStudio Web Form</description>
+  <url>/cstudio/wcm/components/webform</url>
+  <!-- family>dashlet</family -->
+</webscript>

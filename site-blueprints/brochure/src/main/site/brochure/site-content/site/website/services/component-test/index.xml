@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+	<content-type>/page/componentTest</content-type>
+	<display-template>/templates/web/componentTest.ftl</display-template>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<content-type>/page/componentTest</content-type>
+	<display-template>/templates/web/componentTest.ftl</display-template>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<objectGroupId>8e6a</objectGroupId>
+	<objectId>8e6a9712-99ca-339d-1b12-e8f1431d3e61</objectId>
+	<file-name>index.xml</file-name>
+	<folder-name>component-test</folder-name>
+	<internal-name>Component Test Page</internal-name>
+	<bodyModules>	<item>	<key>/site/components/get-certified.xml</key>
+	<value>/site/components/get-certified.xml</value>
+	<include>/site/components/get-certified.xml</include>
+	</item>	<item>	<key>/site/components/what-we-do.xml</key>
+	<value>/site/components/what-we-do.xml</value>
+	<include>/site/components/what-we-do.xml</include>
+	</item></bodyModules>
+	<railModules>	<item>	<key>/site/components/xr9000-101.xml</key>
+	<value>/site/components/xr9000-101.xml</value>
+	<include>/site/components/xr9000-101.xml</include>
+	</item>	<item>	<key>/site/components/award-winning.xml</key>
+	<value>/site/components/award-winning.xml</value>
+	<include>/site/components/award-winning.xml</include>
+	</item></railModules>
+</page>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+	<groupId>org.craftercms</groupId>
+    <artifactId>crafter-studio-alfresco-svcs-war</artifactId>
+    <packaging>war</packaging>
+    <name>Alfresco War with services extension</name>
+    <description>Alfresco war with services extension</description>
+
+    <parent>
+		<groupId>org.craftercms</groupId>
+        <artifactId>crafter-studio-parent</artifactId>
+        <version>2.2.0-SNAPSHOT</version>
+        <relativePath>../parent/pom.xml</relativePath>
+    </parent>
+    <properties>
+        <webapp.name>alfresco</webapp.name>
+		<env>local</env>
+    </properties>
+
+	<!-- Alfresco dependencies -->
+	<dependencies>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco</artifactId>
+            <version>${alfresco.version}</version>
+            <type>war</type>
+        </dependency>
+        <!--
+            All provided libs (as contained in the war dependency) but useful for
+            development (e.g. IDE configuration)
+        -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-web-client</artifactId>
+            <version>${alfresco.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${alfresco.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${alfresco.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-remote-api</artifactId>
+            <version>${alfresco.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--
+            Sample of AMP dependency that will be properly uncompressed in the
+            Alfresco WAR (no more need for AMP): this can be either an AMP built
+            with maven-amp-plugin and deployed on an accessible maven repo or a
+            generally available AMP previously deployed to a repo using mvn
+            deploy:deploy-file <dependency> <scope>runtime</scope>
+            <type>amp</type> <artifactId>recordsmanagement</artifactId>
+            <version>${alfresco.version}</version>
+            <groupId>org.alfresco</groupId> </dependency>
+        -->
+        <dependency>
+            <groupId>org.craftercms</groupId>
+            <artifactId>crafter-studio-alfresco-svcs</artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <type>amp</type>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.json</groupId>
+					<artifactId>json</artifactId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+	</dependencies>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<filters>
+			<filter>src/main/properties/${env}/filter.properties</filter>
+		</filters>
+		<!-- Customize here your webapp name - default: alfresco.war -->
+		<finalName>alfresco</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-amps</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeTypes>amp</includeTypes>
+							<outputDirectory>${project.build.directory}/${webapp.name}</outputDirectory>
+							<excludes>META*</excludes>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<!--
+						This is required to be re-defined explicitly at plugin level as
+						otherwise the 'amp' extension unArchiver won't be available to the
+						maven-dependency-plugin
+					-->
+					<dependency>
+						<groupId>org.alfresco.maven.plugin</groupId>
+						<artifactId>maven-amp-plugin</artifactId>
+						<version>3.0.0</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+                <version>2.2</version>
+				<configuration>
+					<archiveClasses>false</archiveClasses>
+					<webappDirectory>target/${webapp.name}</webappDirectory>
+					<warSourceExcludes>tools/**</warSourceExcludes>
+					<webResources>
+					</webResources>
+					<overlays>
+                        <overlay>
+                            <groupId>org.alfresco</groupId>
+                            <artifactId>alfresco</artifactId>
+                            <excludes>
+                                <exclude>WEB-INF/lib/activation-1.1.jar</exclude>
+                                <exclude>WEB-INF/lib/commons-collections-3.1.jar</exclude>
+                                <!-- exclude>WEB-INF/lib/commons-logging-1.1.jar</exclude>-->
+                                <exclude>WEB-INF/lib/commons-lang-2.4.jar</exclude>
+                                <exclude>WEB-INF/lib/commons-io-1.4.jar</exclude>
+                                <exclude>WEB-INF/lib/geronimo-activation_1.0.2_spec-1.1.jar</exclude>
+                                <exclude>WEB-INF/lib/jta.jar</exclude>
+                                <exclude>WEB-INF/lib/junit-4.7.jar</exclude>
+                                <exclude>WEB-INF/lib/mail.jar</exclude>
+                                <exclude>WEB-INF/lib/wstx-asl-3.2.1.jar</exclude>
+                                <exclude>WEB-INF/classes/alfresco/workflow/submitdirect_processdefinition.xml</exclude>
+                                <exclude>WEB-INF/classes/alfresco/activities/*/ActivityFeed.xml</exclude>
+                                <exclude>WEB-INF/classes/alfresco/templates/webscripts/org/alfresco/repository/wcm/sandbox/Asset/asset.lib.ftl</exclude>
+                            </excludes>
+						</overlay>
+					</overlays>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>local</id>
+			<properties>
+				<env>local</env>
+			</properties>
+		</profile>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env>dev</env>
+			</properties>
+		</profile>
+	</profiles>
+</project>

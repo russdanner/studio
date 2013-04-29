@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>WCM Go Live Queue</shortname>
+  <description>WCM Go Live QueueE</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/go-live-queue</url>
+  <!-- family>dashlet</family -->
+</webscript>

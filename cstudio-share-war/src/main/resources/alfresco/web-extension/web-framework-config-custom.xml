@@ -1,0 +1,13 @@
+<alfresco-config>
+
+   <!-- Apply cstudio custom theme -->
+   <config evaluator="string-compare" condition="WebFramework">
+         <web-framework>
+         	<application-defaults>
+            	<theme>default</theme>
+         	</application-defaults>
+     	 </web-framework>
+    </config>
+	
+
+</alfresco-config>

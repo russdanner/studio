@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<objectGroupId>c03a</objectGroupId>
+	<objectId>c03a6ca6-f07e-ff53-be2a-e9cf9f192ee0</objectId>
+	<file-name>predictive-analytics-for-grc.xml</file-name>
+	<folder-name/>
+	<internal-name>Predictive Analytics</internal-name>
+	<headline> Predictive Analytics for GRC</headline>
+	<subhead>Learn how big data delivers real-time risk managem</subhead>
+	<image>/static-assets/images/touts/carousel-img-1.png</image>
+	<segments>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segments>
+</component>

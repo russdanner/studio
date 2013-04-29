@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>WCM Analytics Dashboard</shortname>
+  <description>WCM Analytics Dashboard</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/analytics-dashboard</url>
+  <!-- family>dashlet</family -->
+</webscript>

@@ -1,0 +1,6 @@
+this component is a modified share component
+
+content-viewer.js - works as a pure webscript, not a dashlet
+	all changes marked with //RL MOD: description
+
+content-viewer.desc.xml - change webscript url

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL MAP 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="deploymentHistory">
+
+    <typeAlias alias="deploymentHistory"
+               type="org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDAO" />
+
+    <typeAlias alias="indexCheckTO"
+               type="org.craftercms.cstudio.alfresco.to.TableIndexCheckTO" />
+
+    <cacheModel id="deploymentHistoryCache" type="LRU" readOnly="false">
+        <flushInterval hours="24" />
+        <flushOnExecute statement="deploymentHistory.insertEntry" />
+        <flushOnExecute statement="deploymentHistory.deleteDeploymentHistoryForSite" />
+        <property name="cache-size" value="1000" />
+    </cacheModel>
+
+    <resultMap id="deploymentHistoryResult" class="deploymentHistory">
+        <result property="id" column="id" />
+        <result property="site" column="site" />
+        <result property="path" column="path" />
+        <result property="publishingChannel" column="publishing_channel" />
+        <result property="user" column="user" />
+        <result property="deploymentDate" column="deployment_date" />
+    </resultMap>
+    
+    <resultMap id="indexResult" class="indexCheckTO">
+        <result property="table" column="Table" />
+        <result property="keyName" column="Key_name" />
+        <result property="columnName" column="Column_name" />
+    </resultMap>
+
+    <select id="checkTableExists" resultClass="java.util.HashMap">
+        show tables like 'cstudio_deploymenthistory';
+    </select>
+
+    <insert id="createTable">
+        CREATE TABLE `cstudio_deploymenthistory` (
+        `id` bigint(20) NOT NULL AUTO_INCREMENT,
+        `site` varchar(35) NOT NULL,
+        `path` text NOT NULL,
+        `publishing_channel` varchar(255) NOT NULL,
+        `user` varchar(35) NOT NULL,
+        `deployment_date` datetime NOT NULL,
+        PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    </insert>
+
+    <insert id="addSiteIndex">
+        CREATE INDEX cstudio_deploymenthistory_site_idx ON cstudio_deploymenthistory (site);
+    </insert>
+
+    <select id="checkSiteIndex" resultMap="indexResult" cacheModel="deploymentHistoryCache">
+        show index from cstudio_deploymenthistory where Key_name='cstudio_deploymenthistory_site_idx';
+    </select>
+
+    <insert id="addSitePathIndex">
+        CREATE INDEX cstudio_deploymenthistory_sitepath_idx ON cstudio_deploymenthistory (site, path(500));
+    </insert>
+
+    <select id="checkSitePathIndex" resultMap="indexResult" cacheModel="deploymentHistoryCache">
+        show index from cstudio_deploymenthistory where Key_name='cstudio_deploymenthistory_sitepath_idx';
+    </select>
+
+    <insert id="addUserIndex">
+        CREATE INDEX cstudio_deploymenthistory_user_idx ON cstudio_deploymenthistory (user);
+    </insert>
+
+    <select id="checkUserIndex" resultMap="indexResult" cacheModel="deploymentHistoryCache">
+        show index from cstudio_deploymenthistory where Key_name='cstudio_deploymenthistory_user_idx';
+    </select>
+
+    <insert id="addChannelIndex">
+        CREATE INDEX cstudio_deploymenthistory_channel_idx ON cstudio_deploymenthistory (publishing_channel);
+    </insert>
+
+    <select id="checkChannelIndex" resultMap="indexResult" cacheModel="deploymentHistoryCache">
+        show index from cstudio_deploymenthistory where Key_name='cstudio_deploymenthistory_channel_idx';
+    </select>
+
+    <insert id="addDeploymentDateIndex">
+        CREATE INDEX cstudio_deploymenthistory_deploymentdate_idx ON cstudio_deploymenthistory (deployment_date);
+    </insert>
+
+    <select id="checkDeploymentDateIndex" resultMap="indexResult" cacheModel="deploymentHistoryCache">
+        show index from cstudio_deploymenthistory where Key_name='cstudio_deploymenthistory_deploymentdate_idx';
+    </select>
+
+    <select id="getDeploymentHistoryForSite" parameterClass="String" resultMap="deploymentHistoryResult" cacheModel="deploymentHistoryCache">
+        SELECT c1.id, c1.site, c1.path, c1.publishing_channel, c1.user, c1.deployment_date
+        FROM cstudio_deploymenthistory c1 inner join (select c2.path, MAX(c2.deployment_date) as deployment_date
+        from cstudio_deploymenthistory c2
+        where c2.site = #site#
+        GROUP BY c2.site, c2.path, DATE(c2.deployment_date)) c3 on c1.path = c3.path and c1.deployment_date = c3.deployment_date
+        where c1.site = #site#
+        order by c1.deployment_date desc
+    </select>
+
+    <insert id="insertEntry" parameterClass="deploymentHistory" >
+        INSERT INTO
+        cstudio_deploymenthistory
+        (site, path, publishing_channel, user, deployment_date)
+        VALUES
+        (#site#, #path#, #publishingChannel#, #user#, #deploymentDate#)
+    </insert>
+
+    <delete id="deleteDeploymentHistoryForSite" parameterClass="String">
+        DELETE FROM cstudio_deploymenthistory
+        WHERE site = #site#;
+    </delete>
+
+</sqlMap>

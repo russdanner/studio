@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+    <!--  going forward please use cstudio* for all new bean names -->
+
+
+	<bean id="author-config-properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>classpath:crafter/server-config.properties</value>
+                <value>classpath*:crafter/cstudio/extension/server-config.properties</value>
+            </list>
+        </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
+    </bean>
+    
+    <!-- factory access  -->
+	<bean id="cstudioBeanResolver" class="org.craftercms.cstudio.share.app.BeanResolver">
+	</bean>
+
+	<!-- Cookie Manager Beans -->
+	<bean id="simpleAesCipher" class="org.craftercms.commons.crypto.SimpleAesCipher">
+		<constructor-arg type="java.lang.String" value="OcdwXB6l7aM19cZd5EtT/Q=="></constructor-arg>
+	</bean>
+
+	<bean id="rlCookieManager" class="org.craftercms.cstudio.share.servlet.CookieManagerImpl">
+		<property name="cipher" ref="simpleAesCipher"></property>
+		<property name="cookieDomain">
+			<value>${authoringDomain}</value>
+		</property>
+	</bean>
+
+	<bean id="seamlessAppCookieManager"
+		class="org.craftercms.cstudio.share.servlet.ShareAuthenticationFilter">
+		<property name="cookieManager" ref="rlCookieManager"></property>
+		<property name="userPreferenceManager" ref="rlUserPreferenceManager"></property>
+	</bean>
+
+	<bean id="seamlessAppLoginServletCookieManager" class="org.craftercms.cstudio.share.servlet.ShareLoginServlet">
+		<property name="cookieManager" ref="rlCookieManager"></property>
+		<property name="userPreferenceManager" ref="rlUserPreferenceManager"></property>
+	</bean>
+
+	<!-- User Preference Manager Beans -->
+	<bean id="rlUserPreferenceManager" class="org.craftercms.cstudio.share.user.UserPreferenceManagerImpl">
+		<property name="cookieManager" ref="rlCookieManager"></property>
+	</bean>
+	
+	<!-- ////////////////////////////// -->
+	<!--                    			-->
+	<!--   Application Service        	-->
+	<!--                         		-->
+	<!-- ////////////////////////////// -->
+	<bean id="cstudioApplicationService" class="org.craftercms.cstudio.share.service.ApplicationService">
+	</bean>
+
+	<!-- ////////////////////////////// -->
+	<!--                    			-->
+	<!--      Form Service          	-->
+	<!--                         		-->
+	<!-- ////////////////////////////// -->
+	<bean id="cstudioFormService"
+		class="org.craftercms.cstudio.share.forms.impl.orbeon.FormServiceImpl">
+
+		<property name="cacheEnabled">
+			<value>true</value>
+		</property>
+		
+		<property name="formStore">
+			<ref bean="cstudioRepositoryFormStore" />
+		</property>
+
+		<property name="scriptProcessor">
+			<ref bean="webscripts.scriptprocessor.javascript" />
+		</property>
+
+		<!-- property name="formStore" ref="cstudioFormStore"></property -->
+		<property name="formSubmissionProcessorMap">
+			<map>
+				<entry key="echo">
+					<bean
+						class="org.craftercms.cstudio.share.forms.impl.submission.EchoSubmissionProcessor">
+					</bean>
+				</entry>
+				<entry key="alfresco-service-post">
+					<bean
+						class="org.craftercms.cstudio.share.forms.impl.submission.EndpointPostSubmissionProcessor">
+						<property name="webscriptEndpoint">
+						  <ref bean="alfrescoWebscriptEndpoint" />
+						</property>
+					</bean>
+				</entry>
+				<entry key="alfresco-service-get">
+					<bean
+						class="org.craftercms.cstudio.share.forms.impl.submission.EndpointGetSubmissionProcessor">
+						<property name="webscriptEndpoint">
+						  <ref bean="alfrescoWebscriptEndpoint" />
+						</property>
+					</bean>
+				</entry>
+                <entry key="execute-controller">
+                    <bean
+                        class="org.craftercms.cstudio.share.forms.impl.submission.ExecuteControllerScriptSubmissionProcessor">
+                        <property name="formService">
+                          <ref bean="cstudioFormService" />
+                        </property>
+                        <property name="scriptProcessor">
+                            <ref bean="webscripts.scriptprocessor.javascript" />
+                        </property>
+                    </bean>
+                </entry>
+			</map>
+		</property>
+		<property name="separateCharToReplace"><value><![CDATA[¬∑]]></value></property>
+		<property name="separateCharToUse"><value><![CDATA[\u00b7]]></value></property>
+	</bean>
+
+    <bean id="alfrescoWebscriptEndpoint"
+             class="org.craftercms.cstudio.share.forms.impl.submission.endpoint.WebscriptEndpointImpl">
+           <property name="connectorService">
+          <ref bean="connector.service" />
+        </property>
+    </bean>
+
+    <bean id="cstudioConsoleLogger"
+             class="org.craftercms.cstudio.share.service.impl.ConsoleLogger">
+    </bean>
+
+    <!-- base handler allow registration without overriding bean -->
+	<bean id="cstudioFormServiceScriptObjectBase"
+	    abstract="true"
+		class="org.craftercms.cstudio.share.forms.impl.FormControllerParamHandler"
+		init-method="registerControllerObject">
+
+		<property name="formService">
+			<ref bean="cstudioFormService" />
+		</property>
+   </bean>
+
+    <bean id="consoleLoggerFormControllerParamHandler"
+          parent="cstudioFormServiceScriptObjectBase">
+        <property name="name">
+            <value>consoleLogger</value>
+        </property>
+        <property name="object">
+            <ref bean="cstudioConsoleLogger" />
+        </property>
+    </bean>
+
+    <bean id="cstudioFormServiceFormControllerParamHandler"
+          parent="cstudioFormServiceScriptObjectBase">
+        <property name="name">
+            <value>cstudioFormService</value>
+        </property>
+        <property name="object">
+            <ref bean="cstudioFormService" />
+        </property>
+    </bean>
+    
+    <bean id="alfrescoWebscriptEndpointFormControllerParamHandler"
+          parent="cstudioFormServiceScriptObjectBase">
+        <property name="name">
+            <value>alfrescoRemote</value>
+        </property>
+        <property name="object">
+            <ref bean="alfrescoWebscriptEndpoint" />
+        </property>
+    </bean>
+
+	<bean id="cstudioRepositoryFormStore" class="org.craftercms.cstudio.share.forms.impl.store.FormStoreImpl">
+		<property name="formServiceUri">
+			<value>/cstudio/form/getformdefintion</value>
+		</property>
+		<property name="formComponentServiceUri">
+			<value>/cstudio/form/getformcomponent</value>
+		</property>
+		<property name="connectorService">
+		  <ref bean="connector.service" />
+		</property>
+	</bean>
+
+
+	<!-- Clipboard service -->
+    <bean id="cstudioClipboardService" class="org.craftercms.cstudio.share.service.impl.ClipboardServiceImpl">
+        <property name="alfrescoWebscriptEndpoint">
+            <ref bean="alfrescoWebscriptEndpoint"/>
+  		</property>
+        <property name="generator">
+            <ref bean="clipboardKeyGenerator"/>
+        </property>
+	</bean>
+	
+    <bean id="clipboardKeyGenerator" class="org.craftercms.cstudio.share.service.impl.TicketKeyGenerator"/>
+
+    <bean id="cstudioCleanHtmlService" class="org.craftercms.cstudio.share.service.impl.CleanHtmlServiceImpl">
+    </bean>
+
+  <!-- ///////////////////////// -->
+  <!--                           -->
+  <!--   Translation Services    -->
+  <!--                           -->
+  <!-- ///////////////////////// -->
+  <bean id="cstudioTranslationService" class="org.craftercms.cstudio.share.service.impl.TranslationServiceBingImpl">
+		<property name="apiKey"><value>FD525CE7BC86C25ED971972BDDF4EBFE06388719</value></property>
+		<property name="translateServiceUrl"><value>http://api.microsofttranslator.com/v2/Ajax.svc/Translate?appId={appId}&amp;text={text}&amp;from={fl}&amp;to={tl}</value></property>
+  </bean>
+    
+    
+  <!-- ///////////////////////// -->
+  <!--                           -->
+  <!--   Analytics Services      -->
+  <!--                           -->
+  <!-- ///////////////////////// -->
+  <bean id="cstudioAnalyticsService" class="org.craftercms.cstudio.share.service.impl.GoogleAnalyticsServiceImpl">
+  </bean>
+    
+
+  <bean id="cstudioTimeConversionService" class="org.craftercms.cstudio.share.service.impl.TimeConversionServiceImpl">
+  </bean>
+
+    <!-- //////////////////////////////// -->
+	<!--                                  -->
+	<!--   Webscripts API Injections      -->
+	<!--                                  -->
+	<!-- //////////////////////////////// -->
+	<bean abstract="true" id="webscripts.abstractcontainer">
+		<property name="formatRegistry" ref="webscripts.formatregistry" />
+		<property name="searchPath" ref="webscripts.searchpath" />
+		<property name="configService" ref="web.config" />
+		<property name="scriptObjects">
+			<map>
+				<entry key="cstudioTimeConversionService">
+					<ref bean="cstudioTimeConversionService" />
+				</entry>
+
+				<entry key="cstudioTranslationService">
+					<ref bean="cstudioTranslationService" />
+				</entry>				
+				<entry key="cstudioAnalyticsService">
+					<ref bean="cstudioAnalyticsService" />
+				</entry>
+				
+				<entry key="cstudioApplicationService">
+					<ref bean="cstudioApplicationService" />
+				</entry>
+
+				<entry key="cstudioCleanHtmlService">
+					<ref bean="cstudioCleanHtmlService" />
+				</entry>
+
+				<entry key="cstudioFormService">
+					<ref bean="cstudioFormService" />
+				</entry>
+				
+				<entry key="cstudioFormStore">
+					<ref bean="cstudioRepositoryFormStore" />
+				</entry>
+
+				<entry key="userPreferenceManagerServices">
+					<ref bean="rlUserPreferenceManager" />
+				</entry>
+
+				<entry key="logger">
+					<bean class="org.springframework.extensions.webscripts.ScriptLogger" />
+				</entry>
+				<entry key="atom">
+					<bean class="org.springframework.extensions.webscripts.atom.AtomService">
+						<property name="abderaService" ref="webscripts.abdera" />
+					</bean>
+				</entry>
+				<entry key="jsonUtils">
+					<bean class="org.springframework.extensions.webscripts.json.JSONUtils" />
+				</entry>
+				<entry key="stringUtils">
+					<bean class="org.springframework.extensions.webscripts.ScriptableUtils" />
+				</entry>
+
+				<entry key="cstudioClipboardService">
+	              <ref bean="cstudioClipboardService" />
+	           </entry>				
+			</map>
+		</property>
+		<property name="templateObjects">
+			<map>
+				<entry key="cstudioApplicationService">
+					<ref bean="cstudioApplicationService" />
+				</entry>
+			
+				<entry key="userPreferenceManagerServices">
+					<ref bean="rlUserPreferenceManager" />
+				</entry>
+
+				<entry key="argreplace">
+					<bean class="org.springframework.extensions.webscripts.ArgReplaceMethod" />
+				</entry>
+				<entry key="encodeuri">
+					<bean class="org.springframework.extensions.webscripts.UrlEncodeMethod" />
+				</entry>
+				<entry key="dateCompare">
+					<bean class="org.springframework.extensions.webscripts.DateCompareMethod" />
+				</entry>
+				<entry key="xmldate">
+					<bean class="org.springframework.extensions.webscripts.ISO8601DateFormatMethod" />
+				</entry>
+				<entry key="jsonUtils">
+					<bean class="org.springframework.extensions.webscripts.json.JSONUtils" />
+				</entry>
+				<entry key="stringUtils">
+					<bean class="org.springframework.extensions.webscripts.ScriptableUtils" />
+				</entry>
+				<entry key="atom">
+					<bean class="org.springframework.extensions.webscripts.atom.AtomService">
+						<property name="abderaService" ref="webscripts.abdera" />
+					</bean>
+				</entry>
+				<entry key="cstudioClipboardService">
+	              <ref bean="cstudioClipboardService" />
+	           </entry>				
+			</map>
+		</property>
+	</bean>
+
+	<!--
+		support returning CSS as a type of webscript since we need this to
+		support the overlay on incontext preview
+	-->
+	<bean parent="webscripts.formatmap">
+		<property name="formats">
+			<props>
+				<prop key="css">text/css</prop>
+			</props>
+		</property>
+	</bean>
+
+      <!-- //////////////////////////////// -->
+      <!--                                  -->
+      <!--      Extension  environment      -->
+      <!--                                  -->
+      <!-- //////////////////////////////// -->
+      <!--  DO NOT PUT BEANS BELOW THIS IMPORT  -->
+	<import resource="classpath*:crafter/cstudio/extension/*-context.xml"/>
+
+</beans>

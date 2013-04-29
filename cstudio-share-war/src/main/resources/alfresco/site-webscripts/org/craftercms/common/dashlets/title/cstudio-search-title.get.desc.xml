@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>CStudio Search Title Component</shortname>
+  <description>Title component used in the search page</description>
+  <url>/cstudio/components/dashlets/title/cstudio-search-title</url>
+</webscript>

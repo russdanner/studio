@@ -1,0 +1,129 @@
+/* === Primary Styles === */
+.ui-mobile [data-role="page"], .ui-mobile [data-role="dialog"], .ui-page { padding-top: 5.2em; }
+
+#branding { background-color: #fff; border-bottom: 2px solid #B3B3B3; position: relative; overflow: hidden; z-index: 50; }
+#branding h1 { text-align: left; float: left; margin: 0; }
+#branding h1 a { margin-left: 0.5em; }
+#branding ul { padding-top: 1em; text-align: right; margin-right: 3em; }
+#branding li { display: inline-block; }
+#branding li a:link,
+#branding li a:visited { border-top: 4px solid #fff; display: block; color:#333; font-size: 1.2em; font-weight: normal; margin: 0 6px; padding: 0.3em 5px 0.7em 5px; text-decoration: none; }
+
+
+.ui-body-c { background: #f3f3f3 url(../images/bg.gif) repeat left top; }
+.ui-header.ui-bar-c { background: #fff none; }
+.ui-body-d { background: #fff none; margin: 5px; padding: 10px 15px 20px 15px; overflow-x:visible; }
+
+.ui-content h1 { font-size: 18px; }
+.ui-content h2 { font-size: 16px; font-weight: normal; }
+
+.ui-header .ui-collapsible-content { clear: left; }
+.ui-header .ui-listview .ui-btn, .ui-footer .ui-listview .ui-btn { display: block; }
+
+.shout-box-container { padding-top: 10px; }
+article.intro header img { float: left; margin: 0 0.5em 0 0; }
+article.intro hgroup { padding-top: 1em; }
+article.intro hgroup h1 { color: #B52025; margin: 0 0 0.1em 0; font-weight: normal; }
+article.intro hgroup h2 { margin: 0; font-weight: normal; font-size: 14px; line-height: 18px; }
+article.intro .content { clear: both; padding: 0.5em 0 1em 0; }
+
+.graphic-navbar .ui-btn-up-d, .graphic-navbar .ui-btn-hover-d { border: 0 none; }
+.graphic-navbar .ui-btn-up-d .ui-btn-inner, .graphic-navbar .ui-btn-hover-d .ui-btn-inner { padding: 0; }
+
+section.sign-up { overflow: hidden; }
+section.sign-up input.ui-input-text { width: 65%; float: left; }	
+section.sign-up .ui-btn { width: 27%; float: left; }
+
+.ui-btn-up-b {
+  color: #FCFCFC;
+  background-color: #e56238; 
+  background-image: -webkit-gradient(linear, left top, left bottom, from( #FF7140), to( #C0522F));
+  background-image: -webkit-linear-gradient(top, #FF7140 , #C0522F);
+  background-image: -moz-linear-gradient(top, #FF7140, #C0522F);
+  background-image: -ms-linear-gradient(top, #FF7140, #C0522F);
+  background-image: -o-linear-gradient(top, #FF7140, #C0522F);
+  background-image: linear-gradient(top, #FF7140, #C0522F);
+  border: 1px solid #a2a3a2;
+  text-shadow: 0 -1px 1px #7b2424;
+}
+.ui-btn-hover-b, .ui-btn-down-b, .ui-btn-active { color: #FCFCFC;
+  background-color: #e24818; 
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF531B), to(#BD3C14));
+  background-image: -webkit-linear-gradient(top, #FF531B , #BD3C14);
+  background-image: -moz-linear-gradient(top, #FF531B, #BD3C14);
+  background-image: -ms-linear-gradient(top, #FF531B, #BD3C14);
+  background-image: -o-linear-gradient(top, #FF531B, #BD3C14);
+  background-image: linear-gradient(top, #FF531B, #BD3C14);
+  text-shadow: 0 -1px 1px #7b2424;
+}
+
+#branding li a:hover,
+#branding li a:focus { color: #e24818; border-top: 4px solid #e24818; }
+
+.two-col > .side-col {
+  -webkit-border-radius: 8px; /* Saf3-4, iOS 1-3.2, Android <e;1.6 */
+     -moz-border-radius: 8px; /* FF1-3.6 */
+          border-radius: 8px;
+	background-color: #f3f2f2; padding: 10px 15px;
+}
+
+.ui-footer p { padding: 0 1em; }
+
+
+/* === Media Queries === */ 
+/* Portrait */
+@media only screen and (max-width: 768px) {
+	
+	article.intro .content img { position: absolute; }
+	article.intro .content > div { margin-left: 280px; margin-top: -15px; width: 52%; }
+
+	/* not supported in FF
+	article.intro .content { 
+		display: -webkit-box; -webkit-box-orient: horizontal;
+		display: -moz-box; -moz-box-orient: horizontal;
+		display: box; box-orient: horizontal;
+	}
+	article.intro .content > div {
+		padding-left: 15px;
+		-webkit-box-flex: 1;
+		-moz-box-flex: 1;
+		box-flex: 1;
+	}
+	*/
+	.two-col > .main-col { margin-bottom: 20px; }
+}
+
+/* Landscape */
+@media only screen and (min-width: 770px) and (max-width: 1024px) {	
+	.shout-box-container > article.intro { float: left; width: 28%; padding-right: 7%; }
+	.shout-box-container > article.intro:last-child { padding-right: 0; }
+	.shout-box-container > article.intro .content img { width: 250px; }
+	.shout-box-container > article.intro .content a.ui-btn { margin-left: 0; }
+	.graphic-navbar { clear: both; padding-top:1px; }
+	
+	.two-col, .layoutWrapper2col { overflow: hidden; }
+	.two-col > .main-col { float: left; padding-right: 20px; width: 60%; }
+	.two-col > .side-col { float: left; margin-top: 20px; width: 33%; }
+	
+	.layoutWrapper2col > .layoutColumn { float: left; padding-right: 3%; width: 47%; }
+	
+	/* not supported in FF
+	.two-col, .layoutWrapper2col {
+		display: -webkit-box; -webkit-box-orient: horizontal;
+		display: -moz-box; -moz-box-orient: horizontal;
+		display: box; box-orient: horizontal;
+	}
+	.two-col > .main-col { width: 60%; padding-right: 15px; }
+	.two-col > .side-col,
+	.layoutWrapper2col > .layoutColumn { 
+		-webkit-box-flex: 1;
+		-moz-box-flex: 1;
+		box-flex: 1;
+	}
+	.layoutWrapper2col > .layoutColumn { padding-right: 15px; }
+	*/
+}
+
+
+
+

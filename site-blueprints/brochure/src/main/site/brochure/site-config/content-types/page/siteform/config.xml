@@ -1,0 +1,15 @@
+<content-type name="/page/siteform" is-wcm-type="true">
+<label>Site Form</label>
+<form>/page/siteform</form>
+<form-path>simple</form-path>
+<model-instance-path>NOT-USED-BY-SIMPLE-FORM-ENGINE</model-instance-path>
+<file-extension>xml</file-extension>
+<content-as-folder>true</content-as-folder>
+<previewable>true</previewable>
+<noThumbnail>true</noThumbnail>
+ <paths>
+     <includes>
+         <pattern>^/site/website/forms/.*</pattern>
+     </includes>
+  </paths>
+</content-type>

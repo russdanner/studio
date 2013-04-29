@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Translation Services - Translate</shortname>
+  <description>Query the analytics system for report results</description>
+  <url>/cstudio/services/translation/translate</url>
+  <format default="xml">argument</format>
+</webscript>

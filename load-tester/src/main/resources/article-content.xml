@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+  <objectType>page</objectType>
+  <file-name>index.xml</file-name>
+  <internal-name>Article Content</internal-name>
+  <placeInNav>true</placeInNav>
+  <orders>
+    <order>
+      <order-name>default</order-name>
+      <order-value>1</order-value>
+    </order>
+  </orders>
+  <status>true</status>
+  <body valid="true">&lt;h1 class="head"&gt;Lorem ipsum dolor sit amet&lt;br clear="none"/&gt; &lt;/h1&gt;&lt;p&gt;Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed  diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam  erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation  ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.  Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse  molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero  eros et accumsan et iusto odio dignissim qui blandit praesent luptatum  zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber  tempor cum soluta nobis eleifend option congue nihil imperdiet doming id  quod mazim placerat facer possim assum. Typi non habent claritatem  insitam; est usus legentis in iis qui facit eorum claritatem.  Investigationes demonstraverunt lectores legere me lius quod ii legunt  saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem  consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc  putamus parum claram, anteposuerit litterarum formas humanitatis per  seacula quarta decima et quinta decima. Eodem modo typi, qui nunc nobis  videntur parum clari, fiant sollemnes in futurum.&lt;/p&gt;&lt;br clear="none"/&gt;            &lt;br clear="none"/&gt;                   &lt;p&gt;Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed  diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam  erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation  ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.  Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse  molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero  eros et accumsan et iusto odio dignissim qui blandit praesent luptatum  zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber  tempor cum soluta nobis eleifend option congue nihil imperdiet doming id  quod mazim placerat facer possim assum. Typi non habent claritatem  insitam; est usus legentis in iis qui facit eorum claritatem.  Investigationes demonstraverunt lectores legere me lius quod ii legunt  saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem  consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc  putamus parum claram, anteposuerit litterarum formas humanitatis per  seacula quarta decima et quinta decima. Eodem modo typi, qui nunc nobis  videntur parum clari, fiant sollemnes in futurum.&lt;/p&gt;&lt;br clear="none"/&gt;            &lt;br clear="none"/&gt;                   &lt;p&gt;Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed  diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam  erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation  ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.  Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse  molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero  eros et accumsan et iusto odio dignissim qui blandit praesent luptatum  zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber  tempor cum soluta nobis eleifend option congue nihil imperdiet doming id  quod mazim placerat facer possim assum. Typi non habent claritatem  insitam; est usus legentis in iis qui facit eorum claritatem.  Investigationes demonstraverunt lectores legere me lius quod ii legunt  saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem  consuetudium lectorum. Mirum est notare quam littera gothica, quam nunc  putamus parum claram, anteposuerit litterarum formas humanitatis per  seacula quarta decima et quinta decima. Eodem modo typi, qui nunc nobis  videntur parum clari, fiant sollemnes in futurum.&lt;/p&gt;</body>
+  <rightRail valid="true">&lt;h2 class="subHead"&gt;Lorem ipsum dolor sit amet&lt;/h2&gt;
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie &lt;br clear="none"/&gt;
+&lt;br clear="none"/&gt;
+&lt;div class="tbl_checkered"&gt;
+   &lt;div class="tableWrapper"&gt;
+       &lt;table class="tableContent"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="width: 0px;"&gt;
+               Product    &lt;br clear="none"/&gt;
+               &lt;/td&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="width: 0px;"&gt;
+               Description &lt;br clear="none"/&gt;
+               &lt;/td&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="width: 0px;"&gt;
+               Price&lt;/td&gt;&lt;td colspan="1" rowspan="1" valign="" class="oddrowcolor" style="width: 20px;"&gt;&lt;span&gt;Availability&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;
+               Consequat&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(188, 230, 188); width: 0px;"&gt;Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie &lt;/td&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;$100.00&lt;br clear="none"/&gt;&lt;/td&gt;&lt;td colspan="1" rowspan="1" valign="" class="oddrowcolor" style="width: 20px; background-color: rgb(188, 230, 188);"&gt;&lt;span&gt; In Stock&lt;br clear="none"/&gt;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(188, 230, 188); width: 0px;"&gt;Minim&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;
+               ibh euismod tincidunt ut&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(188, 230, 188); width: 0px;"&gt;$10.00&lt;/td&gt;&lt;td colspan="1" rowspan="1" valign="" class="evenrowcolor" style="width: 20px; background-color: rgb(255, 204, 102);"&gt;&lt;span&gt;In Stock&lt;br clear="none"/&gt;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;Duis&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(188, 230, 188); width: 0px;"&gt;
+                consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="oddrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;$1000.00&lt;/td&gt;&lt;td colspan="1" rowspan="1" valign="" class="oddrowcolor" style="width: 20px; background-color: rgb(188, 230, 188);"&gt;&lt;span&gt;Hold&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(188, 230, 188); width: 0px;"&gt;
+               Erat&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(255, 204, 102); width: 0px;"&gt;magna aliquam erat volutpat.&lt;/td&gt;&lt;td colspan="1" rowspan="1" class="evenrowcolor" style="background-color: rgb(188, 230, 188);"&gt;1000.00&lt;/td&gt;&lt;td colspan="1" rowspan="1" valign="" class="evenrowcolor" style="width: 2%; background-color: rgb(255, 204, 102);"&gt;&lt;span&gt;In-Stock&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+      
+      &lt;br clear="none"/&gt;
+      &lt;/div&gt;
+   &lt;/div&gt;</rightRail>
+  <title>Article Content</title>
+  <meta-description>5555</meta-description>
+  <corporateKeywords/>
+  <meta-keywords/>
+  <language nodeRef=""/>
+  <display-template>/templates/web/article.ftl</display-template>
+  <descriptor-mapper>hierarchical-mapper</descriptor-mapper>
+  <content-type>/page/article</content-type>
+  <components/>
+  <template-version>0.1</template-version>
+  <pageHeadCode/>
+  <pageFootCode/>
+  <javascripts/>
+  <styles/>
+  <js>.js</js>
+  <css>.css</css>
+  <size/>
+  <lastModifiedBy>admin</lastModifiedBy>
+  <lastModifiedDate>2012-03-25T18:47:37-00:00</lastModifiedDate>
+</page>

@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Delete Site Module Repository Call</shortname>
+   <description>
+
+   </description>
+   <format default="json"/>
+   <url>/cstudio/modules/delete-site</url>
+</webscript>

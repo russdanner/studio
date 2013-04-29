@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<objectGroupId>6e93</objectGroupId>
+	<objectId>6e93ec01-93ef-1ff7-4706-1c98d78b2086</objectId>
+	<file-name>get-certified.xml</file-name>
+	<folder-name/>
+	<internal-name>Partner Certification Tout</internal-name>
+	<heading>Get Certified!</heading>
+	<subhead>Classes coming to a city near you</subhead>
+	<link>www.google.com</link>
+	<image>/static-assets/images/eye_section_thumb1.jpg</image>
+	<thumb/>
+	<segment>	<item>	<key>Partner</key>
+	<value>Partner</value>
+	</item></segment>
+	<body_html>&lt;p&gt;Get the competative edge on the competition with our new and improved training and certification program.&amp;nbsp; Sign up today&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;</body_html>
+</component>

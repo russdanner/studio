@@ -1,0 +1,5 @@
+<webscript>
+    <shortname>Schedule For Delete</shortname>
+    <description>Schedule items for deletion</description>
+    <url>/ui/workflow-actions/schedule-for-delete?site={site}</url>
+</webscript>

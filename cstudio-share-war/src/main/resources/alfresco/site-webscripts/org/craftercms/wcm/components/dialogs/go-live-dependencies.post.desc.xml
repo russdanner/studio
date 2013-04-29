@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Submit to go live - get dependencies</shortname>
+  <description>Submit to go live - get dependencies</description>
+  <url>/ui/workflow-actions/go-live-dependencies?site={site}</url>
+</webscript>

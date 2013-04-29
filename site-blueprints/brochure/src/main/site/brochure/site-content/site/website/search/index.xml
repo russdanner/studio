@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+  <objectType>page</objectType>
+  <pageIdGroup>100</pageIdGroup>
+  <pageId>102</pageId>
+  <file-name>index.xml</file-name>
+  <internal-name>Search</internal-name>
+  <placeInNav>false</placeInNav>
+  <orderDefault_f>-1</orderDefault_f>
+  <orders>
+    <order>
+      <order-name>default</order-name>
+      <order-value>1</order-value>
+    </order>
+  </orders>
+  <searchFields>id,title,body_html,rightRail_html,entryPromos.item.caption_html</searchFields>
+  <highlightFields>id,title,body_html,rightRail_html,entryPromos.item.caption_html</highlightFields>
+  <highlightSnippets>1</highlightSnippets>
+  <highlightSnippetSize>100</highlightSnippetSize>
+  <title>Search Results</title>
+  <meta-description>search</meta-description>
+  <corporateKeywords/>
+  <meta-keywords/>
+  <language nodeRef=""/>
+  <display-template>/templates/web/search.ftl</display-template>
+  <merge-strategy>inherit-levels</merge-strategy>
+  <content-type>/page/search</content-type>
+  <components/>
+  <template-version>1.0</template-version>
+  <pageHeadCode/>
+  <pageFootCode/>
+  <javascripts/>
+  <styles/>
+  <js>.js</js>
+  <css>.css</css>
+  <size/>
+  <lastModifiedBy>admin</lastModifiedBy>
+  <lastModifiedDate>2012-05-02T21:59:59-00:00</lastModifiedDate>
+</page>

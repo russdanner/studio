@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL MAP 2.0//EN"
+        "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="deploymentHistory">
+
+    <typeAlias alias="deploymentHistory"
+               type="org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDAO" />
+
+    <typeAlias alias="indexCheckTO"
+               type="org.craftercms.cstudio.alfresco.to.TableIndexCheckTO" />
+
+    <cacheModel id="deploymentHistoryCache" type="LRU" readOnly="false">
+        <flushInterval hours="24" />
+        <flushOnExecute statement="deploymentHistory.insertEntry" />
+        <flushOnExecute statement="deploymentHistory.deleteDeploymentHistoryForSite" />
+        <property name="cache-size" value="1000" />
+    </cacheModel>
+
+    <resultMap id="deploymentHistoryResult" class="deploymentHistory">
+        <result property="id" column="id" />
+        <result property="site" column="site" />
+        <result property="path" column="path" />
+        <result property="publishingChannel" column="publishing_channel" />
+        <result property="user" column="user" />
+        <result property="deploymentDate" column="deployment_date" />
+    </resultMap>
+
+    <select id="checkTableExists" resultClass="java.util.HashMap">
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND type in (N'U')
+    </select>
+
+    <insert id="createTable">
+        CREATE TABLE [dbo].[cstudio_deploymenthistory](
+        [id] [bigint] IDENTITY(1,1) NOT NULL,
+        [site] [nvarchar](35) NOT NULL,
+        [path] [nvarchar](4000) NOT NULL,
+        [publishing_channel] [nvarchar](255) NOT NULL,
+        [user] [nvarchar](35) NOT NULL,
+        [deployment_date] [datetime] NOT NULL,
+        CONSTRAINT [PK_cstudio_deploymenthistory] PRIMARY KEY CLUSTERED
+        (
+        [id] ASC
+        )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+        ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+    </insert>
+
+    <insert id="addSiteIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymenthistory_site_idx] ON [dbo].[cstudio_deploymenthistory] ( [site] ASC )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+    </insert>
+
+    <select id="checkSiteIndex" resultClass="java.util.HashMap" cacheModel="deploymentHistoryCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND name = N'cstudio_deploymenthistory_site_idx'
+    </select>
+
+    <insert id="addSitePathIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymenthistory_sitepath_idx] ON [dbo].[cstudio_deploymenthistory] ( [site], [path] ASC )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+    </insert>
+
+    <select id="checkSitePathIndex" resultClass="java.util.HashMap" cacheModel="deploymentHistoryCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND name = N'cstudio_deploymenthistory_sitepath_idx'
+    </select>
+
+    <insert id="addUserIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymenthistory_user_idx] ON [dbo].[cstudio_deploymenthistory] ( [user] ASC )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+    </insert>
+
+    <select id="checkUserIndex" resultClass="java.util.HashMap" cacheModel="deploymentHistoryCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND name = N'cstudio_deploymenthistory_user_idx'
+    </select>
+
+    <insert id="addChannelIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymenthistory_channel_idx] ON [dbo].[cstudio_deploymenthistory] ( [publishing_channel] ASC )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+    </insert>
+
+    <select id="checkChannelIndex" resultClass="java.util.HashMap" cacheModel="deploymentHistoryCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND name = N'cstudio_deploymenthistory_channel_idx'
+    </select>
+
+    <insert id="addDeploymentDateIndex">
+        CREATE NONCLUSTERED INDEX [cstudio_deploymenthistory_deploymentdate_idx] ON [dbo].[cstudio_deploymenthistory] ( [deployment_date] ASC )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+    </insert>
+
+    <select id="checkDeploymentDateIndex" resultClass="java.util.HashMap" cacheModel="deploymentHistoryCache">
+        SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymenthistory]') AND name = N'cstudio_deploymenthistory_deploymentdate_idx'
+    </select>
+
+    <select id="getDeploymentHistoryForSite" parameterClass="String" resultMap="deploymentHistoryResult" cacheModel="deploymentHistoryCache">
+        SELECT c1.id, c1.site, c1.path, c1.publishing_channel, c1.[user], c1.deployment_date
+        FROM cstudio_deploymenthistory c1 inner join (select c2.path, MAX(c2.deployment_date) as deployment_date
+        from cstudio_deploymenthistory c2
+        where c2.site = #site#
+        GROUP BY c2.site, c2.path, convert(varchar(10), c2.deployment_date, 0)) c3 on c1.path = c3.path and c1.deployment_date = c3.deployment_date
+        where c1.site = #site#
+        order by c1.deployment_date desc
+    </select>
+
+    <insert id="insertEntry" parameterClass="deploymentHistory" >
+        INSERT INTO
+        cstudio_deploymenthistory
+        (site, path, publishing_channel, [user], deployment_date)
+        VALUES
+        (#site#, #path#, #publishingChannel#, #user#, #deploymentDate#)
+    </insert>
+
+    <delete id="deleteDeploymentHistoryForSite" parameterClass="String">
+        DELETE FROM cstudio_deploymenthistory
+        WHERE site = #site#;
+    </delete>
+
+</sqlMap>

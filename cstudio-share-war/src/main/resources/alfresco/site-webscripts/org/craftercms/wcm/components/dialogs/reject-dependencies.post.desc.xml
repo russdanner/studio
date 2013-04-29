@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Reject item in workflow - get dependencies</shortname>
+  <description>Reject item in workflow - get dependencies</description>
+  <url>/ui/workflow-actions/reject-dependencies?site={site}</url>
+</webscript>

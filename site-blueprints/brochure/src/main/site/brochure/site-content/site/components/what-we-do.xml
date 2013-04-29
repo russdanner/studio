@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<display-template>/templates/web/components/shout-box.ftl</display-template>
+	<content-type>/component/shout-box</content-type>
+	<descriptor-mapper>inherit-levels</descriptor-mapper>
+	<objectGroupId>deeb</objectGroupId>
+	<objectId>deeb0f38-52d6-9e68-25e1-8f81cb9e4f48</objectId>
+	<file-name>what-we-do.xml</file-name>
+	<internal-name>What We Do Shout Box</internal-name>
+	<heading>What We Do</heading>
+	<subhead>Enterprise Solutions</subhead>
+	<thumb>/static-assets/images/icon1.gif</thumb>
+	<image>/static-assets/images/home_section_thumb1.jpg</image>
+	<link>/about</link>
+	<body_html>Empower your organization with personalized, cost-effective communications solutions using Acme's complete portfolio of reliable, scalable products and services</body_html>
+	<segment>	<item>	<key>Anonymous</key>
+	<value>Anonymous</value>
+	</item>	<item>	<key>All</key>
+	<value>All</value>
+	</item></segment>
+	<folder-name/>
+</component>

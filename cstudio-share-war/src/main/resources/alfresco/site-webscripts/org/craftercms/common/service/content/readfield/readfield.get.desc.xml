@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Read Content of a given field</shortname>
+  <description>Read the content of a given field</description>
+  <url>/cstudio/services/content/readfield</url>
+</webscript>

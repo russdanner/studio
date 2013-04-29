@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>Approved Scheduled Items</shortname>
+  <description>Approved Scheduled Items</description>
+  <url>/cstudio/components/dashlets/dashboard-widgets/approved-scheduled-items</url>
+  <!-- family>dashlet</family -->
+</webscript>

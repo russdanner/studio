@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Approve Schedule</shortname>
+  <description>Approve Schedule</description>
+  <url>/ui/workflow-actions/schedule-to-go-live?site={site}</url>
+</webscript>

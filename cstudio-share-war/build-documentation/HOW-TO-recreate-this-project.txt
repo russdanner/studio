@@ -1,0 +1,95 @@
+NOTE: This file is not about how to use this Maven project.  See
+README.txt for that.
+
+- = -
+
+HOW TO: create this Maven project from Alfresco sources and Enterprise Alfresco installation
+
+This may be necessary for example if you want to do this for another
+version of Alfresco (e.g. 3.2 Community, a future version etc).  These
+are the steps used to create this project.  Variations will be
+necessary for other versions.
+
+
+* Install Alfresco Enterprise (download from
+  http://www.alfresco.com/products/ecm/enttrial/ ).  Let's call the
+  install folder $ALF31_INSTALL
+
+* Download the Alfresco source code from SVN.  Let's call the checkout
+  folder $ALF311_SVN:
+
+	svn co https://svn.alfresco.com/repos/alfresco-enterprise-mirror/alfresco-enterprise-mirror/alfresco/TAGS/V3.1.1-ENTERPRISE-FINAL/ $ALF311_SVN
+
+* Create a Maven project from the WAR archetype:
+
+	mvn archetype:create -DgroupId=cx -DartifactId=alfresco-share-cx -DpackageName=package -DarchetypeArtifactId=maven-archetype-webapp
+
+* Copy the Java sources from the Alfresco source, to src/main/java:
+
+	cd alfresco-share-cx
+	cp -pR $ALF311_SVN/root/projects/slingshot/source/java src/main/
+	find src/main -name .svn |xargs rm -rf
+
+* Delete everything from src/main/webapps, then expand the share.war
+  from Alfresco install, into webapps.
+
+	cd src/main/webapp
+	rm -rf *
+	jar xf $ALF31_INSTALL/tomcat/webapps/share.war
+
+* There are some empty folders.  The Maven war creator will not copy them.
+  So, we need a way to force it to.  unfortunately, this is the way
+  I've come up with so far: 
+
+	find src/main/webapp/ -type d -empty -exec touch {}/EMPTY-FOLDER \;
+
+* In the src/main/webapp/WEB-INF/lib folder, create a file called
+  jar-list.txt, containing the jar files:
+
+	cd src/main/webapp/WEB-INF/lib
+	ls -1 *.jar > jar-list.txt
+
+  Edit the file, putting two other columns (tab-separated - it doesn't
+  matter if there are multiple tabs): artifact name, and version.  Use
+  1.0 if no version is apparent from the file name.   For example here
+  are a few lines:
+
+geronimo-activation_1.0.2_spec-1.1.jar  geronimo-activation             1.0.2_spec-1.1
+guessencoding-1.0.jar                   guessencoding                   1.0
+jaxen-1.1-beta-8.jar                    jaxen                           1.1-beta-8
+json.jar                                json                            1.0
+
+* In the same file, delete the line for alfresco-share.war
+
+* Generate the various commands and XML needed to depend on these jars
+  from Maven instead of keepiong them in lib:
+
+	ruby tools/jar2mvnrepo.rb jar-list.txt
+
+* The local-deploy.sh file contains lines that register the jars in
+  your local Maven repo, you should be able to just run it:
+
+	sh local-deploy.sh
+
+* Copy the contents of pom-dependencies.xml into the <dependencies>
+  element in your pom.xml (you'll want to change the scope on at least one
+  dependency to compile.  In particular, spring.) 
+
+* The remote-deploy.sh file is to deploy the artifacts to a remote
+  repository, if need be.  This was tested using an Artifactory
+  repository - but, your mileage may vary.  Even for Artifactory, this
+  requires setting up your remote credentials in your
+  ~/.m2/settings.xml file, using m2-settings.xml.sample as a template.
+  You might want to change a couple constants in the
+  tools/jar2mvnrepo.rb file as well. 
+
+* You no longer need the contents of the src/main/webapp/WEB-INF/lib
+  folder.  What I like to do is move it somewhere else:
+
+	mkdir /tmp/share-webapps-libs
+	mv src/main/webapp/WEB-INF/lib/* /tmp/share-webapp-libs
+
+  Or, you can delete the contents of the folder, if you're really
+  really sure you won't need it.
+
+* Now you should have a working build.  See the README.txt file.

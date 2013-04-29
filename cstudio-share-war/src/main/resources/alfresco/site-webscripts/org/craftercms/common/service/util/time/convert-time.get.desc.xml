@@ -1,0 +1,6 @@
+<webscript>
+  <shortname>convert from 1 timezone to the other</shortname>
+  <description>convert from 1 timezone to the other</description>
+  <url>/cstudio/services/util/time/convert</url>
+  <format default="json">argument</format>
+</webscript>

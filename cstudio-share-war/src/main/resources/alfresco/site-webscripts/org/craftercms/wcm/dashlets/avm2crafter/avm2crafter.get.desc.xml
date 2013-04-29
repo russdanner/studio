@@ -1,0 +1,6 @@
+<webscript>
+   <shortname>AVM Project to Crafter CMS Project</shortname>
+   <description>Tool to help convert a AVM based web project to a Crafter CMS based project</description>
+   <family>user-dashlet</family>
+   <url>/cstudio/wcm/components/dashlets/avm2crafter</url>
+</webscript>

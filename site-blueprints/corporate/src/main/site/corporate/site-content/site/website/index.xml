@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+	<placeInNav>true</placeInNav>
+	<display-template>/templates/web/entry.ftl</display-template>
+	<content-type>/page/entry</content-type>
+	<descriptor-mapper>hierarchical-mapper</descriptor-mapper>
+	<placeInNav>true</placeInNav>
+	<display-template>/templates/web/entry.ftl</display-template>
+	<content-type>/page/entry</content-type>
+	<descriptor-mapper>hierarchical-mapper</descriptor-mapper>
+	<orderDefault_f>1000</orderDefault_f>
+	<file-name>index.xml</file-name>
+	<internal-name>Home</internal-name>
+	<title>globalintegrity minimal site</title>
+	<meta-description>globalintegrity</meta-description>
+	<corporateKeywords/>
+	<meta-keywords>globalintegrity</meta-keywords>
+	<navigable>false</navigable>
+	<helloText>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet</helloText>
+	<helloDropdown>&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet&lt;/p&gt;</helloDropdown>
+	<objectGroupId>b390</objectGroupId>
+	<objectId>b3900ed2-0b3d-86d3-89b2-be3746d54ec6</objectId>
+	<folder-name/>
+	<body>&lt;p&gt;ContentC&lt;/p&gt;</body>
+	<heroImage>/static-assets/images/home-page-heros/home-bg.png</heroImage>
+	<enableTouts>true</enableTouts>
+	<touts>	<item>	<key>/site/components/touts/predictive-analytics-for-grc.xml</key>
+	<value>/site/components/touts/predictive-analytics-for-grc.xml</value>
+	<include>/site/components/touts/predictive-analytics-for-grc.xml</include>
+	</item>	<item>	<key>/site/components/touts/managing-supply-chain-risk.xml</key>
+	<value>/site/components/touts/managing-supply-chain-risk.xml</value>
+	<include>/site/components/touts/managing-supply-chain-risk.xml</include>
+	</item>	<item>	<key>/site/components/touts/six-sigma-process-improvements.xml</key>
+	<value>/site/components/touts/six-sigma-process-improvements.xml</value>
+	<include>/site/components/touts/six-sigma-process-improvements.xml</include>
+	</item>	<item>	<key>/site/components/touts/metrics-for-a-safer-environment.xml</key>
+	<value>/site/components/touts/metrics-for-a-safer-environment.xml</value>
+	<include>/site/components/touts/metrics-for-a-safer-environment.xml</include>
+	</item></touts>
+</page>

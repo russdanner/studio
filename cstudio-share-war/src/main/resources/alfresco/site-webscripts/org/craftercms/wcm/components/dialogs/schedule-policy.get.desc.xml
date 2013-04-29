@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Submit to go live</shortname>
+  <description>Submit to go live</description>
+  <url>/ui/workflow-actions/schedule-policy?site={site}</url>
+</webscript>

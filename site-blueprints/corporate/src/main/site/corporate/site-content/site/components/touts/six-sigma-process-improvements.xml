@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<content-type>/component/tout</content-type>
+	<display-template/>
+	<merge-strategy>inherit-levels</merge-strategy>
+	<objectGroupId>29d2</objectGroupId>
+	<objectId>29d2b51a-d373-2d16-0da9-991aa7edc608</objectId>
+	<file-name>six-sigma-process-improvements.xml</file-name>
+	<folder-name/>
+	<internal-name>Six Sigma Process Improvments</internal-name>
+	<headline>Six Sigma Process Improvments</headline>
+	<subhead/>
+	<image>/static-assets/images/touts/star.jpg</image>
+	<segments>	<item>	<key>Customer</key>
+	<value>Customer</value>
+	</item></segments>
+</component>

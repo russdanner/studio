@@ -1,0 +1,9 @@
+<webscript>
+ <shortname>form</shortname>
+ <description>the webscript for showing the form</description>
+ <url>/cstudio/wcm/components/form-render</url>
+ <format default="html">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+  <!-- family>dashlet</family -->
+</webscript>

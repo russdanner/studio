@@ -1,0 +1,11 @@
+<!-- This is necessary to deploy jars to a remote repo.  See HOW-TO*.txt -->
+
+<settings>
+      <servers>
+            <server>
+                  <id>craftercms</id>
+                  <username>username</username>
+                  <password>password</password>
+            </server>
+      </servers>
+</settings>

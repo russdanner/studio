@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-admin-console</id>
+	<page-type>cstudio-admin-console</page-type>
+	<title>Crafter Studio Admin Console</title>
+	<description>Crafter Studio Admin Console</description>
+	<template-instance>cstudio-admin-console</template-instance>
+	<authentication>user</authentication>
+</page>

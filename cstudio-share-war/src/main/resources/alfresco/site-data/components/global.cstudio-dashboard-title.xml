@@ -1,0 +1,6 @@
+<component>
+   <scope>global</scope>
+   <region-id>cstudio-dashboard-title</region-id>
+   <source-id>global</source-id>
+   <url>/components/title/cstudio-dashboard-title</url>
+</component>

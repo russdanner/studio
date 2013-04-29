@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-itempreview</id>
+	<page-type>cstudio-itempreview</page-type>
+	<title>Crafter Studio Item Preview</title>
+	<description>Crafter Item Preview</description>
+	<template-instance>cstudio-itempreview-overlay</template-instance>
+	<authentication>user</authentication>
+</page>

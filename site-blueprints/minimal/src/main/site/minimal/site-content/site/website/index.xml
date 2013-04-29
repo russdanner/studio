@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page>
+  <content-type>/page/entry</content-type>
+  <placeInNav>true</placeInNav>
+  <orderDefault_f>1000</orderDefault_f>
+  <file-name valid="true">index.xml</file-name>
+  <internal-name>SITENAME Home Page</internal-name>
+  <title>SITENAME minimal site</title>
+  <meta-description>SITENAME</meta-description>
+  <corporateKeywords/>
+  <meta-keywords>SITENAME</meta-keywords>
+  <display-template>/templates/web/entry.ftl</display-template>
+  <descriptor-mapper>hierarchical-mapper</descriptor-mapper>
+  <navigable>false</navigable>
+   <helloText>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet</helloText>
+   <helloDropdown>&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis diam urna, malesuada in porttitor eget, suscipit sit amet&lt;/p&gt;</helloDropdown>
+</page>

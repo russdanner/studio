@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+   <id>cstudio-site-analytics</id>
+   <title>Crafter Studio Site Analytics</title>
+   <description>Site Analytics</description>
+   <template-instance>cstudio-site-analytics</template-instance>
+   <authentication>user</authentication>
+</page>

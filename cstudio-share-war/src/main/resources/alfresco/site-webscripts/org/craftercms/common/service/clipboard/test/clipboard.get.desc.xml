@@ -1,0 +1,8 @@
+<webscript>
+ <shortname>clipboard service</shortname>
+ <description>test webscript for Clipboard service</description>
+ <url>/cstudio/services/clipboard-test</url>
+ <format default="json">argument</format>
+ <authentication>user</authentication>
+ <transaction>required</transaction>
+</webscript>

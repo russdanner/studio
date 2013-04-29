@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<component>
+   <scope>global</scope>
+   <region-id>main</region-id>
+   <source-id>cstudio-webform</source-id>
+   <url>/cstudio/wcm/components/webform</url>
+</component>

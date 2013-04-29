@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<page>
+	<id>cstudio-search</id>
+	<page-type>cstudio-search</page-type>
+	<title>Crafter Studio Search</title>
+	<title-id>page.cstudio-search.title</title-id>
+	<description>Crafter Studio Search</description>
+	<description-id>page.cstudio-search.description
+	</description-id>
+	<template-instance>cstudio-search</template-instance>
+	<authentication>user</authentication>
+</page>

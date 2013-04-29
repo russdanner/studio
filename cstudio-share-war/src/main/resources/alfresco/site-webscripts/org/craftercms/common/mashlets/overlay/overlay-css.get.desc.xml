@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Crafter Preview overlay</shortname>
+  <description>Crafter Preview overlay</description>
+  <url>/cstudio/wcm/preview/overlay/css.css</url>
+  <format default="css">argument</format>
+
+</webscript>
