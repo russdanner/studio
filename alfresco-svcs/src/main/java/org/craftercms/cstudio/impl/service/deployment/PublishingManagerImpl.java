@@ -17,26 +17,41 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.deployment;
 
-import org.apache.commons.httpclient.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnectionManager;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.*;
+import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
+import org.craftercms.cstudio.api.log.Logger;
+import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDAL;
-import org.craftercms.cstudio.api.log.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
 
 public class PublishingManagerImpl implements PublishingManager {
 
@@ -108,11 +123,11 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public long getTargetVersion(PublishingTargetItem target) {
+	public long getTargetVersion(PublishingTargetItem target, String site) {
         long version = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
             LOGGER.debug(String.format("Get deployment agent version for target ", target.getName()));
-            URL versionUrl = null;
+			URL versionUrl = null;
             try {
                 versionUrl = new URL(target.getVersionUrl());
             } catch (MalformedURLException e) {
@@ -122,7 +137,8 @@ public class PublishingManagerImpl implements PublishingManager {
             HttpClient client = null;
             try {
                 getMethod = new GetMethod(target.getVersionUrl());
-                getMethod.setQueryString(new NameValuePair[] {new NameValuePair(TARGET_REQUEST_PARAMETER, target.getTarget())});
+                getMethod.setQueryString(new NameValuePair[] {new NameValuePair(TARGET_REQUEST_PARAMETER, target.getTarget()),
+						new NameValuePair(SITE_REQUEST_PARAMETER, site) });
                 client = new HttpClient();
                 int status = client.executeMethod(getMethod);
                 if (status == HttpStatus.SC_OK) {
@@ -344,7 +360,7 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public long setTargetVersion(PublishingTargetItem target, long newVersion) {
+	public long setTargetVersion(PublishingTargetItem target, long newVersion, String site) {
         long resoponseVersion = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
             LOGGER.debug(String.format("Set deployment agent version for target ", target.getName()));
@@ -360,6 +376,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 postMethod = new PostMethod(target.getVersionUrl());
                 postMethod.addParameter(TARGET_REQUEST_PARAMETER, target.getTarget());
                 postMethod.addParameter(VERSION_REQUEST_PARAMETER, String.valueOf(newVersion));
+				postMethod.addParameter(SITE_REQUEST_PARAMETER, site);
                 client = new HttpClient();
                 int status = client.executeMethod(postMethod);
                 if (status == HttpStatus.SC_OK) {
