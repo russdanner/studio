@@ -322,6 +322,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
                             targetItem.setTarget(endpoint.getTarget());
                             targetItem.setType(endpoint.getType());
                             targetItem.setServerUrl(endpoint.getServerUrl());
+                            targetItem.setVersionUrl(endpoint.getVersionUrl());
                             targetItem.setStatusUrl(endpoint.getStatusUrl());
                             targetItem.setPassword(endpoint.getPassword());
                             targetItem.setExcludePattern(endpoint.getExcludePattern());
@@ -351,9 +352,22 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
 
     @Override
     public String getFilename(String site, String path) {
-        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
-        NodeRef nodeRef = persistenceManagerService.getNodeRef(SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site), path);
-        return DefaultTypeConverter.INSTANCE.convert(String.class, persistenceManagerService.getProperty(nodeRef, ContentModel.PROP_NAME));
+        if (path != null && !path.isEmpty()) {
+            PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+            NodeRef nodeRef = persistenceManagerService.getNodeRef(SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site), path);
+            if (nodeRef != null) {
+                return DefaultTypeConverter.INSTANCE.convert(String.class, persistenceManagerService.getProperty(nodeRef, ContentModel.PROP_NAME));
+            } else {
+                int idx = path.lastIndexOf("/");
+                if (idx > 0) {
+                    return path.substring(idx + 1);
+                } else {
+                    return path;
+                }
+            }
+        } else {
+            return "";
+        }
     }
 
     @Override

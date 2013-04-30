@@ -65,6 +65,9 @@ public class DeploymentEndpointConfigImpl extends ConfigurableServiceBase implem
                 String serverUrl = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_SERVER_URL);
                 endpointConfig.setServerUrl(serverUrl);
 
+                String versionUrl = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_VERSION_URL);
+                endpointConfig.setVersionUrl(versionUrl);
+
                 String password = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_PASSWORD);
                 endpointConfig.setPassword(password);
 

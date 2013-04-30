@@ -57,15 +57,15 @@
     </resultMap>
 
     <select id="checkTableExistsCTE" resultClass="java.util.HashMap">
-        show tables like 'cstudio_copytoenvironment';
+        SELECT tablename FROM pg_tables WHERE tablename = 'cstudio_copytoenvironment';
     </select>
 
     <select id="checkTableExistsPTT" resultClass="java.util.HashMap">
-        show tables like 'cstudio_publishtotarget';
+        SELECT tablename FROM pg_tables WHERE tablename = 'cstudio_publishtotarget';
     </select>
 
     <select id="checkTableExistsDSH" resultClass="java.util.HashMap">
-        show tables like 'cstudio_deploymentsynchistory';
+        SELECT tablename FROM pg_tables WHERE tablename = 'cstudio_deploymentsynchistory';
     </select>
 
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
@@ -75,6 +75,7 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &lt;= #now#
+        ORDER BY scheduleddate ASC
     </select>
 
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
@@ -104,6 +105,7 @@
         FROM cstudio_publishtotarget
         WHERE site = #site#
         AND version &gt; #version#
+        ORDER BY version ASC
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">
@@ -136,5 +138,6 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &gt; #now#
+        ORDER BY scheduleddate ASC
     </select>
 </sqlMap>

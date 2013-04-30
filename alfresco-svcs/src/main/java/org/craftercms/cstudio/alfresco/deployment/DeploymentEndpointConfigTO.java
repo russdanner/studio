@@ -99,4 +99,12 @@ public class DeploymentEndpointConfigTO {
     public void setStatusUrl(String statusUrl) {
         this.statusUrl = statusUrl;
     }
+
+    protected String versionUrl;
+    public String getVersionUrl() {
+        return versionUrl;
+    }
+    public void setVersionUrl(String versionUrl) {
+        this.versionUrl = versionUrl;
+    }
 }

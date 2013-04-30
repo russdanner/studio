@@ -54,6 +54,7 @@ public class PublishingManagerImpl implements PublishingManager {
     private final static String INDEX_FILE = "index.xml";
     private final static String FILES_SEPARATOR = ",";
     private final static String LIVE_ENVIRONMENT = "live";
+    private final static String WORK_AREA_ENVIRONMENT = "work-area";
 
     @Override
     public Set<String> getAllAvailableSites() {
@@ -69,12 +70,12 @@ public class PublishingManagerImpl implements PublishingManager {
     public boolean checkConnection(PublishingTargetItem target) {
         boolean connOk = false;
         if (target.getStatusUrl() != null && !target.getStatusUrl().isEmpty()) {
-            //LOGGER.debug(String.format("Check deployment agent status for target ", target.getName()));
+            LOGGER.debug(String.format("Check deployment agent status for target ", target.getName()));
             URL statusUrl = null;
             try {
                 statusUrl = new URL(target.getStatusUrl());
             } catch (MalformedURLException e) {
-                //LOGGER.error(String.format("Invalid endpoint status URL for publishing channel [%s]", target.getName()), e);
+                LOGGER.error(String.format("Invalid endpoint status URL for publishing channel [%s]", target.getName()), e);
             }
             GetMethod getMethod = null;
             HttpClient client = null;
@@ -87,7 +88,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 }
 
             } catch (Exception e) {
-                //LOGGER.error(String.format("Target (%s) is not available. Status check failed for url %s", target.getName(), target.getStatusUrl()));
+                LOGGER.error(String.format("Target (%s) is not available. Status check failed for url %s", target.getName(), target.getStatusUrl()));
             } finally {
                 if (client != null) {
                     HttpConnectionManager mgr = client.getHttpConnectionManager();
@@ -110,12 +111,12 @@ public class PublishingManagerImpl implements PublishingManager {
     public long getTargetVersion(PublishingTargetItem target) {
         long version = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
-            //LOGGER.debug(String.format("Get deployment agent version for target ", target.getName()));
+            LOGGER.debug(String.format("Get deployment agent version for target ", target.getName()));
             URL versionUrl = null;
             try {
                 versionUrl = new URL(target.getVersionUrl());
             } catch (MalformedURLException e) {
-                //LOGGER.error(String.format("Invalid get version URL for target [%s]", target.getName()), e);
+                LOGGER.error(String.format("Invalid get version URL for target [%s]", target.getName()), e);
             }
             GetMethod getMethod = null;
             HttpClient client = null;
@@ -165,7 +166,7 @@ public class PublishingManagerImpl implements PublishingManager {
         try {
             requestUrl = new URL(target.getServerUrl());
         } catch (MalformedURLException e) {
-            //LOGGER.error(String.format("Invalid server URL for target [%s]", target.getName()), e);
+            LOGGER.error(String.format("Invalid server URL for target [%s]", target.getName()), e);
         }
 
         ByteArrayPartSource baps = null;
@@ -175,7 +176,7 @@ public class PublishingManagerImpl implements PublishingManager {
 
         int numberOfBuckets = filteredItems.size() / target.getBucketSize() + 1;
         Iterator<PublishingSyncItem> iter = filteredItems.iterator();
-        //LOGGER.debug(String.format("Divide all deployment items into %d bucket(s) for  target [%s]", numberOfBuckets , target.getName()));
+        LOGGER.debug(String.format("Divide all deployment items into %d bucket(s) for  target [%s]", numberOfBuckets , target.getName()));
         List<DeploymentEventItem> eventItems = new ArrayList<DeploymentEventItem>();
         for (int bucketIndex = 0; bucketIndex < numberOfBuckets; bucketIndex++) {
             int cntFiles = 0;
@@ -186,7 +187,7 @@ public class PublishingManagerImpl implements PublishingManager {
             formParts.add(new StringPart(TARGET_REQUEST_PARAMETER, target.getTarget()));
             formParts.add(new StringPart(SITE_REQUEST_PARAMETER, site));
 
-            //LOGGER.debug(String.format("Preparing deployment items (bucket %d) for target [%s]", bucketIndex + 1, target.getName()));
+            LOGGER.debug(String.format("Preparing deployment items (bucket %d) for target [%s]", bucketIndex + 1, target.getName()));
 
             int loopSize = (filteredItems.size() - (bucketIndex * target.getBucketSize()) > target.getBucketSize()) ? target.getBucketSize() : filteredItems.size() - bucketIndex * target.getBucketSize();
             for (int j = 0; j < loopSize; j++) {
@@ -218,19 +219,30 @@ public class PublishingManagerImpl implements PublishingManager {
                         } else {
                             eventItem.setState(DeploymentEventItem.STATE_UPDATED);
                         }
-                        String fileName = _contentRepository.getFilename(site, item.getPath());
+
                         InputStream input = _contentRepository.getContent(site, null, LIVE_ENVIRONMENT, item.getPath());
+                        try {
+                            if (input == null || input.available() > 0) {
+                            // Content does not exist - skip deploying file
+                            continue;
+                            }
+                        } catch (IOException err) {
+                            LOGGER.error("Error reading input stream for content at path: " + item.getPath() + " site: " + item.getSite());
+                            continue;
+                        }
+                        String fileName = _contentRepository.getFilename(site, item.getPath());
 
                         byte[] byteArray = null;
 
                         try {
                             byteArray = IOUtils.toByteArray(input);
                         } catch (IOException e) {
-                            //LOGGER.error("Error while converting input stream to byte array", e);
+                            LOGGER.error("Error while converting input stream to byte array", e);
                             baps = null;
                             stringPart = null;
                             filePart = null;
                             formParts = null;
+                            continue;
                         }
                         finally {
                             IOUtils.closeQuietly(input);
@@ -265,7 +277,7 @@ public class PublishingManagerImpl implements PublishingManager {
                                 metadataPart = new ByteArrayPartSource(fileName + ".meta", IOUtils.toByteArray(metadataStream));
                                 formParts.add(new FilePart(METADATA_FILE_REQUEST_PARAMETER + cntFiles, metadataPart));
                             } catch (IOException e) {
-                                //LOGGER.error("Error while creating input stream with content metadata", e);
+                                LOGGER.error("Error while creating input stream with content metadata", e);
                                 baps = null;
                                 stringPart = null;
                                 filePart = null;
@@ -286,7 +298,7 @@ public class PublishingManagerImpl implements PublishingManager {
             if (sbDeletedFiles.length() > 0) {
                 formParts.add(new StringPart(DELETED_FILES_REQUEST_PARAMETER, sbDeletedFiles.toString()));
             }
-            //LOGGER.debug(String.format("Create http request to deploy bucket %d for target [%s]", bucketIndex + 1, target.getName()));
+            LOGGER.debug(String.format("Create http request to deploy bucket %d for target [%s]", bucketIndex + 1, target.getName()));
 
             PostMethod postMethod = null;
             HttpClient client = null;
@@ -300,16 +312,16 @@ public class PublishingManagerImpl implements PublishingManager {
                 client = new HttpClient();
                 int status = client.executeMethod(postMethod);
                 if (status == HttpStatus.SC_OK) {
-                    //LOGGER.info(String.format("Successfully deployed bucket number %d on target [%s]", bucketIndex + 1, target.getName()));
+                    LOGGER.info(String.format("Successfully deployed bucket number %d on target [%s]", bucketIndex + 1, target.getName()));
                 } else {
-                    //LOGGER.error(String.format("Deployment failed for bucket number %d on target [%s]. Deployment agent returned status [%s]", bucketIndex + 1, target.getName(), HttpStatus.getStatusText(status)));
+                    LOGGER.error(String.format("Deployment failed for bucket number %d on target [%s]. Deployment agent returned status [%s]", bucketIndex + 1, target.getName(), HttpStatus.getStatusText(status)));
                 }
             } catch (HttpException e) {
                 String message = String.format("Publish failed for target [%s] due to http protocol exception", target.getName());
-                //LOGGER.error(message, e);
+                LOGGER.error(message, e);
             } catch (IOException e) {
                 String message = String.format("Publish failed for target [%s] due to I/O (transport) exception", target.getName());
-                //LOGGER.error(message, e);
+                LOGGER.error(message, e);
             } finally {
                 if (client != null) {
                     HttpConnectionManager mgr = client.getHttpConnectionManager();
@@ -329,19 +341,19 @@ public class PublishingManagerImpl implements PublishingManager {
             }
         }
         _contentRepository.publishDeployEvent(target.getName(), eventItems);
-        //LOGGER.info(String.format("Deployment successful on target [%s]", target.getName()));
+        LOGGER.info(String.format("Deployment successful on target [%s]", target.getName()));
     }
 
     @Override
     public long setTargetVersion(PublishingTargetItem target, long newVersion) {
         long resoponseVersion = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
-            //LOGGER.debug(String.format("Set deployment agent version for target ", target.getName()));
+            LOGGER.debug(String.format("Set deployment agent version for target ", target.getName()));
             URL versionUrl = null;
             try {
                 versionUrl = new URL(target.getVersionUrl());
             } catch (MalformedURLException e) {
-                //LOGGER.error(String.format("Invalid set version URL for target [%s]", target.getName()), e);
+                LOGGER.error(String.format("Invalid set version URL for target [%s]", target.getName()), e);
             }
             PostMethod postMethod = null;
             HttpClient client = null;
@@ -361,7 +373,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 }
 
             } catch (Exception e) {
-                //LOGGER.error(String.format("Target (%s) responded with error while setting target version. Set version failed for url %s", target.getName(), target.getVersionUrl()));
+                LOGGER.error(String.format("Target (%s) responded with error while setting target version. Set version failed for url %s", target.getName(), target.getVersionUrl()));
 
             } finally {
                 if (client != null) {
@@ -394,6 +406,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 _contentRepository.clearRenamed(item.getSite(), item.getPath());
             }
             _contentRepository.deleteContent(item.getSite(), item.getEnvironment(), item.getPath());
+            _contentRepository.deleteContent(item.getSite(), WORK_AREA_ENVIRONMENT, item.getPath());
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
             if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {

@@ -78,6 +78,7 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &lt;= #now#
+        ORDER BY scheduleddate ASC
     </select>
 
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
@@ -107,6 +108,7 @@
         FROM cstudio_publishtotarget
         WHERE site = #site#
         AND version &gt; #version#
+        ORDER BY version ASC
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">
@@ -145,5 +147,6 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &gt; #now#
+        ORDER BY scheduleddate ASC
     </select>
 </sqlMap>

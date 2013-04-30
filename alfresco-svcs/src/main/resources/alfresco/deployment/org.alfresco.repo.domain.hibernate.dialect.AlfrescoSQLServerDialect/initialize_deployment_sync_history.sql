@@ -20,11 +20,4 @@ CREATE NONCLUSTERED INDEX [cs_depsynchist_target_idx] ON [dbo].[cstudio_deployme
 CREATE NONCLUSTERED INDEX [cs_depsynchist_user_idx] ON [dbo].[cstudio_deploymentsynchistory] ( [username] );
 
 CREATE NONCLUSTERED INDEX [cs_depsynchist_ctc_idx] ON [dbo].[cstudio_deploymentsynchistory] ( [contenttypeclass] );
-  PRIMARY KEY (`id`) ,
-  INDEX `cs_depsynchist_site_idx` (`site` ASC) ,
-  INDEX `cs_depsynchist_env_idx` (`environment` ASC) ,
-  INDEX `cs_depsynchist_path_idx` (`path`(250) ASC) ,
-  INDEX `cs_depsynchist_sitepath_idx` (`site` ASC, `path`(250) ASC) ,
-  INDEX `cs_depsynchist_target_idx` (`target` ASC) ,
-  INDEX `cs_depsynchist_user_idx` (`username` ASC) ,
-  INDEX `cs_depsynchist_ctc_idx` (`contenttypeclass` ASC));
+

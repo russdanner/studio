@@ -57,15 +57,15 @@
     </resultMap>
 
     <select id="checkTableExistsCTE" resultClass="java.util.HashMap">
-        show tables like 'cstudio_copytoenvironment';
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_copytoenvironment]') AND type in (N'U');
     </select>
 
     <select id="checkTableExistsPTT" resultClass="java.util.HashMap">
-        show tables like 'cstudio_publishtotarget';
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_publishtotarget]') AND type in (N'U');
     </select>
 
     <select id="checkTableExistsDSH" resultClass="java.util.HashMap">
-        show tables like 'cstudio_deploymentsynchistory';
+        SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_deploymentsynchistory]') AND type in (N'U');
     </select>
 
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
@@ -75,6 +75,7 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &lt;= #now#
+        ORDER BY scheduleddate ASC
     </select>
 
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
@@ -104,6 +105,7 @@
         FROM cstudio_publishtotarget
         WHERE site = #site#
         AND version &gt; #version#
+        ORDER BY version ASC
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">
@@ -118,7 +120,7 @@
         FROM cstudio_deploymentsynchistory as dsh2
         WHERE dsh2.site = #site#
         AND dsh2.syncdate BETWEEN #from_date# AND #to_date#
-        GROUP BY dsh2.site_id, dsh2.path, dsh2.target, convert(varchar(10), dsh2.syncdate)) as dsh3
+        GROUP BY dsh2.site, dsh2.path, dsh2.target, convert(varchar(10), dsh2.syncdate)) as dsh3
         ON dsh1.path = dsh3.path and dsh1.target = dsh3.target and dsh1.syncdate = dsh3.syncdate
         WHERE dsh1.site = #site#
         <dynamic prepend=" AND ">
@@ -126,7 +128,7 @@
                 dsh1.contenttypeclass=#filter#
             </isNotNull>
         </dynamic>
-        ORDER BY dsh1.deployed_date desc
+        ORDER BY dsh1.syncdate desc
     </select>
 
     <select id="getScheduledItems" resultMap="copyToEnvironmentItemResult"
@@ -136,5 +138,6 @@
         WHERE site = #site#
         AND state = #state#
         AND scheduleddate &gt; #now#
+        ORDER BY scheduleddate ASC
     </select>
 </sqlMap>
