@@ -17,13 +17,13 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.deployment;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  *document
@@ -37,13 +37,13 @@ public interface PublishingManager {
 
     boolean checkConnection(PublishingTargetItem target);
 
-	long getTargetVersion(PublishingTargetItem target, String site);
+    long getTargetVersion(PublishingTargetItem target);
 
     List<PublishingSyncItem> getItemsToSync(String site, long targetVersion);
 
     void deployItemsToTarget(String site, List<PublishingSyncItem> filteredItems, PublishingTargetItem target);
 
-	long setTargetVersion(PublishingTargetItem target, long newVersion, String site);
+    long setTargetVersion(PublishingTargetItem target, long newVersion);
 
     List<CopyToEnvironmentItem> getItemsReadyForDeployment(String site, String environment);
 
