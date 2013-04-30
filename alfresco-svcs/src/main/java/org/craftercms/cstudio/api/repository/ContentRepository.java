@@ -134,6 +134,8 @@ public interface ContentRepository {
 
     void publishDeployEvent(String endpoint, List<DeploymentEventItem> items);
 
+    void deleteContent(String site, String path);
+
     void deleteContent(String site, String environment, String path);
 
     void clearRenamed(String site, String path);

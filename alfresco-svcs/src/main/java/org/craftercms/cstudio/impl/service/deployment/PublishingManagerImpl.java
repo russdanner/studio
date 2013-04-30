@@ -225,7 +225,6 @@ public class PublishingManagerImpl implements PublishingManager {
                         if (item.getPath().endsWith("/" + INDEX_FILE)) {
                             sbDeletedFiles.append(FILES_SEPARATOR).append(item.getPath().replace("/" + INDEX_FILE, ""));
                         }
-                        eventItems.add(eventItem);
                     } else {
 
                         if (item.getAction() == PublishingSyncItem.Action.NEW) {
@@ -423,7 +422,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 _contentRepository.clearRenamed(item.getSite(), item.getPath());
             }
             _contentRepository.deleteContent(item.getSite(), item.getEnvironment(), item.getPath());
-            _contentRepository.deleteContent(item.getSite(), WORK_AREA_ENVIRONMENT, item.getPath());
+            _contentRepository.deleteContent(item.getSite(), item.getPath());
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
             if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {

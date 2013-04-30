@@ -425,7 +425,26 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
         fullPath = fullPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, environment);
         fullPath = fullPath + path;
-        logger.info("Deleting path " + fullPath);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+        if (nodeRef != null) {
+            NodeRef parentNode = persistenceManagerService.getPrimaryParent(nodeRef).getParentRef();
+            persistenceManagerService.deleteNode(nodeRef);
+            List<FileInfo> children = persistenceManagerService.list(parentNode);
+            while ( children == null || children.size() < 1) {
+                NodeRef helpNode = parentNode;
+                parentNode = persistenceManagerService.getPrimaryParent(helpNode).getParentRef();
+                persistenceManagerService.deleteNode(helpNode);
+                children = persistenceManagerService.list(parentNode);
+            }
+        }
+    }
+
+    @Override
+    public void deleteContent(String site, String path) {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        fullPath = fullPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, WORK_AREA_REPOSITORY);
+        fullPath = fullPath + path;
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
         if (nodeRef != null) {
             try {
