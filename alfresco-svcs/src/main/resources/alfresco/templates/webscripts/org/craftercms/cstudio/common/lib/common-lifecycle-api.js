@@ -29,7 +29,7 @@ controller = {
             } else if (contentLifecycleOperation == "DELETE") {
                 controller.event.onDelete(site, path);
             } else if (contentLifecycleOperation == "DUPLICATE") {
-                controller.event.onDelete(site, path);
+                controller.event.onDuplicate(site, path);
             } else if (contentLifecycleOperation == "NEW") {
                 controller.event.onNew(site, path);
             } else if (contentLifecycleOperation == "RENAME") {

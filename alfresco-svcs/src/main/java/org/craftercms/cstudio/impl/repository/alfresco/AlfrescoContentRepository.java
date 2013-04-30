@@ -28,9 +28,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.IOUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEngineConstants;
@@ -41,12 +38,17 @@ import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.event.EventService;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.*;
+import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
+import org.craftercms.cstudio.api.log.Logger;
+import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.repository.AbstractContentRepository;
-import org.craftercms.cstudio.api.log.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 
 import javax.transaction.UserTransaction;
 import java.io.InputStream;
@@ -426,6 +428,12 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         logger.info("Deleting path " + fullPath);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
         if (nodeRef != null) {
+            try {
+                _dmContentService.deleteContent(site, path, true, true, null);
+                return;
+            } catch (ServiceException e) {
+                logger.debug("Failed to delete content at path: " + path + " site " + site);
+            }
             NodeRef parentNode = persistenceManagerService.getPrimaryParent(nodeRef).getParentRef();
             persistenceManagerService.deleteNode(nodeRef);
             List<FileInfo> children = persistenceManagerService.list(parentNode);
