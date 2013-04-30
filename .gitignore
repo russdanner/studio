@@ -4,3 +4,10 @@
 *.jar
 *.war
 *.ear
+
+# IntelliJIdea files#
+*.iml
+.idea
+
+# Maven build overlays #
+overlays
