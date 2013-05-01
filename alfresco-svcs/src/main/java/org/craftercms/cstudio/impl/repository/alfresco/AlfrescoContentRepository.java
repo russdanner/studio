@@ -492,7 +492,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         }else if  (_dmFilterWrapper.accept(site, path, DmConstants.CONTENT_TYPE_DOCUMENT)){
             return DmConstants.CONTENT_TYPE_DOCUMENT;
         } else {
-            return null;
+            return "";
         }
     }
 
