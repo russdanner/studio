@@ -952,12 +952,12 @@
     <!-- ////////////////////////////////////// -->
     <!--         deployment service             -->
     <!-- ////////////////////////////////////// -->
-    <bean id="cstudioDeploymentServiceDAL" class="org.rivetlogic.cstudio.impl.service.deployment.dal.DeploymentDALImpl"
-          init-method="initTable">
+    <bean id="cstudioDeploymentServiceDAL" class="org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDALImpl"
+            init-method="initTable">
+        <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="initializeWorkerTablesScriptPath"><value>alfresco/deployment/${hibernate.dialect}/initialize_deployment_workers.sql</value></property>
         <property name="initializeHistoryTableScriptPath"><value>alfresco/deployment/${hibernate.dialect}/initialize_deployment_sync_history.sql</value></property>
-        <property name="addSubmissionCommentCTEScriptPath"><value>alfresco/deployment/${hibernate.dialect}/add_submission_comment_cte.sql</value></property>
         <property name="sqlMapClient" ref="cstudioCopyToEnvironmentSqlMap" />
     </bean>
 

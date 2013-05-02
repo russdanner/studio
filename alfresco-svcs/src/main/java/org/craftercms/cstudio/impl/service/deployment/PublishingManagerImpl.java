@@ -24,14 +24,13 @@ import org.apache.commons.httpclient.methods.multipart.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
-import org.craftercms.cstudio.api.log.Logger;
-import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDAL;
+import org.craftercms.cstudio.api.log.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,11 +108,11 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-	public long getTargetVersion(PublishingTargetItem target, String site) {
+    public long getTargetVersion(PublishingTargetItem target) {
         long version = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
             LOGGER.debug(String.format("Get deployment agent version for target ", target.getName()));
-			URL versionUrl = null;
+            URL versionUrl = null;
             try {
                 versionUrl = new URL(target.getVersionUrl());
             } catch (MalformedURLException e) {
@@ -123,8 +122,7 @@ public class PublishingManagerImpl implements PublishingManager {
             HttpClient client = null;
             try {
                 getMethod = new GetMethod(target.getVersionUrl());
-                getMethod.setQueryString(new NameValuePair[] {new NameValuePair(TARGET_REQUEST_PARAMETER, target.getTarget()),
-						new NameValuePair(SITE_REQUEST_PARAMETER, site) });
+                getMethod.setQueryString(new NameValuePair[] {new NameValuePair(TARGET_REQUEST_PARAMETER, target.getTarget())});
                 client = new HttpClient();
                 int status = client.executeMethod(getMethod);
                 if (status == HttpStatus.SC_OK) {
@@ -211,6 +209,7 @@ public class PublishingManagerImpl implements PublishingManager {
                         if (item.getPath().endsWith("/" + INDEX_FILE)) {
                             sbDeletedFiles.append(FILES_SEPARATOR).append(item.getPath().replace("/" + INDEX_FILE, ""));
                         }
+                        eventItems.add(eventItem);
                     } else {
 
                         if (item.getAction() == PublishingSyncItem.Action.NEW) {
@@ -346,7 +345,7 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-	public long setTargetVersion(PublishingTargetItem target, long newVersion, String site) {
+    public long setTargetVersion(PublishingTargetItem target, long newVersion) {
         long resoponseVersion = -1;
         if (target.getVersionUrl() != null && !target.getVersionUrl().isEmpty()) {
             LOGGER.debug(String.format("Set deployment agent version for target ", target.getName()));
@@ -362,7 +361,6 @@ public class PublishingManagerImpl implements PublishingManager {
                 postMethod = new PostMethod(target.getVersionUrl());
                 postMethod.addParameter(TARGET_REQUEST_PARAMETER, target.getTarget());
                 postMethod.addParameter(VERSION_REQUEST_PARAMETER, String.valueOf(newVersion));
-				postMethod.addParameter(SITE_REQUEST_PARAMETER, site);
                 client = new HttpClient();
                 int status = client.executeMethod(postMethod);
                 if (status == HttpStatus.SC_OK) {
@@ -408,11 +406,11 @@ public class PublishingManagerImpl implements PublishingManager {
                 _contentRepository.clearRenamed(item.getSite(), item.getPath());
             }
             _contentRepository.deleteContent(item.getSite(), item.getEnvironment(), item.getPath());
-            _contentRepository.deleteContent(item.getSite(), item.getPath());
+            _contentRepository.deleteContent(item.getSite(), WORK_AREA_ENVIRONMENT, item.getPath());
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
             if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
-                _contentRepository.createNewVersion(item.getSite(), item.getPath(), item.getSubmissionComment(), true);
+                _contentRepository.createNewVersion(item.getSite(), item.getPath(), true);
                 _contentRepository.stateTransition(item.getSite(), item.getPath(), TransitionEvent.DEPLOYMENT);
             }
             if (item.getAction() == CopyToEnvironmentItem.Action.MOVE) {

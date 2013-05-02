@@ -4,7 +4,7 @@ function extractCommonProperties(contentNode, root) {
 	// TODO: addCommonAspects should be called from form-extractors, to make sure no properties has been modified in between.  
 	addCommonAspects(contentNode);
 	extractContentType(contentNode, root);
-	extractDisabled(contentNode, root);
+	extractStatus(contentNode, root);
 	extractFloating(contentNode, root);
 	extractTemplateVersion(contentNode, root);
 	extractWCMIdentifiable(contentNode, root);
@@ -35,6 +35,18 @@ function extractContentType(contentNode, root) {
 		contentNode.properties["cstudio-core:contentType"] = contentType;
 	}
 }
+
+// a special case that value=false means property=true
+// is this content disabled (throw 404 upon user access? status:true = disabled: false)
+function extractStatus(contentNode, root) {
+	var value = root.valueOf("status")
+	if (value != undefined && value == "false") {
+		contentNode.properties["cstudio-core:disabled"] = true;
+	} else {
+		contentNode.properties["cstudio-core:disabled"] = false;
+	}
+}
+
 // a special case that value=false means property=true
 function extractFloating(contentNode, root) {
 	var value = root.valueOf("placeInNav")

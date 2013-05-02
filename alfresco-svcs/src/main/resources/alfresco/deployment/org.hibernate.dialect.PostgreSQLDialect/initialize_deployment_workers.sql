@@ -9,7 +9,6 @@ CREATE  TABLE cstudio_copytoenvironment (
   state VARCHAR(50) NOT NULL ,
   action VARCHAR(20) NOT NULL ,
   contenttypeclass VARCHAR(20) NULL,
-  submissioncomment TEXT NULL,
   CONSTRAINT cstudio_copytoenvironment_pkey PRIMARY KEY (id)
 );
 

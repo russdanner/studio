@@ -68,9 +68,6 @@ public class CopyToEnvironmentItem implements Serializable {
     public String getContentTypeClass() { return _contentTypeClass; }
     public void setContentTypeClass(String contentTypeClass) { this._contentTypeClass = contentTypeClass; }
 
-    public String getSubmissionComment() { return _submissionComment; }
-    public void setSubmissionComment(String submissionComment) { this._submissionComment = submissionComment; }
-
     protected String _id;
     protected String _site;
     protected String _environment;
@@ -81,5 +78,4 @@ public class CopyToEnvironmentItem implements Serializable {
     protected Action _action;
     protected String _oldPath;
     protected String _contentTypeClass;
-    protected String _submissionComment;
 }

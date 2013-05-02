@@ -329,12 +329,7 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 		if (items != null) {
 			for (FileInfo item : items) {
  				String name = item.getName();
-                String currentPath;
-                if (parentPath.equals("/")) {
-                    currentPath = parentPath + name;
-                } else {
-                    currentPath = parentPath + "/" + name;
-                }
+				String currentPath = parentPath + "/" + name;
 				String currentFullPath = targetRoot + currentPath;
 				if (item.isFolder()) {
 					populateFiles(targetRoot, item.getNodeRef(), currentPath, importedPaths, importedFullPaths);
