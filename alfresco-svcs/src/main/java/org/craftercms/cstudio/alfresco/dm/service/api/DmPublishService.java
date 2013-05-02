@@ -23,20 +23,20 @@ import java.util.Date;
 import java.util.List;
 
 public interface DmPublishService {
-    
+
     public void publish(String site, String path, Date launchDate);
-    
+
     public void publish(String site, List<String> paths, Date launchDate);
 
     public void publish(String site, List<String> paths, Date launchDate, MultiChannelPublishingContext mcpContext);
 
-    public void unpublish(String site, List<String> paths);
+    public void unpublish(String site, List<String> paths, String approver);
+
+    public void unpublish(String site, List<String> paths, String approver, Date scheduleDate);
 
     public void cancelScheduledItem(String site, String path);
 
     public List<PublishingChannelTO> getAvailablePublishingChannelGroups(String site, String path);
 
-    public void unpublish(String site, List<String> paths, Date scheduleDate);
-
-	public boolean hasChannelsConfigure(String site, MultiChannelPublishingContext mcpContext);
+    public boolean hasChannelsConfigure(String site, MultiChannelPublishingContext mcpContext);
 }

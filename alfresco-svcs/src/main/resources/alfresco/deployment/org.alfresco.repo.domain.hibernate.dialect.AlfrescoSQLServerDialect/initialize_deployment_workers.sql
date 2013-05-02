@@ -9,6 +9,7 @@ CREATE  TABLE [dbo].[cstudio_copytoenvironment] (
   [state] NVARCHAR(50) NOT NULL ,
   [action] NVARCHAR(20) NOT NULL ,
   [contenttypeclass] NVARCHAR(20) ,
+  [submissioncomment] NVARCHAR(4000) ,
   CONSTRAINT [PK_cstudio_copytoenvironment] PRIMARY KEY CLUSTERED (id));
 
 CREATE NONCLUSTERED INDEX [cstudio_cte_site_idx] ON [dbo].[cstudio_copytoenvironment] ( [site] );
