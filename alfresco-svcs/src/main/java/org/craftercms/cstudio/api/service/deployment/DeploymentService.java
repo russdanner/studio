@@ -25,11 +25,11 @@ import java.util.List;
  */
 public interface DeploymentService {
 
-	// document
-	void deploy(String site, String environment, List<String> paths, Date scheduledDate);
+    // document
+    void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment);
 
-	// document
-    void delete(String site, String environment, List<String> paths, Date scheduledDate);
+    // document
+    void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate);
 
     List<DeploymentSyncHistoryItem> getDeploymentHistory(String site, Date fromDate, Date toDate, String filterType, int numberOfItems);
 

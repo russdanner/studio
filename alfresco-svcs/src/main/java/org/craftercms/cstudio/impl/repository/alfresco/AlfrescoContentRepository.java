@@ -227,10 +227,10 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     @Override
-    public void createNewVersion(String site, String path, boolean isMajorVersion) {
+    public void createNewVersion(String site, String path, String submissionComment, boolean isMajorVersion) {
         DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
         if (isMajorVersion) {
-            dmVersionService.createNextMajorVersion(site, path);
+            dmVersionService.createNextMajorVersion(site, path, submissionComment);
         } else {
             dmVersionService.createNextMinorVersion(site, path);
         }

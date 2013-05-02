@@ -29,8 +29,8 @@ import java.util.*;
 /**
  */
 public class DeploymentServiceImpl implements DeploymentService {
-	
-	public void deploy(String site, String environment, List<String> paths, Date scheduledDate) {
+
+    public void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) {
 
         if (scheduledDate != null && scheduledDate.after(new Date())) {
             _contentRepository.stateTransition(site, paths, TransitionEvent.SCHEDULED_DEPLOYMENT);
@@ -57,14 +57,14 @@ public class DeploymentServiceImpl implements DeploymentService {
         groupedPaths.put(CopyToEnvironmentItem.Action.NEW, newPaths);
         groupedPaths.put(CopyToEnvironmentItem.Action.MOVE, movedPaths);
         groupedPaths.put(CopyToEnvironmentItem.Action.UPDATE, updatedPaths);
-		
-		// use dal to setup deploy to environment log
-        _deploymentDAL.setupItemsToDeploy(site, environment, groupedPaths, scheduledDate);
-	}
+
+        // use dal to setup deploy to environment log
+        _deploymentDAL.setupItemsToDeploy(site, environment, groupedPaths, scheduledDate, approver, submissionComment);
+    }
 
     @Override
-    public void delete(String site, String environment, List<String> paths, Date scheduledDate) {
-        _deploymentDAL.setupItemsToDelete(site, environment, paths, scheduledDate);
+    public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
+        _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
     }
 
     @Override
