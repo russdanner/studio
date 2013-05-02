@@ -431,8 +431,8 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 	        theme_advanced_buttons2 : toolbarConfig2, 
 	        theme_advanced_buttons3 : toolbarConfig3,
 	        theme_advanced_buttons4 : toolbarConfig4,
-	         	        
-	        content_css : _thisControl._getCurrentStyleSheets(),        
+	        
+	        content_css : "",
 
 	        // Drop lists for link/image/media/template dialogs
 	        // template_external_list_url : "js/template_list.js",
@@ -588,6 +588,13 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 		var dom = editor.dom;
 		var ss = dom.doc.createElement('style'),
 		tt = dom.doc.createTextNode(styleOverrides);
+
+		//First add the currentStyleSheets
+		var styleSheets = tinymce.explode(this._getContentCSS(editor) + "," + this._getCurrentStyleSheets());
+
+		tinymce.each(styleSheets, function(u) {
+			dom.loadCSS(u);
+		});
 		
 		if(configuration) {
 			ss.setAttribute('type', 'text/css');
@@ -601,6 +608,14 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 				ss.appendChild(tt);		// all other browsers
 			}
 		} 
+	},
+
+	/**
+	 * Load the default theme style sheet
+	 */
+	_getContentCSS: function(editor){
+		var url = tinymce.ThemeManager.urls[editor.settings.theme] || tinymce.documentBaseURL.replace(/\/$/, '');
+		return editor.baseURI.toAbsolute(url + "/skins/" + editor.settings.skin + "/content.css");
 	},
 	
 	/**
