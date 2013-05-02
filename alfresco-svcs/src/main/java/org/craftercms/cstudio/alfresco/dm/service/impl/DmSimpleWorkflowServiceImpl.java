@@ -535,7 +535,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
     }
 
     @Override
-    public void preScheduleDelete(Set<String> urisToDelete, final Date scheduleDate, GoLiveContext context, Set rescheduledUris)
+    public void preScheduleDelete(Set<String> urisToDelete, final Date scheduleDate, final GoLiveContext context, Set rescheduledUris)
             throws ServiceException {
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         DmContentService dmContentService = getService(DmContentService.class);
@@ -546,7 +546,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         RetryingTransactionHelper txnHelper = dmTransactionService.getRetryingTransactionHelper();
         RetryingTransactionHelper.RetryingTransactionCallback<Void> cancelWorkflowCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable {
-                dmPublishService.unpublish(site, itemsToDelete, scheduleDate);
+                dmPublishService.unpublish(site, itemsToDelete, context.getApprover(), scheduleDate);
                 return null;
             }
         };
@@ -568,7 +568,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         RetryingTransactionHelper txnHelper = dmTransactionService.getRetryingTransactionHelper();
         RetryingTransactionHelper.RetryingTransactionCallback<List<String>> cancelWorkflowCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<List<String>>() {
             public List<String> execute() throws Throwable {
-                dmPublishService.unpublish(site, itemsToDelete);
+                dmPublishService.unpublish(site, itemsToDelete, approver);
                 if (!enableNewDeploymentEngine) {
                     return dmContentService.deleteContents(site, itemsToDelete, generateActivity, approver);
                 } else {

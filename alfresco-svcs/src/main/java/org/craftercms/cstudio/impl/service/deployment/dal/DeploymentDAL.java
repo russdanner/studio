@@ -32,13 +32,11 @@ public interface DeploymentDAL {
 
     List<CopyToEnvironmentItem> getItemsReadyForDeployment(String site, String environment);
 
-    void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate);
-
-    void setupItemsForPublishingSync(String site, String environment, Map<PublishingSyncItem.Action, List<String>> paths);
+    void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment);
 
     List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version);
 
-    void setupItemsToDelete(String site, String environment, List<String> paths, Date scheduledDate);
+    void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate);
 
     void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy);
 

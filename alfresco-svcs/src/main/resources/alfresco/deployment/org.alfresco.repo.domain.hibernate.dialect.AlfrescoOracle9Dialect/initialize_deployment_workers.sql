@@ -8,7 +8,8 @@ CREATE  TABLE cstudio_copytoenvironment (
   scheduleddate DATE NOT NULL ,
   state VARCHAR(50) NOT NULL ,
   action VARCHAR(20) NOT NULL ,
-  contenttypeclass VARCHAR(20)
+  contenttypeclass VARCHAR(20),
+  submissioncomment CLOB
 );
 
 CREATE SEQUENCE CSTUDIO_COPYTOENVIRONMENT_SEQ

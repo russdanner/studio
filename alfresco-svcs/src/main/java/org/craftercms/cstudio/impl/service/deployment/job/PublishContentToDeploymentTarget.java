@@ -17,6 +17,18 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.deployment.job;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.transaction.UserTransaction;
+
 import org.craftercms.cstudio.api.job.Job;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
@@ -25,12 +37,6 @@ import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.transaction.TransactionService;
 import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
-
-import javax.transaction.UserTransaction;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class PublishContentToDeploymentTarget implements Job {
 
@@ -60,7 +66,7 @@ public class PublishContentToDeploymentTarget implements Job {
                         Set<PublishingTargetItem> targets = _publishingManager.getAllTargetsForSite(site);
                         for (PublishingTargetItem target : targets) {
                             if (_publishingManager.checkConnection(target)) {
-                            	long targetVersion = _publishingManager.getTargetVersion(target);
+								long targetVersion = _publishingManager.getTargetVersion(target, site);
                                 
                                 if(targetVersion != -1) {
                                 	List<PublishingSyncItem> syncItems = _publishingManager.getItemsToSync(site, targetVersion);
@@ -73,7 +79,7 @@ public class PublishContentToDeploymentTarget implements Job {
 	                                    }
 	                                    
 	                                    long newVersion = getDeployedVersion(syncItems);
-	                                    _publishingManager.setTargetVersion(target, newVersion);
+										_publishingManager.setTargetVersion(target, newVersion, site);
 	                                    _publishingManager.insertDeploymentHistory(target, filteredItems, new Date());
 	                                }
                                 }

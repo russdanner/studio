@@ -112,7 +112,7 @@ public interface ContentRepository {
 
     void setSystemProcessing(String site, String path, boolean isSystemProcessing);
 
-    void createNewVersion(String site, String path, boolean isMajorVersion);
+    void createNewVersion(String site, String path, String submissionComment, boolean isMajorVersion);
 
     void copyToEnvironment(String site, String environment, String path);
 
@@ -133,6 +133,8 @@ public interface ContentRepository {
     InputStream getMetadataStream(String site, String path);
 
     void publishDeployEvent(String endpoint, List<DeploymentEventItem> items);
+
+    void deleteContent(String site, String path);
 
     void deleteContent(String site, String environment, String path);
 
