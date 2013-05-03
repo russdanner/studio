@@ -13,6 +13,7 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.id = id;
 	this.registeredPlugins = [];
 	this.rteTables = [];
+	this.rteTableStyles = {};
 	this.readonly = readonly;
 	this.codeModeXreduction = 50;	// Amount of pixels deducted from the total width value of the RTE in code mode
 	this.codeModeYreduction = 130;	// Amount of pixels deducted from the total height value of the RTE in code mode
@@ -86,6 +87,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 					control: _thisControl
 				});
 				_thisControl.rteTables = rteConfig.rteTables;
+				_thisControl.rteTableStyles = rteConfig.rteTablestyles;
 			},
 			failure: function() {
 			}
@@ -385,7 +387,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 			}
 		}
 
-		var pluginList = "autoresize, paste, noneditable, table, cs_contextmenu, cs_inlinepopups, ";
+		var pluginList = "autoresize, paste, noneditable, cs_table, cs_contextmenu, cs_inlinepopups, ";
 		for(var l=0; l<rteConfig.rteModules.length; l++) {
 			// mce plugin names cannot have a - in them
 			pluginList += "-"+rteConfig.rteModules[l].replace(/-/g,"")+",";
