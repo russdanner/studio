@@ -568,8 +568,8 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
                     adjustedWidth = this.previewBoxWidth;
                     adjustedHeight = Math.floor( (this.originalHeight * this.previewBoxWidth) / this.originalWidth );
                 }else{
-                    adjustedHeight = 250;
-                    adjustedWidth = Math.floor( (this.originalWidth * 250) / this.originalHeight );
+                    adjustedHeight = this.previewBoxHeight;
+                    adjustedWidth = Math.floor( (this.originalWidth * this.previewBoxHeight) / this.originalHeight );
                 }
 
                 YAHOO.util.Dom.setStyle(this.imageEl, 'height', adjustedHeight + "px");
