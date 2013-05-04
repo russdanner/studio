@@ -65,18 +65,18 @@ import java.util.*;
 
 public class AlfrescoContentRepository extends AbstractContentRepository {
 
-	protected static final String MSG_ERROR_RUN_AS_FAILED = "err_alfresco_run_as_failure";
-	protected static final String MSG_NODE_REF_IS_NULL_FOR_PATH = "alfresco_noderef_null_for_path";
-	
-	private static final Logger logger = LoggerFactory.getLogger(AlfrescoContentRepository.class);
+    protected static final String MSG_ERROR_RUN_AS_FAILED = "err_alfresco_run_as_failure";
+    protected static final String MSG_NODE_REF_IS_NULL_FOR_PATH = "alfresco_noderef_null_for_path";
 
-	/**
-	 * perform operation as a specific user
-	 * @param userName the name of the user account performing the operation
-	 * @param obj the object that contains the method to executre
-	 * @param work the method that represents the work to perform
-	 * @param args any number of arguments to pass to the method
-	 */
+    private static final Logger logger = LoggerFactory.getLogger(AlfrescoContentRepository.class);
+
+    /**
+     * perform operation as a specific user
+     * @param userName the name of the user account performing the operation
+     * @param obj the object that contains the method to executre
+     * @param work the method that represents the work to perform
+     * @param args any number of arguments to pass to the method
+     */
     private static final String SITE_REPO_ROOT_PATTERN = "/wem-projects/{site}/{site}/work-area";
     private static final String SITE_ENVIRONMENT_ROOT_PATTERN = "/wem-projects/{site}/{site}/{environment}";
     private static final String SITE_REPLACEMENT_PATTERN = "\\{site\\}";
@@ -84,49 +84,49 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     private static final String WORK_AREA_REPOSITORY = "work-area";
     private static final String LIVE_REPOSITORY = "live";
 
-	public Object runAs(final String userName, final Object obj, final Method work, final Object ... args) {
-		
-		Object retObject = null;
-		
-		// need to check params for nulls
-		
-		try {
-			retObject = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
-				public Object doWork() {
-					Object retValue = null;
-					
-					try {
-						retValue =  work.invoke(obj, null);
-					}
-					catch(Exception err) {
-						logger.error(MSG_ERROR_RUN_AS_FAILED, err, userName, obj.getClass().getName());
-					}
-					
-					return retValue;
-		    	}
-			}, userName);
-		}
-		catch(Exception err) {
-			logger.error(MSG_ERROR_RUN_AS_FAILED, err, userName, obj.getClass().getName());
-		}
-		
-		return retObject;
-	}
-	
-	/** 
-	 * get transaction
-	 */
-	public UserTransaction getTransaction() {
-		return _transactionService.getUserTransaction();
-	}
+    public Object runAs(final String userName, final Object obj, final Method work, final Object ... args) {
 
-	/**
-	 * @return true if site has content object at path
-	 */
-	public boolean contentExists(String site, String path) {
-	    
-		return _dmContentService.contentExists(site, path, path);
-	}
+        Object retObject = null;
+
+        // need to check params for nulls
+
+        try {
+            retObject = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+                public Object doWork() {
+                    Object retValue = null;
+
+                    try {
+                        retValue =  work.invoke(obj, null);
+                    }
+                    catch(Exception err) {
+                        logger.error(MSG_ERROR_RUN_AS_FAILED, err, userName, obj.getClass().getName());
+                    }
+
+                    return retValue;
+                }
+            }, userName);
+        }
+        catch(Exception err) {
+            logger.error(MSG_ERROR_RUN_AS_FAILED, err, userName, obj.getClass().getName());
+        }
+
+        return retObject;
+    }
+
+    /**
+     * get transaction
+     */
+    public UserTransaction getTransaction() {
+        return _transactionService.getUserTransaction();
+    }
+
+    /**
+     * @return true if site has content object at path
+     */
+    public boolean contentExists(String site, String path) {
+
+        return _dmContentService.contentExists(site, path, path);
+    }
 
     /**
      * get document from wcm content
@@ -136,29 +136,29 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
      * @throws ServiceException
      */
     public InputStream getContent(String path) {
-    	InputStream retStream = null;
-    	PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
-	    NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
+        InputStream retStream = null;
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
 
-	    if (nodeRef != null) {
-	    	ContentReader reader = persistenceManagerService.getReader(nodeRef);
-	    	retStream = reader.getContentInputStream();
-	    }
-	    else {
-	    	logger.info(MSG_NODE_REF_IS_NULL_FOR_PATH, path);
-	    }
+        if (nodeRef != null) {
+            ContentReader reader = persistenceManagerService.getReader(nodeRef);
+            retStream = reader.getContentInputStream();
+        }
+        else {
+            logger.info(MSG_NODE_REF_IS_NULL_FOR_PATH, path);
+        }
 
-	    return retStream;
-	}
+        return retStream;
+    }
 
     public void writeContent(String path, InputStream content) {
-    	PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
-    	//NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
-    	 
-    	//if (nodeRef != null) {
- 	    	ContentWriter writer = persistenceManagerService.getWriter(path);
- 	    	writer.putContent(content);
- 	    //}
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        //NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
+
+        //if (nodeRef != null) {
+        ContentWriter writer = persistenceManagerService.getWriter(path);
+        writer.putContent(content);
+        //}
     }
 
     @Override
@@ -192,13 +192,13 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     private final Map<TransitionEvent, ObjectStateService.TransitionEvent> eventConversionMap = new HashMap<TransitionEvent, ObjectStateService.TransitionEvent>() {{
-            put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_SCHEDULED);
-            put(TransitionEvent.DEPLOYMENT, ObjectStateService.TransitionEvent.DEPLOYMENT);
+        put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_SCHEDULED);
+        put(TransitionEvent.DEPLOYMENT, ObjectStateService.TransitionEvent.DEPLOYMENT);
     }};
 
     private final Map<TransitionEvent, ObjectStateService.State> defaultStateForEvent = new HashMap<TransitionEvent, ObjectStateService.State>() {{
-            put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.State.NEW_SUBMITTED_NO_WF_SCHEDULED);
-            put(TransitionEvent.DEPLOYMENT, ObjectStateService.State.EXISTING_UNEDITED_UNLOCKED);
+        put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.State.NEW_SUBMITTED_NO_WF_SCHEDULED);
+        put(TransitionEvent.DEPLOYMENT, ObjectStateService.State.EXISTING_UNEDITED_UNLOCKED);
     }};
 
     @Override
@@ -227,10 +227,10 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     @Override
-    public void createNewVersion(String site, String path, boolean isMajorVersion) {
+    public void createNewVersion(String site, String path, String submissionComment, boolean isMajorVersion) {
         DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
         if (isMajorVersion) {
-            dmVersionService.createNextMajorVersion(site, path);
+            dmVersionService.createNextMajorVersion(site, path, submissionComment);
         } else {
             dmVersionService.createNextMinorVersion(site, path);
         }
@@ -324,8 +324,8 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
                             targetItem.setTarget(endpoint.getTarget());
                             targetItem.setType(endpoint.getType());
                             targetItem.setServerUrl(endpoint.getServerUrl());
-                            targetItem.setVersionUrl(endpoint.getVersionUrl());
                             targetItem.setStatusUrl(endpoint.getStatusUrl());
+                            targetItem.setVersionUrl(endpoint.getVersionUrl());
                             targetItem.setPassword(endpoint.getPassword());
                             targetItem.setExcludePattern(endpoint.getExcludePattern());
                             targetItem.setIncludePattern(endpoint.getIncludePattern());
@@ -425,7 +425,26 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
         fullPath = fullPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, environment);
         fullPath = fullPath + path;
-        logger.info("Deleting path " + fullPath);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+        if (nodeRef != null) {
+            NodeRef parentNode = persistenceManagerService.getPrimaryParent(nodeRef).getParentRef();
+            persistenceManagerService.deleteNode(nodeRef);
+            List<FileInfo> children = persistenceManagerService.list(parentNode);
+            while ( children == null || children.size() < 1) {
+                NodeRef helpNode = parentNode;
+                parentNode = persistenceManagerService.getPrimaryParent(helpNode).getParentRef();
+                persistenceManagerService.deleteNode(helpNode);
+                children = persistenceManagerService.list(parentNode);
+            }
+        }
+    }
+
+    @Override
+    public void deleteContent(String site, String path) {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        fullPath = fullPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, WORK_AREA_REPOSITORY);
+        fullPath = fullPath + path;
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
         if (nodeRef != null) {
             try {
@@ -473,14 +492,14 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         }else if  (_dmFilterWrapper.accept(site, path, DmConstants.CONTENT_TYPE_DOCUMENT)){
             return DmConstants.CONTENT_TYPE_DOCUMENT;
         } else {
-            return null;
+            return "";
         }
     }
 
     /** dmContentService getter */
-	public DmContentService getDmContentService() { return _dmContentService; }
-	/** dmContentService setter */
-	public void setDmContentService(DmContentService service) { _dmContentService = service; }
+    public DmContentService getDmContentService() { return _dmContentService; }
+    /** dmContentService setter */
+    public void setDmContentService(DmContentService service) { _dmContentService = service; }
 
     public ServicesManager getServicesManager() { return _servicesManager; }
     public void setServicesManager(ServicesManager servicesManager) {  this._servicesManager = servicesManager; }
@@ -490,7 +509,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
 
     public DmFilterWrapper getDmFilterWrapper() { return _dmFilterWrapper; }
     public void setDmFilterWrapper(DmFilterWrapper dmFilterWrapper) { this._dmFilterWrapper = dmFilterWrapper; }
-    
+
     protected ServicesManager _servicesManager;
     protected DmContentService _dmContentService;
     protected org.alfresco.service.transaction.TransactionService _transactionService;

@@ -49,6 +49,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
     private static int PSD_AUTOINCREMENT = 0;
 
     private static final String STATEMENT_CHECK_CTE_TABLE_EXISTS = "deploymentWorkers.checkTableExistsCTE";
+    private static final String STATEMENT_CHECK_COLUMN_CTECS_EXISTS = "deploymentWorkers.checkIfCTESCExists";
     private static final String STATEMENT_GET_ITEMS_READY_FOR_DEPLOYMENT = "deploymentWorkers.getItemsReadyForDeployment";
     private static final String STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT = "deploymentWorkers.insertItemForDeployment";
     private static final String STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE = "deploymentWorkers.setupItemsDeploymentState";
@@ -80,6 +81,11 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 scriptRunner.runScript(Resources.getResourceAsReader(_initializeWorkerTablesScriptPath));
             }
 
+            List<HashMap> checkColumnCTECS = _sqlMapClient.queryForList(STATEMENT_CHECK_COLUMN_CTECS_EXISTS);
+            if (checkColumnCTECS == null || checkColumnCTECS.isEmpty()  ) {
+                scriptRunner.runScript(Resources.getResourceAsReader(_addSubmissionCommentCTEScriptPath));
+            }
+
             List<HashMap> checkTableDSH = _sqlMapClient.queryForList(STATEMENT_CHECK_DSH_TABLE_EXISTS);
             if (checkTableDSH == null || checkTableDSH.size() < 1 ) {
                 scriptRunner.runScript(Resources.getResourceAsReader(_initializeHistoryTableScriptPath));
@@ -107,40 +113,40 @@ public class DeploymentDALImpl implements DeploymentDAL {
 
     @Override
     public List<CopyToEnvironmentItem> getItemsReadyForDeployment(String site, String environment) {
-    	List<CopyToEnvironmentItem> retQueue = null;
-    	
+        List<CopyToEnvironmentItem> retQueue = null;
+
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
             params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
             params.put("now", new Date());
-            
+
             retQueue = (List<CopyToEnvironmentItem>) _sqlMapClient.queryForList(STATEMENT_GET_ITEMS_READY_FOR_DEPLOYMENT, params);
-            
+
             if (retQueue != null) {
-            	if(retQueue.size() > 0) {
-	                params = new HashMap<String, Object>();
-	                params.put("state", CopyToEnvironmentItem.State.PROCESSING);
-	                params.put("items", retQueue);
-	                _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
-            	}
-            	else {
+                if(retQueue.size() > 0) {
+                    params = new HashMap<String, Object>();
+                    params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+                    params.put("items", retQueue);
+                    _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                }
+                else {
                     logger.info("Deployment queue is empty.");
                     retQueue = null; // since other paths return null as empty (consider changing this)
-            	}
+                }
             } else {
                 logger.info("Deployment queue is empty.");
             }
         } catch (SQLException e) {
             logger.error("Error while getting deployment work queue", e);
         }
-        
+
         return retQueue;
     }
 
     @Override
-    public void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate) {
-        List<CopyToEnvironmentItem> items = createItems(site, environment, paths, scheduledDate);
+    public void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) {
+        List<CopyToEnvironmentItem> items = createItems(site, environment, paths, scheduledDate, approver, submissionComment);
         try {
             _sqlMapClient.startBatch();
             for (CopyToEnvironmentItem item : items) {
@@ -152,7 +158,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
         }
     }
 
-    private List<CopyToEnvironmentItem> createItems(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate) {
+    private List<CopyToEnvironmentItem> createItems(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) {
         List<CopyToEnvironmentItem> newItems = new ArrayList<CopyToEnvironmentItem>(paths.size());
         for (CopyToEnvironmentItem.Action action : paths.keySet()) {
             for (String path : paths.get(action)) {
@@ -170,44 +176,8 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 }
                 String contentTypeClass = _contentRepository.getContentTypeClass(site, path);
                 item.setContentTypeClass(contentTypeClass);
-                newItems.add(item);
-            }
-        }
-        return newItems;
-    }
-
-    @Override
-    public void setupItemsForPublishingSync(String site, String environment, Map<PublishingSyncItem.Action, List<String>> paths){
-        List<PublishingSyncItem> items = createItems(site, environment, paths);
-
-        try {
-            _sqlMapClient.startBatch();
-            for (PublishingSyncItem item : items) {
-                _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_TARGETS_SYNC, item);
-            }
-            int numberOfRowsInserted = _sqlMapClient.executeBatch();
-        } catch (SQLException e) {
-            logger.error("Error while inserting items for target sync", e);
-        }
-
-    }
-
-    private List<PublishingSyncItem> createItems(String site, String environment, Map<PublishingSyncItem.Action, List<String>> paths) {
-        Calendar cal = Calendar.getInstance();
-        long currentTimestamp = cal.getTimeInMillis();
-        List<PublishingSyncItem> newItems = new ArrayList<PublishingSyncItem>(paths.size());
-        for (PublishingSyncItem.Action action : paths.keySet()) {
-            for (String path : paths.get(action)) {
-                PublishingSyncItem item = new PublishingSyncItem();
-                item.setId(Integer.toString(++PSD_AUTOINCREMENT));
-                item.setSite(site);
-                item.setEnvironment(environment);
-                item.setPath(path);
-                item.setUser(_authenticationService.getCurrentUser());
-                item.setTimestampVersion(currentTimestamp);
-                item.setAction(action);
-                String contentTypeClass = _contentRepository.getContentTypeClass(site, path);
-                item.setContentTypeClass(contentTypeClass);
+                item.setUser(approver);
+                item.setSubmissionComment(submissionComment);
                 newItems.add(item);
             }
         }
@@ -234,8 +204,8 @@ public class DeploymentDALImpl implements DeploymentDAL {
     }
 
     @Override
-    public void setupItemsToDelete(String site, String environment, List<String> paths, Date scheduledDate) {
-        List<CopyToEnvironmentItem> items = createDeleteItems(site, environment, paths, scheduledDate);
+    public void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
+        List<CopyToEnvironmentItem> items = createDeleteItems(site, environment, paths, approver, scheduledDate);
         try {
             _sqlMapClient.startBatch();
             for (CopyToEnvironmentItem item : items) {
@@ -247,7 +217,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
         }
     }
 
-    private List<CopyToEnvironmentItem> createDeleteItems(String site, String environment, List<String> paths, Date scheduledDate) {
+    private List<CopyToEnvironmentItem> createDeleteItems(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
         List<CopyToEnvironmentItem> newItems = new ArrayList<CopyToEnvironmentItem>(paths.size());
         for (String path : paths) {
             CopyToEnvironmentItem item = new CopyToEnvironmentItem();
@@ -264,6 +234,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
             }
             String contentTypeClass = _contentRepository.getContentTypeClass(site, path);
             item.setContentTypeClass(contentTypeClass);
+            item.setUser(approver);
             newItems.add(item);
         }
         return newItems;
@@ -294,7 +265,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
             item.setSite(site);
             item.setEnvironment(environment);
             item.setPath(itemToDeploy.getPath());
-            item.setUser(_authenticationService.getCurrentUser());
+            item.setUser(itemToDeploy.getUser());
             item.setTimestampVersion(currentTimestamp);
             if (itemToDeploy.getAction() == CopyToEnvironmentItem.Action.NEW) {
                 item.setAction(PublishingSyncItem.Action.NEW);
@@ -394,9 +365,6 @@ public class DeploymentDALImpl implements DeploymentDAL {
         }
     }
 
-    public AuthenticationService getAuthenticationService() { return _authenticationService; }
-    public void setAuthenticationService(AuthenticationService authenticationService) { this._authenticationService = authenticationService; }
-
     public ContentRepository getContentRepository() { return _contentRepository; }
     public void setContentRepository(ContentRepository contentRepository) { this._contentRepository = contentRepository; }
 
@@ -409,9 +377,12 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public String getInitializeHistoryTableScriptPath() { return _initializeHistoryTableScriptPath; }
     public void setInitializeHistoryTableScriptPath(String initializeScriptPath) { this._initializeHistoryTableScriptPath = initializeScriptPath; }
 
-    protected AuthenticationService _authenticationService;
+    public String getAddSubmissionCommentCTEScriptPath() { return _addSubmissionCommentCTEScriptPath; }
+    public void setAddSubmissionCommentCTEScriptPath(String addSubmissionCommentCTEScriptPath) { this._addSubmissionCommentCTEScriptPath = addSubmissionCommentCTEScriptPath; }
+
     protected ContentRepository _contentRepository;
     protected SqlMapClient _sqlMapClient;
     protected String _initializeWorkerTablesScriptPath;
     protected String _initializeHistoryTableScriptPath;
+    protected String _addSubmissionCommentCTEScriptPath;
 }

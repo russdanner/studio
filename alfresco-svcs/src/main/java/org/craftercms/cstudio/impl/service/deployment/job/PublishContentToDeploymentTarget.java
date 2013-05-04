@@ -21,87 +21,169 @@ import org.craftercms.cstudio.api.job.Job;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.service.authentication.AuthenticationService;
+import org.craftercms.cstudio.api.service.deployment.ContentNotFoundForPublishingException;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
+import org.craftercms.cstudio.api.service.deployment.UploadFailedException;
 import org.craftercms.cstudio.api.service.transaction.TransactionService;
 import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PublishContentToDeploymentTarget implements Job {
 
-	private static final Logger logger = LoggerFactory.getLogger(PublishContentToDeploymentTarget.class);
+    private static final Logger logger = LoggerFactory.getLogger(PublishContentToDeploymentTarget.class);
 
-	public void execute() {
-		try {
-			Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-			_authenticationService.runAs("admin", this, processJobMethod);
-		}
-		catch(Exception err) {
-			//logger.error("unable to execute job", err);
-		}
-	}
-	
-	public void processJobs() {
-		
+    protected static final ReentrantLock singleWorkerLock = new ReentrantLock();
 
-		try {
-			UserTransaction tx = _transactionService.getTransaction();
+    protected static Map<String, Map<String, Integer>> _publishingFailureCounters = new HashMap<String, Map<String, Integer>>();
 
-			try {
-				tx.begin();
+    public static Map<String, Map<String, Integer>> getPublishingRetryCounters() {
+        return _publishingFailureCounters;
+    }
+
+    public static Map<String, Integer> getPublishingRetryCounters(String site) {
+        return _publishingFailureCounters.get(site);
+    }
+
+    public void execute() {
+        if (singleWorkerLock.tryLock()) {
+            try {
+                Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
+                _authenticationService.runAs("admin", this, processJobMethod);
+            } catch(Exception err) {
+                logger.error("unable to execute job", err);
+            } finally {
+                singleWorkerLock.unlock();
+            }
+        }
+    }
+
+    public void processJobs() {
+
+
+        try {
+            UserTransaction tx = _transactionService.getTransaction();
+            try {
+                tx.begin();
                 Set<String> siteNames = _publishingManager.getAllAvailableSites();
+                tx.commit();
                 if (siteNames != null && siteNames.size() > 0){
                     for (String site : siteNames) {
+                        logger.debug("Starting publishing for site \"{0}\"", site);
+                        tx = _transactionService.getTransaction();
+                        tx.begin();
                         Set<PublishingTargetItem> targets = _publishingManager.getAllTargetsForSite(site);
+                        tx.commit();
                         for (PublishingTargetItem target : targets) {
+                            logger.debug("Starting publishing on target \"{0}\", site \"{1}\"", target.getName(), site);
                             if (_publishingManager.checkConnection(target)) {
-                            	long targetVersion = _publishingManager.getTargetVersion(target);
-                                
+                                tx = _transactionService.getTransaction();
+                                tx.begin();
+
+                                logger.debug("Getting target version (target: \"{0}\", site: \"{1}\"", target.getName(), site);
+                                long targetVersion = _publishingManager.getTargetVersion(target, site);
+
+                                logger.debug("Target version: \"{0}\" (target: \"{1}\", site: \"{2}\"", targetVersion, target.getName(), site);
                                 if(targetVersion != -1) {
-                                	List<PublishingSyncItem> syncItems = _publishingManager.getItemsToSync(site, targetVersion);
-	                                if (syncItems != null && syncItems.size() > 0) {
-	                                	logger.info("publishing \"{0}\" item(s) to \"{1}\" for site \"{2}\"", syncItems.size(), target.getName(), site);
-	                                	
-	                                	List<PublishingSyncItem> filteredItems = filterItems(syncItems, target);
-	                                    if (filteredItems != null && filteredItems.size() > 0) {
-	                                        _publishingManager.deployItemsToTarget(site, filteredItems, target);
-	                                    }
-	                                    
-	                                    long newVersion = getDeployedVersion(syncItems);
-	                                    _publishingManager.setTargetVersion(target, newVersion);
-	                                    _publishingManager.insertDeploymentHistory(target, filteredItems, new Date());
-	                                }
+                                    List<PublishingSyncItem> syncItems = _publishingManager.getItemsToSync(site, targetVersion);
+                                    if (syncItems != null && syncItems.size() > 0) {
+                                        logger.info("publishing \"{0}\" item(s) to \"{1}\" for site \"{2}\"", syncItems.size(), target.getName(), site);
+
+                                        logger.debug("Filtering out items before sending to deployment agent");
+                                        List<PublishingSyncItem> filteredItems = filterItems(syncItems, target);
+
+                                        if (filteredItems != null && filteredItems.size() > 0) {
+                                            try {
+                                                logger.debug("Sending \"{0}\" items to target \"{1}\", site \"{2}\"", filteredItems.size(), target.getName(), site);
+                                                _publishingManager.deployItemsToTarget(site, filteredItems, target);
+
+                                                long newVersion = getDeployedVersion(syncItems);
+                                                logger.debug("Setting new version for target (target: \"{0}\", site \"{1}\", version \"{2}\"", target.getName(), site, newVersion);
+                                                _publishingManager.setTargetVersion(target, newVersion, site);
+                                                logger.debug("Inserting deployment history for \"{0}\" items on target \"{1}\", site \"{2}\"", filteredItems.size(), target.getName(), site);
+                                                _publishingManager.insertDeploymentHistory(target, filteredItems, new Date());
+                                            } catch (UploadFailedException err) {
+                                                Map<String, Integer> counters = _publishingFailureCounters.get(err.getSite());
+                                                if (counters == null) {
+                                                    counters = new HashMap<String, Integer>();
+                                                }
+                                                Integer count = counters.get(err.getTarget());
+                                                if (count == null) {
+                                                    count = 0;
+                                                } else {
+                                                    count++;
+                                                }
+                                                if (count > _maxTolerableRetries) {
+                                                    // TODO: Send notification - big red alert!
+                                                    logger.error("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
+                                                } else {
+                                                    logger.warn("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
+                                                }
+                                                counters.put(err.getTarget(), count);
+                                                _publishingFailureCounters.put(err.getSite(), counters);
+                                                tx.rollback();
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    Map<String, Integer> counters = _publishingFailureCounters.get(site);
+                                    if (counters == null) {
+                                        counters = new HashMap<String, Integer>();
+                                    }
+                                    counters.put(target.getName(), 0);
+                                    _publishingFailureCounters.put(site, counters);
                                 }
                                 else {
-                                	// we can talk to the agent but there is something wrong
-                                	// for example the features we need are not supported
-                                	logger.error("cannot negotiate a version for deployment agent \"{0}\" for site \"{1}\"", target.getName(), site);
+                                    // we can talk to the agent but there is something wrong
+                                    // for example the features we need are not supported
+                                    logger.error("cannot negotiate a version for deployment agent \"{0}\" for site \"{1}\"", target.getName(), site);
                                 }
-                                
-                            } 
+                                tx.commit();
+                            }
                             else {
                                 // TODO: update target status
-                            	logger.warn("cannot connect to deployment agent \"{0}\" for site \"{1}\"", target.getName(), site);
+                                logger.warn("cannot connect to deployment agent \"{0}\" for site \"{1}\"", target.getName(), site);
                             }
+                            logger.debug("Finished publishing on target \"{0}\", site \"{1}\"", target.getName(), site);
                         }
+                        logger.debug("Finished publishing for site \"{0}\"", site);
                     }
                 }
-				tx.commit();
-			}
-			catch(Exception err) {
-				logger.error("error while processing items to be published", err);
-				tx.rollback();
-			}
-		}
-		catch(Exception err) {
-			logger.error("error while processing items to be published", err);
-		}
-	}
+            } catch (ContentNotFoundForPublishingException err) {
+                Map<String, Integer> counters = _publishingFailureCounters.get(err.getSite());
+                if (counters == null) {
+                    counters = new HashMap<String, Integer>();
+                }
+                Integer count = counters.get(err.getTarget());
+                if (count == null) {
+                    count = 0;
+                } else {
+                    count++;
+                }
+                if (count > _maxTolerableRetries) {
+                    // TODO: Send notification - big red alert!
+                    logger.error("Content not found for publishing site \"{0}\", target \"{1}\", path \"{2}\"", err.getSite(), err.getTarget(), err.getPath());
+                } else {
+                    logger.warn("Content not found for publishing site \"{0}\", target \"{1}\", path \"{2}\"", err.getSite(), err.getTarget(), err.getPath());
+                }
+                counters.put(err.getTarget(), count);
+                _publishingFailureCounters.put(err.getSite(), counters);
+                tx.rollback();
+            } catch(Exception err) {
+                logger.error("error while processing items to be published", err);
+                tx.rollback();
+            }
+        }
+        catch(Exception err) {
+            logger.error("error while processing items to be published", err);
+        }
+    }
 
     protected long getDeployedVersion(List<PublishingSyncItem> syncItems) {
         Collections.sort(syncItems, new VersionComparator());
@@ -156,19 +238,23 @@ public class PublishContentToDeploymentTarget implements Job {
     }
 
     /** getter auth service */
-	public AuthenticationService getAuthenticationService() { return _authenticationService; }
-	/** setter for auth service */
-	public void setAuthenticationService(AuthenticationService service) { _authenticationService = service; }
+    public AuthenticationService getAuthenticationService() { return _authenticationService; }
+    /** setter for auth service */
+    public void setAuthenticationService(AuthenticationService service) { _authenticationService = service; }
 
-	/** getter transaction service */
-	public TransactionService getTransactionService() { return _transactionService; }
-	/** setter for transaction service */
-	public void setTransactionService(TransactionService service) { _transactionService = service; }
+    /** getter transaction service */
+    public TransactionService getTransactionService() { return _transactionService; }
+    /** setter for transaction service */
+    public void setTransactionService(TransactionService service) { _transactionService = service; }
 
     public PublishingManager getPublishingManager() { return this._publishingManager; }
     public void setPublishingManager(PublishingManager publishingManager) { this._publishingManager = publishingManager; }
 
-	protected TransactionService _transactionService;
-	protected AuthenticationService _authenticationService;
+    public Integer getMaxTolerableRetries() { return _maxTolerableRetries; }
+    public void setMaxTolerableRetries(Integer maxTolerableRetries) { this._maxTolerableRetries = maxTolerableRetries; }
+
+    protected TransactionService _transactionService;
+    protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
+    protected Integer _maxTolerableRetries;
 }

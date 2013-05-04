@@ -4,13 +4,13 @@
 <sqlMap namespace="deploymentWorkers">
 
     <typeAlias alias="copyToEnvironmentItem"
-               type="org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem" />
+               type="org.rivetlogic.cstudio.api.service.deployment.CopyToEnvironmentItem" />
 
     <typeAlias alias="publishingSyncItem"
-               type="org.craftercms.cstudio.api.service.deployment.PublishingSyncItem" />
+               type="org.rivetlogic.cstudio.api.service.deployment.PublishingSyncItem" />
 
     <typeAlias alias="deploymentSyncHistoryItem"
-               type="org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem" />
+               type="org.rivetlogic.cstudio.api.service.deployment.DeploymentSyncHistoryItem" />
 
     <cacheModel id="deploymentWorkersCache" type="LRU" readOnly="false">
         <flushInterval hours="24" />
@@ -31,6 +31,7 @@
         <result property="state" column="state" />
         <result property="action" column="action" />
         <result property="contentTypeClass" column="contenttypeclass" />
+        <result property="submissionComment" column="submissioncomment" />
     </resultMap>
 
     <resultMap id="publishingSyncItemResult" class="publishingSyncItem">
@@ -68,6 +69,10 @@
         show tables like 'cstudio_deploymentsynchistory';
     </select>
 
+    <select id="checkIfCTESCExists" resultClass="java.util.HashMap">
+        show columns from cstudio_copytoenvironment where field = 'submissioncomment';
+    </select>
+
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *
@@ -90,8 +95,8 @@
     </update>
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">
-        INSERT INTO cstudio_copytoenvironment (site, environment, path, oldpath, username, scheduleddate, state, action, contenttypeclass)
-        values (#site#, #environment#, #path#, #oldPath#, #user#, #scheduledDate#, #state#, #action#, #contentTypeClass#)
+        INSERT INTO cstudio_copytoenvironment (site, environment, path, oldpath, username, scheduleddate, state, action, contenttypeclass, submissioncomment)
+        values (#site#, #environment#, #path#, #oldPath#, #user#, #scheduledDate#, #state#, #action#, #contentTypeClass#, #submissionComment#)
     </insert>
 
     <insert id="insertItemForTargetSync" parameterClass="publishingSyncItem">
