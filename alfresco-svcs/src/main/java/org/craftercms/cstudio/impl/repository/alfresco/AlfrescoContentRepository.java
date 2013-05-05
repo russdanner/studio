@@ -301,8 +301,8 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
 
     @Override
     public Set<String> getAllAvailableSites() {
-        ServicesConfig servicesConfig = _servicesManager.getService(ServicesConfig.class);
-        return servicesConfig.getAllAvailableSites();
+        SiteService siteService = _servicesManager.getService(SiteService.class);
+        return siteService.getAllAvailableSites();
     }
 
     @Override

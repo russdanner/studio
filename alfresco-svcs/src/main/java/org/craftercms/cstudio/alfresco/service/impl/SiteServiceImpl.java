@@ -717,6 +717,13 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
 		
 	}
 
+    @Override
+    public Set<String> getAllAvailableSites() {
+        checkForUpdates();
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        return servicesConfig.getAllAvailableSites();
+    }
+
 	/**
 	 * @param environmentConfig
 	 *            the environmentConfig to set

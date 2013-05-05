@@ -17,15 +17,14 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.service.api;
 
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
-import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.alfresco.to.SiteTO;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Provides site-related data and configuration.
@@ -144,4 +143,6 @@ public interface SiteService {
     public void extractMetadataForNewSite(NodeRef siteRoot);
 
     public DeploymentEndpointConfigTO getDeploymentEndpoint(String site, String endpoint);
+
+    public Set<String> getAllAvailableSites();
 }
