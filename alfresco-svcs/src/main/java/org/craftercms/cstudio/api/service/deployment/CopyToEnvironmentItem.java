@@ -28,7 +28,8 @@ public class CopyToEnvironmentItem implements Serializable {
     public enum State {
         READY_FOR_LIVE,
         PROCESSING,
-        COMPLETED
+        COMPLETED,
+        CANCELED
     }
 
     public enum Action {

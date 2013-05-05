@@ -183,6 +183,14 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         this.enableNewDeploymentEngine = enableNewDeploymentEngine;
     }
 
+    protected org.craftercms.cstudio.api.service.deployment.DeploymentService _deploymentService;
+    public org.craftercms.cstudio.api.service.deployment.DeploymentService getDeploymentService() {
+        return _deploymentService;
+    }
+    public void setDeploymentService(org.craftercms.cstudio.api.service.deployment.DeploymentService deploymentService) {
+        this._deploymentService = deploymentService;
+    }
+
     enum Operation {
         GO_LIVE,
         SUBMIT_TO_GO_LIVE,
@@ -1318,15 +1326,14 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
     }
 
     protected void _cancelWorkflow(String site, NodeRef node) {
-    	PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         DmContentService dmContentService = getService(DmContentService.class);
         String currentUser = persistenceManagerService.getCurrentUserName();
         String fullPath = persistenceManagerService.getNodePath(node);
         if (node != null) {
             if (enableNewDeploymentEngine) {
-                DeploymentService deploymentService = getService(DeploymentService.class);
                 DmPathTO dmPathTO = new DmPathTO(fullPath);
-                deploymentService.cancelWorkflow(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                _deploymentService.cancelWorkflow(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
             } else {
                 List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(node);
                 if (events != null && events.size() > 0) {

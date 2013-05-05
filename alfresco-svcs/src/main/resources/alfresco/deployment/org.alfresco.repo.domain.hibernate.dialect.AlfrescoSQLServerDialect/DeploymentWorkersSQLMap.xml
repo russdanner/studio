@@ -17,6 +17,8 @@
         <flushOnExecute statement="deploymentWorkers.setupItemsDeploymentState" />
         <flushOnExecute statement="deploymentWorkers.insertItemForDeployment" />
         <flushOnExecute statement="deploymentWorkers.insertItemForTargetSync" />
+        <flushOnExecute statement="deploymentWorkers.insertDeploymentSyncHistoryItem" />
+        <flushOnExecute statement="deploymentWorkers.cancelWorkflow" />
         <property name="cache-size" value="1000" />
     </cacheModel>
 
@@ -145,4 +147,13 @@
         AND scheduleddate &gt; #now#
         ORDER BY scheduleddate ASC
     </select>
+
+    <update id="cancelWorkflow" parameterClass="java.util.Map">
+        UPDATE cstudio_copytoenvironment
+        SET state = #canceledstate#
+        WHERE site = #site#
+        AND path = #path#
+        AND state = #state#
+        AND scheduleddate &gt; #now#
+    </update>
 </sqlMap>

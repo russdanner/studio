@@ -45,4 +45,6 @@ public interface DeploymentDAL {
     List<DeploymentSyncHistoryItem> getDeploymentHistory(String site, Date fromDate, Date toDate, String filterType, int numberOfItems);
 
     List<CopyToEnvironmentItem> getScheduledItems(String site);
+
+    void cancelWorkflow(String site, String path);
 }

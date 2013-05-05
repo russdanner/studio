@@ -61,7 +61,6 @@ import org.craftercms.cstudio.alfresco.service.api.*;
 import org.craftercms.cstudio.alfresco.service.exception.ContentNotFoundException;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
-import org.craftercms.cstudio.api.service.deployment.DeploymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,14 +108,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
 
     public void setCustomContentTypeNotificationPattern(String customContentTypeNotificationPattern) {
         this.customContentTypeNotificationPattern = customContentTypeNotificationPattern;
-    }
-
-    protected DeploymentService _deploymentService;
-    public DeploymentService getDeploymentService() {
-        return _deploymentService;
-    }
-    public void setDeploymentService(DeploymentService deploymentService) {
-        this._deploymentService = deploymentService;
     }
 
     @Override
@@ -492,7 +483,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         if (!dmDependencyTO.isSubmitted() && scheduledDate != null && scheduledDate.equals(dmDependencyTO.getScheduledDate())) {
             return;
         }
-        if (isNotScheduled || !dmDependencyTO.isReference()) {
+        if (!dmDependencyTO.isReference()) {
             submitpackage.addToPackage(dmDependencyTO);
         }
 
@@ -509,18 +500,14 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
             }
         }
         for (DmDependencyTO dependencyTO : dependencyTOSet) {
-            if (isNotScheduled) {
-                submitpackage.addToPackage(dependencyTO);
-            } else {
+            submitpackage.addToPackage(dependencyTO);
+            if (!isNotScheduled) {
                 dependencyPackage.addToPackage(dependencyTO);
             }
         }
 
         if (isRescheduleRequest(dmDependencyTO, site)) {
             rescheduledUris.add(dmDependencyTO.getUri());
-            if (dmDependencyTO.isNow()) {
-                //dmStateManager.markNow(node);
-            }
         }
     }
 
@@ -844,20 +831,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
                 handleReferences(site, submitpackage, child, isNotScheduled, dependencyPackage, approver, rescheduledUris);
                 goLivepackage(site, submitpackage, child, isNotScheduled, dependencyPackage, approver, rescheduledUris);
             }
-        } /*
-        List<DmDependencyTO> deps = dmDependencyTO.getDirectDependencies();
-        ServicesConfig servicesConfig = getService(ServicesConfig.class);
-        String siteRoot = servicesConfig.getRepositoryRootPath(site);
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        if (deps != null) {
-            for (DmDependencyTO dep : deps) {
-                String fullPath = siteRoot + dep.getUri();
-                if (persistenceManagerService.isNew(fullPath)) {
-                    handleReferences(site, submitpackage, dep, isNotScheduled, dependencyPackage, approver, rescheduledUris);
-                }
-                goLivepackage(site, submitpackage, dep, isNotScheduled, dependencyPackage, approver, rescheduledUris);
-            }
-        }   */
+        }
     }
 
     protected String getScheduleLabel(SubmitPackage submitPackage, SubmitPackage dependencyPack) {

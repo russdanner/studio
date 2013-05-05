@@ -23,7 +23,6 @@ import com.ibatis.sqlmap.client.SqlMapClient;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.repository.ContentRepository;
-import org.craftercms.cstudio.api.service.authentication.AuthenticationService;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
@@ -54,6 +53,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
     private static final String STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT = "deploymentWorkers.insertItemForDeployment";
     private static final String STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE = "deploymentWorkers.setupItemsDeploymentState";
     private static final String STATEMENT_GET_SCHEDULED_ITEMS = "deploymentWorkers.getScheduledItems";
+    private static final String STATEMENT_CANCEL_WORKFLOW_FOR_CONTENT = "deploymentWorkers.cancelWorkflow";
 
     private static final String STATEMENT_CHECK_PTT_TABLE_EXISTS = "deploymentWorkers.checkTableExistsPTT";
     private static final String STATEMENT_INSERT_ITEMS_FOR_TARGETS_SYNC = "deploymentWorkers.insertItemForTargetSync";
@@ -362,6 +362,21 @@ public class DeploymentDALImpl implements DeploymentDAL {
         } catch (SQLException e) {
             logger.error("Error while getting scheduled items ", e);
             return null;
+        }
+    }
+
+    @Override
+    public void cancelWorkflow(String site, String path) {
+        try {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("site", site);
+            params.put("path", path);
+            params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
+            params.put("canceledstate", CopyToEnvironmentItem.State.CANCELED);
+            params.put("now", new Date());
+            _sqlMapClient.update(STATEMENT_CANCEL_WORKFLOW_FOR_CONTENT, params);
+        } catch (SQLException e) {
+            logger.error("Error while canceling workflow for content site \"{0}\" path \"{1}\"", e, site, path);
         }
     }
 

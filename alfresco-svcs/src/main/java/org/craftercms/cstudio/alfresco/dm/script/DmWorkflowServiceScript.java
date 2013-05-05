@@ -21,7 +21,6 @@ import javolution.util.FastList;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-
 import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -45,7 +44,6 @@ import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.*;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
-import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.alfresco.to.ResultTO;
 import org.craftercms.cstudio.alfresco.util.ContentFormatUtils;
 import org.craftercms.cstudio.alfresco.util.TransactionHelper;
@@ -623,13 +621,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                                 nodeRefs.add(nr.getId());
                             }
                         }
-                        persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
                         dmWorkflowService.goLive(site, sub, goLiveItems, approver, mcpContext);
-                        if (!isNow) {
-                            for (String fullPath : goLivePaths) {
-                                persistenceManagerService.setSystemProcessing(fullPath, false);
-                            }
-                        }
                     }
 
                     if (!renameItems.isEmpty()) {
@@ -660,11 +652,6 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                         }
                        
                         dmRenameService.goLive(site, sub, renameItems, approver, mcpContext);
-                        if (!isNow) {
-                            for (String fullPath : renamePaths) {
-                                persistenceManagerService.setSystemProcessing(fullPath, false);
-                            }
-                        }
                     }
 
                     break;
