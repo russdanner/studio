@@ -4,13 +4,13 @@
 <sqlMap namespace="deploymentWorkers">
 
     <typeAlias alias="copyToEnvironmentItem"
-               type="org.rivetlogic.cstudio.api.service.deployment.CopyToEnvironmentItem" />
+               type="org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem" />
 
     <typeAlias alias="publishingSyncItem"
-               type="org.rivetlogic.cstudio.api.service.deployment.PublishingSyncItem" />
+               type="org.craftercms.cstudio.api.service.deployment.PublishingSyncItem" />
 
     <typeAlias alias="deploymentSyncHistoryItem"
-               type="org.rivetlogic.cstudio.api.service.deployment.DeploymentSyncHistoryItem" />
+               type="org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem" />
 
     <cacheModel id="deploymentWorkersCache" type="LRU" readOnly="false">
         <flushInterval hours="24" />
@@ -88,12 +88,7 @@
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
         UPDATE cstudio_copytoenvironment
         SET state = #state#
-        <dynamic prepend=" WHERE id IN ">
-            <iterate property="items" open="(" close=")" conjunction=",">
-                #items[].id#
-            </iterate>
-        </dynamic>
-
+        WHERE id = #itemId#
     </update>
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">

@@ -17,21 +17,8 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.dm.service.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javolution.util.FastList;
 import javolution.util.FastMap;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -43,24 +30,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.Node;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.constant.DmXmlConstants;
 import org.craftercms.cstudio.alfresco.dm.content.pipeline.api.DmContentProcessor;
-import org.craftercms.cstudio.alfresco.dm.service.api.ContentItemIdGenerator;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmClipboardService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmContentLifeCycleService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmContentTypeService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmPageNavigationOrderService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmPreviewService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmRenameService;
-import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
+import org.craftercms.cstudio.alfresco.dm.service.api.*;
 import org.craftercms.cstudio.alfresco.dm.to.DmPasteItemTO;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
@@ -75,8 +49,24 @@ import org.craftercms.cstudio.alfresco.to.ContentTypeConfigTO;
 import org.craftercms.cstudio.alfresco.util.ContentFormatUtils;
 import org.craftercms.cstudio.alfresco.util.ContentUtils;
 import org.craftercms.cstudio.alfresco.util.TransactionHelper;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DmClipboardServiceImpl extends AbstractRegistrableService implements DmClipboardService{
 
@@ -424,7 +414,7 @@ public class DmClipboardServiceImpl extends AbstractRegistrableService implement
                 dmRenameService.rename(site, null, path, destinationUri, false);
                 updateFileWithNewNavOrder(site, null, destinationUri);//only for cut/paste will need to provide new navorder value right here since it doesnt go through FormContentProcessor
                 fullPath = servicesConfig.getRepositoryRootPath(site) + destinationUri;
-                objectStateService.transition(fullPath, ObjectStateService.TransitionEvent.PASTE);
+                objectStateService.transition(fullPath, ObjectStateService.TransitionEvent.SAVE);
             }
             persistenceManagerService.setSystemProcessing(fullPath, false);
         }

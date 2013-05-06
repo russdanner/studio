@@ -121,7 +121,7 @@ public class PublishContentToDeploymentTarget implements Job {
                                                 }
                                                 if (count > _maxTolerableRetries) {
                                                     // TODO: Send notification - big red alert!
-                                                    logger.error("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
+                                                    logger.error("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err, err.getSite(), err.getTarget(), err.getUrl());
                                                 } else {
                                                     logger.warn("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
                                                 }
@@ -168,7 +168,7 @@ public class PublishContentToDeploymentTarget implements Job {
                 }
                 if (count > _maxTolerableRetries) {
                     // TODO: Send notification - big red alert!
-                    logger.error("Content not found for publishing site \"{0}\", target \"{1}\", path \"{2}\"", err.getSite(), err.getTarget(), err.getPath());
+                    logger.error("Content not found for publishing site \"{0}\", target \"{1}\", path \"{2}\"", err, err.getSite(), err.getTarget(), err.getPath());
                 } else {
                     logger.warn("Content not found for publishing site \"{0}\", target \"{1}\", path \"{2}\"", err.getSite(), err.getTarget(), err.getPath());
                 }

@@ -723,6 +723,7 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
 	            	persistenceManagerService.setProperty(indexNode, CStudioContentModel.PROP_RENAMED_OLD_URL, oldUri);
 
         }
+        persistenceManagerService.updateObjectPath(node, path.getRelativePath());
         persistenceManagerService.setProperty(node,ContentModel.PROP_MODIFIER, user);
         persistenceManagerService.setProperty(node,CStudioContentModel.PROP_LAST_MODIFIED_BY, user);	
         

@@ -50,7 +50,6 @@ public class PublishingManagerImpl implements PublishingManager {
     private final static String CONTENT_FILE_REQUEST_PARAMETER = "contentFile";
     private final static String METADATA_FILE_REQUEST_PARAMETER = "metadataFile";
 
-    private final static String INDEX_FILE = "index.xml";
     private final static String FILES_SEPARATOR = ",";
     private final static String LIVE_ENVIRONMENT = "live";
     private final static String WORK_AREA_ENVIRONMENT = "work-area";
@@ -210,8 +209,8 @@ public class PublishingManagerImpl implements PublishingManager {
                         } else {
                             sbDeletedFiles.append(item.getPath());
                         }
-                        if (item.getPath().endsWith("/" + INDEX_FILE)) {
-                            sbDeletedFiles.append(FILES_SEPARATOR).append(item.getPath().replace("/" + INDEX_FILE, ""));
+                        if (item.getPath().endsWith("/" + _indexFile)) {
+                            sbDeletedFiles.append(FILES_SEPARATOR).append(item.getPath().replace("/" + _indexFile, ""));
                         }
                     } else {
 
@@ -228,6 +227,10 @@ public class PublishingManagerImpl implements PublishingManager {
                         try {
                             if (input == null || input.available() > 0) {
                                 if (_contentRepository.contentExists(site, item.getPath())) {
+                                    baps = null;
+                                    stringPart = null;
+                                    filePart = null;
+                                    formParts = null;
                                     throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
                                 } else {
                                     // Content does not exist - skip deploying file
@@ -237,6 +240,10 @@ public class PublishingManagerImpl implements PublishingManager {
                         } catch (IOException err) {
                             LOGGER.error("Error reading input stream for content at path: " + item.getPath() + " site: " + item.getSite());
                             if (_contentRepository.contentExists(site, item.getPath())) {
+                                baps = null;
+                                stringPart = null;
+                                filePart = null;
+                                formParts = null;
                                 throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
                             } else {
                                 // Content does not exist - skip deploying file
@@ -284,8 +291,8 @@ public class PublishingManagerImpl implements PublishingManager {
                                 } else {
                                     sbDeletedFiles.append(item.getOldPath());
                                 }
-                                if (item.getOldPath().endsWith("/" + INDEX_FILE)) {
-                                    sbDeletedFiles.append(FILES_SEPARATOR).append(item.getOldPath().replace("/" + INDEX_FILE, ""));
+                                if (item.getOldPath().endsWith("/" + _indexFile)) {
+                                    sbDeletedFiles.append(FILES_SEPARATOR).append(item.getOldPath().replace("/" + _indexFile, ""));
                                 }
                             }
                         }
@@ -472,6 +479,10 @@ public class PublishingManagerImpl implements PublishingManager {
     public DeploymentDAL getDeploymentDal() { return _deploymentDAL; }
     public void setDeploymentDAL(DeploymentDAL deploymentDAL) { this._deploymentDAL = deploymentDAL; }
 
+    public String getIndexFile() {  return _indexFile; }
+    public void setIndexFile(String indexFile) { this._indexFile = indexFile; }
+
     protected ContentRepository _contentRepository;
     protected DeploymentDAL _deploymentDAL;
+    protected String _indexFile;
 }

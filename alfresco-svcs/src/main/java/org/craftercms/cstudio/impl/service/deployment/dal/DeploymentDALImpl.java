@@ -116,6 +116,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
         List<CopyToEnvironmentItem> retQueue = null;
 
         try {
+            _sqlMapClient.startTransaction();
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
             params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
@@ -125,10 +126,23 @@ public class DeploymentDALImpl implements DeploymentDAL {
 
             if (retQueue != null) {
                 if(retQueue.size() > 0) {
-                    params = new HashMap<String, Object>();
-                    params.put("state", CopyToEnvironmentItem.State.PROCESSING);
-                    params.put("items", retQueue);
-                    _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                    int counter = 0;
+                    _sqlMapClient.startBatch();
+                    for (CopyToEnvironmentItem item : retQueue) {
+                        params = new HashMap<String, Object>();
+                        params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+                        params.put("itemId", item.getId());
+                        _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                        counter++;
+                        if (counter >= _sqlBatchMaxSize) {
+                            _sqlMapClient.executeBatch();
+                            counter = 0;
+                        }
+                    }
+                    if (counter > 0) {
+                        _sqlMapClient.executeBatch();
+                    }
+                    _sqlMapClient.commitTransaction();
                 }
                 else {
                     logger.info("Deployment queue is empty.");
@@ -139,6 +153,12 @@ public class DeploymentDALImpl implements DeploymentDAL {
             }
         } catch (SQLException e) {
             logger.error("Error while getting deployment work queue", e);
+        }  finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error while ending transaction", e);
+            }
         }
 
         return retQueue;
@@ -148,13 +168,30 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) {
         List<CopyToEnvironmentItem> items = createItems(site, environment, paths, scheduledDate, approver, submissionComment);
         try {
+            int counter = 0;
+            int numberOfRowsInserted = 0;
+            _sqlMapClient.startTransaction();
             _sqlMapClient.startBatch();
             for (CopyToEnvironmentItem item : items) {
                 _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
+                counter++;
+                if (counter >= _sqlBatchMaxSize) {
+                    numberOfRowsInserted += _sqlMapClient.executeBatch();
+                    counter = 0;
+                }
             }
-            int numberOfRowsInserted = _sqlMapClient.executeBatch();
+            if (counter > 0) {
+                numberOfRowsInserted += _sqlMapClient.executeBatch();
+            }
+            _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
             logger.error("Error while inserting items for deploy", e);
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error while ending transaction", e);
+            }
         }
     }
 
@@ -207,13 +244,30 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
         List<CopyToEnvironmentItem> items = createDeleteItems(site, environment, paths, approver, scheduledDate);
         try {
+            int counter = 0;
+            int numberOfRowsInserted = 0;
+            _sqlMapClient.startTransaction();
             _sqlMapClient.startBatch();
             for (CopyToEnvironmentItem item : items) {
                 _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
+                counter++;
+                if (counter >= _sqlBatchMaxSize) {
+                    numberOfRowsInserted += _sqlMapClient.executeBatch();
+                    counter = 0;
+                }
             }
-            int numberOfRowsInserted = _sqlMapClient.executeBatch();
+            if (counter > 0) {
+                numberOfRowsInserted += _sqlMapClient.executeBatch();
+            }
+            _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
             logger.error("Error while inserting items for deploy", e);
+        }  finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error while ending transaction", e);
+            }
         }
     }
 
@@ -245,11 +299,21 @@ public class DeploymentDALImpl implements DeploymentDAL {
         List<PublishingSyncItem> items = createItems(site, environment, itemsToDeploy);
 
         try {
+            int counter = 0;
+            int numberOfRowsInserted = 0;
             _sqlMapClient.startBatch();
             for (PublishingSyncItem item : items) {
                 _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_TARGETS_SYNC, item);
+
+                counter++;
+                if (counter >= _sqlBatchMaxSize) {
+                    numberOfRowsInserted += _sqlMapClient.executeBatch();
+                    counter = 0;
+                }
             }
-            int numberOfRowsInserted = _sqlMapClient.executeBatch();
+            if (counter > 0) {
+                numberOfRowsInserted += _sqlMapClient.executeBatch();
+            }
         } catch (SQLException e) {
             logger.error("Error while inserting items for target sync", e);
         }
@@ -288,13 +352,31 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> publishedItems, Date publishingDate) {
         List<DeploymentSyncHistoryItem> items = createItems(target, publishedItems, publishingDate);
         try {
+            int counter = 0;
+            int numberOfRowsInserted = 0;
+            _sqlMapClient.startTransaction();
             _sqlMapClient.startBatch();
             for (DeploymentSyncHistoryItem item : items) {
                 _sqlMapClient.insert(STATEMENT_INSERT_DEPLOYMENT_HISTORY, item);
+                counter++;
+                if (counter >= _sqlBatchMaxSize) {
+                    numberOfRowsInserted += _sqlMapClient.executeBatch();
+                    counter = 0;
+                }
             }
-            int numberOfRowsInserted = _sqlMapClient.executeBatch();
+            if (counter > 0) {
+                numberOfRowsInserted += _sqlMapClient.executeBatch();
+            }
+            _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
             logger.error("Error while inserting items for target sync", e);
+
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error while ending transaction", e);
+            }
         }
     }
 
@@ -395,9 +477,13 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public String getAddSubmissionCommentCTEScriptPath() { return _addSubmissionCommentCTEScriptPath; }
     public void setAddSubmissionCommentCTEScriptPath(String addSubmissionCommentCTEScriptPath) { this._addSubmissionCommentCTEScriptPath = addSubmissionCommentCTEScriptPath; }
 
+    public int getSqlBatchMaxSize() { return _sqlBatchMaxSize; }
+    public void setSqlBatchMaxSize(int sqlBatchMaxSize) { this._sqlBatchMaxSize = sqlBatchMaxSize; }
+
     protected ContentRepository _contentRepository;
     protected SqlMapClient _sqlMapClient;
     protected String _initializeWorkerTablesScriptPath;
     protected String _initializeHistoryTableScriptPath;
     protected String _addSubmissionCommentCTEScriptPath;
+    protected int _sqlBatchMaxSize;
 }
