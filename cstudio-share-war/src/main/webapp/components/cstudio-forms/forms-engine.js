@@ -985,12 +985,14 @@ var CStudioForms = CStudioForms || function() {
 						CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, entityId, getContentItemCb);
 					},					
 					failure: function(err) {
-						try{
-							alert(YAHOO.lang.JSON.parse(err.responseText).callstack[1].substring( YAHOO.lang.JSON.parse(err.responseText).callstack[1].indexOf(':')+1))
-						}catch (e) {
-							alert("Unable to save content due a error");
-						}
-					}						
+            try{
+              alert(YAHOO.lang.JSON.parse(err.responseText).callstack[1].substring( YAHOO.lang.JSON.parse(err.responseText).callstack[1].indexOf(':')+1))
+            }catch (e) {
+              alert("Unable to save form content. Please try again or contact or your system administrator.");
+            }
+            if(saveAndCloseEl) saveAndCloseEl.disabled = false;       
+            if(saveAndPreviewEl) saveAndPreviewEl.disabled = false;
+          }						
 				};
 							
 				YAHOO.util.Connect.setDefaultPostHeader(false);
@@ -1893,27 +1895,27 @@ var CStudioForms = CStudioForms || function() {
 	   		return map;
 	   	},
 
-        xmlModelToMapChildren: function(node, children) {
-            for(var i=0; i<children.length; i++) {
-                try {
-                    var child = children[i];
-                    if(child.nodeName != "#text") {
-                        var itemChildren = (child.children) ? child.children : child.childNodes;
+      xmlModelToMapChildren: function(node, children) {
+          for(var i=0; i<children.length; i++) {
+              try {
+                  var child = children[i];
+                  if(child.nodeName != "#text") {
+                      // Chrome and FF support childElementCount; for IE we will get the length of the childNodes collection
+                      var hasChildren = (typeof child.childElementCount == "number") ? !!child.childElementCount : 
+                                          (!!child.childNodes.length && child.firstChild.nodeName != "#text");
 
-                        if(!itemChildren || (itemChildren.length <= 1
-                            && (!itemChildren[0] || !itemChildren[0].children || itemChildren[0].children.length == 0))) {
-                            // Chrome counts text nodes in the DOM; FF doesn't
-                            this.xmlModelToMapNoArray(node, child);
-                        }
-                        else {
-                            this.xmlModelToMapArray(node, child);
-                        }
-                    }
-                }
-                catch(err) {
-                }
-            }
-        },
+                      if(hasChildren) {
+                        this.xmlModelToMapArray(node, child);
+                      }
+                      else {
+                        this.xmlModelToMapNoArray(node, child);
+                      }
+                  }
+              }
+              catch(err) {
+              }
+          }
+      },
 
 		xmlModelToMapNoArray: function(node, child) {
 			// single item		    				

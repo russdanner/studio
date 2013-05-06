@@ -301,7 +301,20 @@ CStudioForms.Controls.RTE.InsertComponent = CStudioForms.Controls.RTE.InsertComp
 		},
 	    
 	    hideControls: function(editor) {
-	    	var controlsEl = editor.dom.doc.getElementById("cstudio-component-controls");
+	    	var controlsEl;
+
+	    	try {
+	    		controlsEl = editor.dom.doc.getElementById("cstudio-component-controls");
+	    	} catch (err) {
+	    		// FIXME: caused by _renderRepeat (forms-engine.js)
+	    		// When repeat groups are created, the whole container is re-rendered so all repeat groups (old and new)
+	    		// create new controls. However, the existing controls (along with the events bound to them) are not 
+	    		// removed so when the "/rte/blurred" event is published, it is heard by these controls as well.
+	    		// Only IE finds this to be an error (hence the try/catch block -uncomment the throw, create a new repeat
+	    		// group and save the form to see for yourself); however, this implementation is equally affecting all 
+				// browsers => it is resulting in a memory leak and will degrade performace as new repeat-groups are created.
+	    		// throw "Unable to access cstudio-component-controls (insert-component.js @hideControls)";	
+	    	}
 	    	
 	    	if(controlsEl) {
 	    		controlsEl.parentNode.removeChild(controlsEl);
