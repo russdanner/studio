@@ -548,37 +548,33 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
     },
 
     adjustImage: function(){
-        var imgWidth = 0;
-        var imgHeight = 0;
+        var wImg = this.originalWidth;
+        var hImg = this.originalHeight;
+        var wThb = parseInt(this.previewBoxWidth,10);
+        var hThb = parseInt(this.previewBoxHeight,10);
+        var adjustedWidth = 0;
+        var adjustedHeight = 0;
 
         YAHOO.util.Dom.setStyle(this.previewEl, 'height', "100%");
         YAHOO.util.Dom.setStyle(this.previewEl, 'width', "100%");
 
-        if(this.originalWidth < this.previewBoxWidth && this.originalHeight < this.previewBoxHeight){
+        if(wImg < wThb && hImg < hThb){
             YAHOO.util.Dom.removeClass(this.previewEl, 'cstudio-form-control-asset-picker-preview-content');
-            YAHOO.util.Dom.setStyle(this.imageEl,  'height', this.originalHeight + "px");
-            YAHOO.util.Dom.setStyle(this.imageEl,  'width', this.originalWidth + "px");
+            YAHOO.util.Dom.setStyle(this.imageEl,  'height', hImg + "px");
+            YAHOO.util.Dom.setStyle(this.imageEl,  'width', wImg + "px");
         }else{
-            var adjustedHeight = 0;
-            var adjustedWidth = 0;
+            if(wImg && hImg){
+                var conversionFactor = (wImg / wThb > hImg / hThb)? wImg / wThb : hImg / hThb;
+                    adjustedHeight = Math.floor(hImg / conversionFactor);
+                    adjustedWidth = Math.floor(wImg / conversionFactor);
 
-            if(this.originalWidth && this.originalHeight){
-
-                if(this.originalWidth > this.originalHeight){
-                    adjustedWidth = this.previewBoxWidth;
-                    adjustedHeight = Math.floor( (this.originalHeight * this.previewBoxWidth) / this.originalWidth );
-                }else{
-                    adjustedHeight = this.previewBoxHeight;
-                    adjustedWidth = Math.floor( (this.originalWidth * this.previewBoxHeight) / this.originalHeight );
-                }
 
                 YAHOO.util.Dom.setStyle(this.imageEl, 'height', adjustedHeight + "px");
                 YAHOO.util.Dom.setStyle(this.imageEl, 'width',  adjustedWidth + "px");
             }else{
-                YAHOO.util.Dom.setStyle(this.imageEl, 'height', this.previewBoxHeight + "px");
-                YAHOO.util.Dom.setStyle(this.imageEl, 'width',  this.previewBoxWidth + "px");
+                YAHOO.util.Dom.setStyle(this.imageEl, 'height', hThb + "px");
+                YAHOO.util.Dom.setStyle(this.imageEl, 'width',  wThb+ "px");
             }
-
         }
     },
 
