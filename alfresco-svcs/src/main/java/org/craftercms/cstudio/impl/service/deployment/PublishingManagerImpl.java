@@ -449,7 +449,11 @@ public class PublishingManagerImpl implements PublishingManager {
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
             if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
-                _contentRepository.createNewVersion(item.getSite(), item.getPath(), item.getSubmissionComment(), true);
+                if (!_importModeEnabled) {
+                    _contentRepository.createNewVersion(item.getSite(), item.getPath(), item.getSubmissionComment(), true);
+                } else {
+                    LOGGER.debug("Import mode is ON. Create new version is skipped for [{0}] site \"{1}\"", item.getPath(), item.getSite());
+                }
                 _contentRepository.stateTransition(item.getSite(), item.getPath(), TransitionEvent.DEPLOYMENT);
             }
             if (item.getAction() == CopyToEnvironmentItem.Action.MOVE) {
@@ -482,7 +486,14 @@ public class PublishingManagerImpl implements PublishingManager {
     public String getIndexFile() {  return _indexFile; }
     public void setIndexFile(String indexFile) { this._indexFile = indexFile; }
 
+    public boolean isImportModeEnabled() { return _importModeEnabled; }
+    public void setImportModeEnabled(boolean importModeEnabled) {
+        this._importModeEnabled = importModeEnabled;
+        LOGGER.info("Import mode is {0}. Creating new version when deploying content is {1}", _importModeEnabled ? "ON" : "OFF", _importModeEnabled ? "DISABLED" : "ENABLED");
+    }
+
     protected ContentRepository _contentRepository;
     protected DeploymentDAL _deploymentDAL;
     protected String _indexFile;
+    protected boolean _importModeEnabled;
 }

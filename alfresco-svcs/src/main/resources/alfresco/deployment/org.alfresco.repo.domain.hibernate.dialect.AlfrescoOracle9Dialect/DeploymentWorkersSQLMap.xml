@@ -93,7 +93,11 @@
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
         UPDATE cstudio_copytoenvironment
         SET state = #state#
-        WHERE id = #itemId#
+        <dynamic prepend=" WHERE id IN ">
+            <iterate property="itemIds"  open="(" close=")" conjunction=",">
+                #itemIds[]#
+            </iterate>
+        </dynamic>
     </update>
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">

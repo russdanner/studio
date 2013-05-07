@@ -968,7 +968,8 @@
     <bean id="cstudioPublishingManager" class="org.rivetlogic.cstudio.impl.service.deployment.PublishingManagerImpl">
         <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="deploymentDAL" ref="cstudioDeploymentServiceDAL" />
-        <property name="indexFile" value="index.xml" />
+        <property name="indexFile" value="${publishingManager.indexFile}" />
+        <property name="importModeEnabled" value="${publishingManager.importModeEnabled}" />
     </bean>
 
 
