@@ -27,6 +27,7 @@ import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -63,12 +64,24 @@ public class DeployContentToEnvironmentStore implements Job {
                         List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
                             logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
+                            int counter = 0;
+                            List<CopyToEnvironmentItem> processedItems = new ArrayList<CopyToEnvironmentItem>();
                             for (CopyToEnvironmentItem item : itemsToDeploy) {
                                 logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
                                 _publishingManager.processItem(item);
+                                counter++;
+                                processedItems.add(item);
+                                if (counter >= _processingChunkSize) {
+                                    logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
+                                    _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
+                                    counter = 0;
+                                    processedItems = new ArrayList<CopyToEnvironmentItem>();
+                                }
                             }
-                            logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
-                            _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemsToDeploy);
+                            if (processedItems.size() > 0) {
+                                logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
+                                _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
+                            }
                         }
                     }
                 }
@@ -97,7 +110,11 @@ public class DeployContentToEnvironmentStore implements Job {
     public PublishingManager getPublishingManager() { return _publishingManager; }
     public void setPublishingManager(PublishingManager publishingManager) { this._publishingManager = publishingManager; }
 
+    public int getProcessingChunkSize() {  return _processingChunkSize; }
+    public void setProcessingChunkSize(int processingChunkSize) { this._processingChunkSize = processingChunkSize; }
+
     protected TransactionService _transactionService;
     protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
+    protected int _processingChunkSize;
 }

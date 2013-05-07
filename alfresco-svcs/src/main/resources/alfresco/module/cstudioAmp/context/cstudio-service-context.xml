@@ -1070,13 +1070,14 @@
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
+        <property name="processingChunkSize" value="${deployContentToEnvironmentJob.processingChunkSize}" />
     </bean>
 
     <bean id="cstudioSyncTargetsJobs" class="org.craftercms.cstudio.impl.service.deployment.job.PublishContentToDeploymentTarget">
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
-        <property name="maxTolerableRetries" value="30" />
+        <property name="maxTolerableRetries" value="${syncTargetsJob.maxmaxTolerableRetries}" />
     </bean>
 
 	<!-- scheduled actions -->

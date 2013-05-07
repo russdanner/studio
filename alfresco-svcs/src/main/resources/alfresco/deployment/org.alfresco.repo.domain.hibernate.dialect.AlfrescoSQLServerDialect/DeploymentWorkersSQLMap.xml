@@ -110,8 +110,11 @@
         SELECT *
         FROM cstudio_publishtotarget
         WHERE site = #site#
-        AND version &gt; #version#
-        ORDER BY version ASC
+        AND version = (
+        select min(version) from crafter.cstudio_publishtotarget
+        where site = 'marriott'
+        and version &gt; #version#
+        )
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">
