@@ -150,7 +150,7 @@
         ORDER BY scheduleddate ASC
     </select>
 
-    <update id="cancelWorkflow" parameterClass="java.util.Map">
+    <update id="cancelWorkflow" parameterClass="java.util.HahsMap">
         UPDATE cstudio_copytoenvironment
         SET state = #canceledstate#
         WHERE site = #site#
