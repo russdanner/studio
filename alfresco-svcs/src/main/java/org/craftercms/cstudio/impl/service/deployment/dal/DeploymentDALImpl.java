@@ -127,20 +127,24 @@ public class DeploymentDALImpl implements DeploymentDAL {
             if (retQueue != null) {
                 if(retQueue.size() > 0) {
                     int counter = 0;
-                    _sqlMapClient.startBatch();
+                    List<String> itemIds = new ArrayList<String>();
                     for (CopyToEnvironmentItem item : retQueue) {
-                        params = new HashMap<String, Object>();
-                        params.put("state", CopyToEnvironmentItem.State.PROCESSING);
-                        params.put("itemId", item.getId());
-                        _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                        itemIds.add(item.getId());
                         counter++;
                         if (counter >= _sqlBatchMaxSize) {
-                            _sqlMapClient.executeBatch();
+                            params = new HashMap<String, Object>();
+                            params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+                            params.put("itemIds", itemIds);
+                            _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
                             counter = 0;
+                            itemIds = new ArrayList<String>();
                         }
                     }
                     if (counter > 0) {
-                        _sqlMapClient.executeBatch();
+                        params = new HashMap<String, Object>();
+                        params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+                        params.put("itemIds", itemIds);
+                        _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
                     }
                     _sqlMapClient.commitTransaction();
                 }

@@ -91,7 +91,11 @@
     <update id="setupItemsDeploymentState" parameterClass="java.util.HashMap">
         UPDATE cstudio_copytoenvironment
         SET state = #state#
-        WHERE id = #itemId#
+        <dynamic prepend=" WHERE id IN ">
+            <iterate property="itemIds"  open="(" close=")" conjunction=",">
+                #itemIds[]#
+            </iterate>
+        </dynamic>
     </update>
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">
@@ -109,8 +113,11 @@
         SELECT *
         FROM cstudio_publishtotarget
         WHERE site = #site#
-        AND version &gt; #version#
-        ORDER BY version ASC
+        AND version = (
+            SELECT min(version) FROM cstudio_publishtotarget
+            WHERE site = #site#
+            AND version &gt; #version#
+        )
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">

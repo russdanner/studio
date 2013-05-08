@@ -959,7 +959,7 @@
         <property name="initializeHistoryTableScriptPath"><value>alfresco/deployment/${hibernate.dialect}/initialize_deployment_sync_history.sql</value></property>
         <property name="addSubmissionCommentCTEScriptPath"><value>alfresco/deployment/${hibernate.dialect}/add_submission_comment_cte.sql</value></property>
         <property name="sqlMapClient" ref="cstudioCopyToEnvironmentSqlMap" />
-        <property name="sqlBatchMaxSize" value="1000" />
+        <property name="sqlBatchMaxSize" value="${deploymentDAL.sqlBatchMaxSize}" />
     </bean>
 
     <!-- ////////////////////////////////////// -->
@@ -968,7 +968,8 @@
     <bean id="cstudioPublishingManager" class="org.rivetlogic.cstudio.impl.service.deployment.PublishingManagerImpl">
         <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="deploymentDAL" ref="cstudioDeploymentServiceDAL" />
-        <property name="indexFile" value="index.xml" />
+        <property name="indexFile" value="${publishingManager.indexFile}" />
+        <property name="importModeEnabled" value="${publishingManager.importModeEnabled}" />
     </bean>
 
 
@@ -1069,13 +1070,14 @@
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
+        <property name="processingChunkSize" value="${deployContentToEnvironmentJob.processingChunkSize}" />
     </bean>
 
     <bean id="cstudioSyncTargetsJobs" class="org.craftercms.cstudio.impl.service.deployment.job.PublishContentToDeploymentTarget">
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
-        <property name="maxTolerableRetries" value="30" />
+        <property name="maxTolerableRetries" value="${syncTargetsJob.maxmaxTolerableRetries}" />
     </bean>
 
 	<!-- scheduled actions -->

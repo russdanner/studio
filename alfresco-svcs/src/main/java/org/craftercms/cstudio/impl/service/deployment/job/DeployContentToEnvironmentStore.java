@@ -27,75 +27,94 @@ import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class DeployContentToEnvironmentStore implements Job {
 
-	private static final Logger logger = LoggerFactory.getLogger(DeployContentToEnvironmentStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeployContentToEnvironmentStore.class);
 
-	public void execute() {
-		try {
-			Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-			_authenticationService.runAs("admin", this, processJobMethod);
-		}
-		catch(Exception err) {
-			//logger.error("unable to execute job", err);
-		}
-	}
-	
-	public void processJobs() {
+    private static final String LIVE_ENVIRONMENT = "live";
 
-		try {
+    public void execute() {
+        try {
+            Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
+            _authenticationService.runAs("admin", this, processJobMethod);
+        }
+        catch(Exception err) {
+            logger.error("unable to execute job", err);
+        }
+    }
 
-			UserTransaction tx = _transactionService.getTransaction();
+    public void processJobs() {
 
-			try {
-				// USE MANAGER TO DO ALL OF THIS, MOST OF THESE ARE PROTECTED MANAGER METHODS!
-				tx.begin();
+        try {
 
-                String environment = "live";
+            UserTransaction tx = _transactionService.getTransaction();
+
+            try {
+                // USE MANAGER TO DO ALL OF THIS, MOST OF THESE ARE PROTECTED MANAGER METHODS!
+                tx.begin();
 
                 Set<String> siteNames = _publishingManager.getAllAvailableSites();
                 if (siteNames != null && siteNames.size() > 0){
                     for (String site : siteNames) {
-                        List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, environment);
+                        logger.debug("Processing content ready for deployment for site \"{0}\"", site);
+                        List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
+                            logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
+                            int counter = 0;
+                            List<CopyToEnvironmentItem> processedItems = new ArrayList<CopyToEnvironmentItem>();
                             for (CopyToEnvironmentItem item : itemsToDeploy) {
+                                logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
                                 _publishingManager.processItem(item);
+                                counter++;
+                                processedItems.add(item);
+                                if (counter >= _processingChunkSize) {
+                                    logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
+                                    _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
+                                    counter = 0;
+                                    processedItems = new ArrayList<CopyToEnvironmentItem>();
+                                }
                             }
-                            _publishingManager.setupItemsForPublishingSync(site, environment, itemsToDeploy);
+                            if (processedItems.size() > 0) {
+                                logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
+                                _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
+                            }
                         }
                     }
                 }
-				
-				tx.commit();
-			} catch(Exception err) {
-				tx.rollback();
-                err.printStackTrace();
-                //logger.error("ERROR: ", err);
-			}
-		}
-		catch(Exception err) {
-            err.printStackTrace();
-            //logger.error("ERROR: ", err);
-		}
-	}
 
-	/** getter auth service */
-	public AuthenticationService getAuthenticationService() { return _authenticationService; }
-	/** setter for auth service */
-	public void setAuthenticationService(AuthenticationService service) { _authenticationService = service; }
+                tx.commit();
+            } catch(Exception err) {
+                tx.rollback();
+                logger.error("Error while executing deployment to environment store", err);
+            }
+        }
+        catch(Exception err) {
+            logger.error("Error while executing deployment to environment store", err);
+        }
+    }
 
-	/** getter transaction service */
-	public TransactionService getTransactionService() { return _transactionService; }
-	/** setter for transaction service */
-	public void setTransactionService(TransactionService service) { _transactionService = service; }
+    /** getter auth service */
+    public AuthenticationService getAuthenticationService() { return _authenticationService; }
+    /** setter for auth service */
+    public void setAuthenticationService(AuthenticationService service) { _authenticationService = service; }
+
+    /** getter transaction service */
+    public TransactionService getTransactionService() { return _transactionService; }
+    /** setter for transaction service */
+    public void setTransactionService(TransactionService service) { _transactionService = service; }
 
     public PublishingManager getPublishingManager() { return _publishingManager; }
     public void setPublishingManager(PublishingManager publishingManager) { this._publishingManager = publishingManager; }
 
+    public int getProcessingChunkSize() {  return _processingChunkSize; }
+    public void setProcessingChunkSize(int processingChunkSize) { this._processingChunkSize = processingChunkSize; }
+
     protected TransactionService _transactionService;
-	protected AuthenticationService _authenticationService;
+    protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
+    protected int _processingChunkSize;
 }
