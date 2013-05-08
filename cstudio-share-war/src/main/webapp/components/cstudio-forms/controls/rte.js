@@ -230,11 +230,17 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
         	// The RTE is in text mode
         	tinymce.DOM.setStyle(this.editor.editorId + "_ifr", "height", this.editor.settings.height + "px");
         	this.editor.getWin().scrollTo(0,0);	// Scroll to the top of the editor window
-        	this.clearTextEditorSelection();
+        	
+        	// The editor selection is automatically cleared in IE9 when the text editor is blurred
+			if (!YAHOO.env.ua.ie || YAHOO.env.ua.ie >= 10) {
+        		this.clearTextEditorSelection();
+        	}
         	this.editor.onDeactivate.dispatch(this.editor, null);	// Fire tinyMCE handlers for onDeactivate (eg. used by contextmenu)
         } else {
         	// The RTE is in code mode
         	widthVal = this.containerEl.clientWidth - this.codeModeXreduction;
+        	this.editor.codeMirror.setSelection({line: 0, ch: 0});	// Clear the current selection -in case there was any
+			this.editor.codeMirror.setCursor({line: 0, ch: 0});		// Set the cursor to the beginning of the code editor
         	this.editor.codeMirror.setSize(widthVal, +this.editor.settings.height);
         	this.editor.codeMirror.scrollTo(0,0);	// Scroll to the top of the editor window
         	this.editor.setContent(this.editor.codeMirror.getValue());	// Transfer content in codeMirror to RTE

@@ -159,6 +159,17 @@ CStudioAuthoring.Module.requireModule(
 						}
 					});
 				} else {
+					// Clear the current selection -in case there was any
+					editor.codeMirror.setSelection({line: 0, ch: 0});
+
+					// Flush the contents of this textarea used to read input. This textarea 
+					// is known to store the text selection contents. Fixes bug in IE 9, since setting
+					// a new value will result in appending the new content to this value.
+					editor.codeMirror.getInputField().value = "";
+
+					// Set the cursor to the beginning of the code editor
+					editor.codeMirror.setCursor({line: 0, ch: 0});
+
 					editor.codeMirror.setValue(editor.codeTextArea.value);
 				}
 				// We resize codeMirror each time in case the user has resized the window
