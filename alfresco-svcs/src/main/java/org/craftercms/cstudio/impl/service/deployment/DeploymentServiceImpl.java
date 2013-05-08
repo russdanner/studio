@@ -34,6 +34,7 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         if (scheduledDate != null && scheduledDate.after(new Date())) {
             _contentRepository.stateTransition(site, paths, TransitionEvent.SCHEDULED_DEPLOYMENT);
+            _contentRepository.setSystemProcessing(site, paths, false);
         } else {
             _contentRepository.setSystemProcessing(site, paths, true);
         }

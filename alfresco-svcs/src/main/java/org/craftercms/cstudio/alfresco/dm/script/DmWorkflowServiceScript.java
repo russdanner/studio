@@ -621,6 +621,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                                 nodeRefs.add(nr.getId());
                             }
                         }
+                        persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
                         dmWorkflowService.goLive(site, sub, goLiveItems, approver, mcpContext);
                     }
 
@@ -641,14 +642,13 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                         renameItems.addAll(renamedChildren);
                         //Set proper information of all renameItems before send them to GoLive 
                         for(int i=0;i<renameItems.size();i++){
-                           DmDependencyTO renamedItem = renameItems.get(i);
-                        	if(isNow)
-                        		renamedItem.setNow(true);
-                        	else{
-                        		renamedItem.setScheduledDate(getScheduledDate(site, format, scheduledDate));
-                        		renamedItem.setNow(false);
-                        	}
-                         renameItems.set(i, renamedItem);
+                            DmDependencyTO renamedItem = renameItems.get(i);
+                            if(!renamedItem.getScheduledDate().after(new Date())) {
+                                renamedItem.setNow(true);
+                            } else {
+                                renamedItem.setNow(false);
+                            }
+                            renameItems.set(i, renamedItem);
                         }
                        
                         dmRenameService.goLive(site, sub, renameItems, approver, mcpContext);

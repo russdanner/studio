@@ -1077,7 +1077,7 @@
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
-        <property name="maxTolerableRetries" value="${syncTargetsJob.maxmaxTolerableRetries}" />
+        <property name="maxTolerableRetries" value="${syncTargetsJob.maxTolerableRetries}" />
     </bean>
 
 	<!-- scheduled actions -->
