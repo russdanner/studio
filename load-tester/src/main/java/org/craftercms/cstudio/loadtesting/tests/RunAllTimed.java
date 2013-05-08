@@ -41,6 +41,7 @@ public class RunAllTimed extends TestingBase {
 		String destination = props.getProperty("runAll.destination");
 		String contentPrefix = props.getProperty("runAll.contentPrefix");
 		String duration = props.getProperty("runAll.duration");
+		boolean keepFolders = Boolean.valueOf(props.getProperty("runAll.keepFolders"));
 		long durationinMs = Integer.valueOf(duration) * 60 * 1000; 
 			
 		String shareUrl = props.getProperty("shareUrl");
@@ -75,7 +76,6 @@ public class RunAllTimed extends TestingBase {
 		long endTime = System.currentTimeMillis() + durationinMs;
 		long ticketTime = System.currentTimeMillis() + DURATION_TICKET;
 		ArrayList<String> contents = new ArrayList<String>();
-		ArrayList<String> folders = new ArrayList<String>();
 		int numOfItems = rand.nextInt(max) + 1;
 		int numOfSkips = rand.nextInt(maxSkipGoLiveCount - minSkipGoLiveCount + 1) + minSkipGoLiveCount;
 		int currItems = 0;
@@ -105,12 +105,16 @@ public class RunAllTimed extends TestingBase {
 				String contentPath = TestingConstants.ROOT_PATH + folderPath;
 				try {
 					writeContent.writeContent(contentPath, baseFolderName, baseFolderType, "index.xml", folderName);
-					folders.add(folderPath);
 					if (currSkips < numOfSkips) { 
 						currSkips++;
 					} else {
 						contents.add(contentPath + "/index.xml");
 						currItems++;
+					}
+					if (totalItems == 1) {
+						contentPath = TestingConstants.ROOT_PATH + destination;
+						folderName = destination.substring(destination.lastIndexOf('/') + 1);
+						writeContent.writeContent(contentPath, baseFolderName, baseFolderType, "index.xml", folderName, false);
 					}
 					System.out.println("[COUNT] " + username + ": currItems: " + currItems + ", numToGoLive: " + numOfItems + ", totalItems: " + totalItems + ", currSkips: " + currSkips + ", total Skips: " + numOfSkips);
 				} catch (Exception e) {
@@ -132,7 +136,6 @@ public class RunAllTimed extends TestingBase {
 					currItems = 0;
 					currSkips = 0;
 					contents.clear();
-					timeInSec = rand.nextInt(maxWriteSleepTime - minWriteSleepTime + 1) + minWriteSleepTime;
 					Thread.sleep(timeInSec * 1000);
 				}
 				numOfWrites++;
@@ -153,7 +156,16 @@ public class RunAllTimed extends TestingBase {
 			totalCount++;
 		} while (System.currentTimeMillis() < endTime);
 
-		deleteAll(folders, 5);
+		if (!contents.isEmpty()) {
+			try {
+				goLive(goLive, contents);
+			} catch (Exception e) {
+				System.out.println("[FAILURE] " + username + ": go live of " + contents);
+			}
+			Thread.sleep(maxWriteSleepTime * 1000);
+		}
+		if (!keepFolders)
+			deleteOne(destination, 5);
 	}
 
 	/**

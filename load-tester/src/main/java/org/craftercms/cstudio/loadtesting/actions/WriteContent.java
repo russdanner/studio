@@ -34,7 +34,7 @@ public class WriteContent extends BaseAction {
 
 	private static String URL_WRITE_CONTENT = "/cstudio/wcm/content/write-content";
 	
-    private HttpClient httpClient = new HttpClient();
+	private HttpClient httpClient = new HttpClient();
 	private String serverUrl;
 	private String site;
 	private String username;
@@ -46,25 +46,27 @@ public class WriteContent extends BaseAction {
 		this.username = username;
 		this.ticket = ticket;
 	}
-	
-	
-    public void writeContent(String path, String baseFileName, String contentType, String fileName, String internalName) throws Exception {
-        long startTime = System.currentTimeMillis();
-        TestingUtils.writeLog(username, "WRITE-CONTENT", "started");
-        PostMethod method = new PostMethod(serverUrl + URL_WRITE_CONTENT 
-        		+ "?createFolders=true&unlock=true&site=" + site + "&contentType=" + contentType
-        		+ "&path=" + path + "&fileName=" + fileName + "&user=" + username + "&alf_ticket=" + ticket);
-        String requestBody = getFileContent(baseFileName, fileName, internalName);
-        method.setRequestEntity(new StringRequestEntity(requestBody, "text/xml", "UTF-8"));
-        int statusCode = this.runAction(httpClient, method, username);
+
+	public void writeContent(String path, String baseFileName, String contentType, String fileName, String internalName) throws Exception {
+		writeContent(path, baseFileName, contentType, fileName, internalName, true);
+	}
+
+	public void writeContent(String path, String baseFileName, String contentType, String fileName, String internalName, boolean createFolders) throws Exception {
+		long startTime = System.currentTimeMillis();
+		TestingUtils.writeLog(username, "WRITE-CONTENT", "started");
+		PostMethod method = new PostMethod(serverUrl + URL_WRITE_CONTENT 
+				+ "?createFolders=" + createFolders +"&unlock=true&site=" + site + "&contentType=" + contentType
+				+ "&path=" + path + "&fileName=" + fileName + "&user=" + username + "&alf_ticket=" + ticket);
+		String requestBody = getFileContent(baseFileName, fileName, internalName);
+		method.setRequestEntity(new StringRequestEntity(requestBody, "text/xml", "UTF-8"));
+		int statusCode = this.runAction(httpClient, method, username);
 		if (statusCode == 200) {
-            TestingUtils.writeLog(username, "WRITE-CONTENT", "end:success", (System.currentTimeMillis() - startTime));
+			TestingUtils.writeLog(username, "WRITE-CONTENT", "end:success", (System.currentTimeMillis() - startTime));
 		} else {
-            TestingUtils.writeLog(username, "WRITE-CONTENT", "end:failure", (System.currentTimeMillis() - startTime));
+			TestingUtils.writeLog(username, "WRITE-CONTENT", "end:failure", (System.currentTimeMillis() - startTime));
 			throw new Exception(method.getResponseBodyAsString());
 		}
 	}
-	
 
 	/**
 	 * convert InputStream to string
@@ -75,12 +77,12 @@ public class WriteContent extends BaseAction {
 	 */
 	public String getFileContent(String baseFileName, String fileName, String internalName) throws Exception {
 		InputStream is = null;
-        InputStreamReader isReader = null;
-        StringWriter sw  = null;
-        XMLWriter writer  = null;
+		InputStreamReader isReader = null;
+		StringWriter sw  = null;
+		XMLWriter writer  = null;
 		try {
 			is = this.getClass().getResourceAsStream("/"+baseFileName);
-            isReader = new InputStreamReader(is, "UTF-8");
+			isReader = new InputStreamReader(is, "UTF-8");
 			SAXReader saxReader = new SAXReader();
 			Document document = saxReader.read(isReader);
 			Element root = document.getRootElement();
