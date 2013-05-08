@@ -137,9 +137,6 @@
 	color: #909090;
 }
 
-.cstudio-drop-arrow-button {
-}
-
 .cstudio-form-control-node-selector-items-container{
     background: none repeat scroll 0 0 white;
     border: 1px solid #C5D6E2;
@@ -157,18 +154,11 @@
     display: inline-block;
     width: 600px;
 }
-    
-.cstudio-button-first {
-
-}
 
 .cstudio-form-container {
     margin: 20px auto 0 auto;
     padding-bottom: 90px;
     width: 95%;
-}
-
-.cstudio-form-container-ice {
 }
 
 .cstudio-form-header {
@@ -537,9 +527,9 @@
     display: none;
 }
 
-.rte-active .mceLayout {
-    box-shadow: 0px 0px 5px 0px #0176B1;
-}
+.rte-active .mceLayout { box-shadow: 0px 0px 5px 0px #0176B1; }
+.ie9 .rte-active .mceLayout { border-collapse: separate; box-shadow: 0px 0px 6px 0px #0176B1; }
+
 .rte-active .mceLayout > tbody > tr.mceFirst > td.mceToolbar > div {
     left: 0;
     top: 0;
