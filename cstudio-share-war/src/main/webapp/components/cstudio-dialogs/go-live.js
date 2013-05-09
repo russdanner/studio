@@ -20,17 +20,16 @@ CStudioAuthoring.Module.requireModule("publish-dialog",
 						// Extend GoLive's prototype with its own class functions
 						CStudioAuthoring.Dialogs.DialogGoLive.prototype.createPanel = function (panelName, modalState, zIdx) {
 							return new YAHOO.widget.Panel(panelName, {
-								//width : "641px",
-								//height : "500px",// made bigger because of style issues "448px",
-								fixedcenter : true,
-								visible : false,
-								close : false,
-								draggable : false,
-								underlay : "none",
-								modal : modalState,
-								zIndex : zIdx,
-								constraintoviewport : true
-							});
+                                fixedcenter : true,
+                                visible : false,
+                                close : false,
+                                draggable : false,
+                                underlay : "none",
+                                modal : modalState,
+                                zIndex : zIdx,
+                                constraintoviewport : true,
+                                autofillheight: null
+                            });
 						};
 						
 						CStudioAuthoring.Dialogs.DialogGoLive.prototype.setUpGoLiveListeners = function () {
