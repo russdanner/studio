@@ -332,7 +332,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		}		
 	},
 	
-	insertItem: function(key, value) {
+	insertItem: function(key, value, fileType) {
 		var successful = true;
 		var message = "";
 		if(this.allowDuplicates != true){
@@ -355,7 +355,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		}
 
 		if(successful){
-			var item = { key: key, value: value };
+			var item = { key: key, value: value, fileType_s: fileType };
 			this.items[this.items.length] = item
 			
 			if(this.datasource.itemsAreContentReferences) {
