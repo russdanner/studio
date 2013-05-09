@@ -132,7 +132,8 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         if (launchDate == null) {
             launchDate = new Date();
         }
-        deploymentService.deploy(site, "live", pathsToPublish, launchDate);
+        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, mcpContext.getSubmissionComment());
     }
 
     //@Override
@@ -431,7 +432,8 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         if (scheduleDate == null) {
             scheduleDate = new Date();
         }
-        deploymentService.delete(site, "live", paths, scheduleDate);
+        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        deploymentService.delete(site, "live", paths,approver, scheduleDate);
     }
 
     public void unpublishOld(String site, List<String> paths, Date scheduleDate) {
