@@ -14,6 +14,8 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.registeredPlugins = [];
 	this.rteTables = [];
 	this.rteTableStyles = {};
+	this.rteLinkStyles = [];
+	this.rteLinkTargets = [];
 	this.readonly = readonly;
 	this.codeModeXreduction = 50;	// Amount of pixels deducted from the total width value of the RTE in code mode
 	this.codeModeYreduction = 130;	// Amount of pixels deducted from the total height value of the RTE in code mode
@@ -88,6 +90,8 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 				});
 				_thisControl.rteTables = rteConfig.rteTables;
 				_thisControl.rteTableStyles = rteConfig.rteTablestyles;
+				_thisControl.rteLinkStyles = rteConfig.rteLinkStyles;
+				_thisControl.rteLinkTargets = rteConfig.rteLinkTargets;
 			},
 			failure: function() {
 			}
