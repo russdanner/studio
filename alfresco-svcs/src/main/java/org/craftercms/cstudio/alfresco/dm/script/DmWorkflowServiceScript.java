@@ -643,7 +643,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                         //Set proper information of all renameItems before send them to GoLive 
                         for(int i=0;i<renameItems.size();i++){
                             DmDependencyTO renamedItem = renameItems.get(i);
-                            if(!renamedItem.getScheduledDate().after(new Date())) {
+                            if (renamedItem.getScheduledDate() != null && !renamedItem.getScheduledDate().after(new Date())) {
                                 renamedItem.setNow(true);
                             } else {
                                 renamedItem.setNow(false);
