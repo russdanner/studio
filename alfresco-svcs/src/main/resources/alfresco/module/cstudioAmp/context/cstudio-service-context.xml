@@ -952,7 +952,7 @@
     <!-- ////////////////////////////////////// -->
     <!--         deployment service             -->
     <!-- ////////////////////////////////////// -->
-    <bean id="cstudioDeploymentServiceDAL" class="org.rivetlogic.cstudio.impl.service.deployment.dal.DeploymentDALImpl"
+    <bean id="cstudioDeploymentServiceDAL" class="org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDALImpl"
           init-method="initTable">
         <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="initializeWorkerTablesScriptPath"><value>alfresco/deployment/${hibernate.dialect}/initialize_deployment_workers.sql</value></property>
@@ -965,7 +965,7 @@
     <!-- ////////////////////////////////////// -->
     <!--         publishing manager             -->
     <!-- ////////////////////////////////////// -->
-    <bean id="cstudioPublishingManager" class="org.rivetlogic.cstudio.impl.service.deployment.PublishingManagerImpl">
+    <bean id="cstudioPublishingManager" class="org.craftercms.cstudio.impl.service.deployment.PublishingManagerImpl">
         <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="deploymentDAL" ref="cstudioDeploymentServiceDAL" />
         <property name="indexFile" value="${publishingManager.indexFile}" />
