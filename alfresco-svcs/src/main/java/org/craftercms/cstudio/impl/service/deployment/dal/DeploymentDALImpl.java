@@ -27,6 +27,7 @@ import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingSyncItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
+import org.craftercms.cstudio.api.util.ListUtils;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
     private static final String STATEMENT_INSERT_DEPLOYMENT_HISTORY = "deploymentWorkers.insertDeploymentSyncHistoryItem";
     private static final String STATEMENT_GET_DEPLOYMENT_HISTORY = "deploymentWorkers.getDeploymentHistory";
 
-    public void initTable() {
+    public void initTable() throws DeploymentDALException {
         DataSource dataSource = _sqlMapClient.getDataSource();
         Connection connection = null;
         int oldval = -1;
@@ -98,13 +99,16 @@ public class DeploymentDALImpl implements DeploymentDAL {
 
         } catch (SQLException e) {
             logger.error("Error while initializing \"Copy To Environment\" table", e);
+            throw new DeploymentDALException("Error while initializing \"Copy To Environment\" table", e);
         } catch (IOException e) {
             logger.error("Error while initializing \"Copy To Environment\" table", e);
+            throw new DeploymentDALException("Error while initializing \"Copy To Environment\" table", e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
+                    logger.error("Error while closing db connection", e);
                 }
                 connection = null;
             }
@@ -116,7 +120,6 @@ public class DeploymentDALImpl implements DeploymentDAL {
         List<CopyToEnvironmentItem> retQueue = null;
 
         try {
-            _sqlMapClient.startTransaction();
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
             params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
@@ -124,72 +127,35 @@ public class DeploymentDALImpl implements DeploymentDAL {
 
             retQueue = (List<CopyToEnvironmentItem>) _sqlMapClient.queryForList(STATEMENT_GET_ITEMS_READY_FOR_DEPLOYMENT, params);
 
-            if (retQueue != null) {
-                if(retQueue.size() > 0) {
-                    int counter = 0;
-                    List<String> itemIds = new ArrayList<String>();
-                    for (CopyToEnvironmentItem item : retQueue) {
-                        itemIds.add(item.getId());
-                        counter++;
-                        if (counter >= _sqlBatchMaxSize) {
-                            params = new HashMap<String, Object>();
-                            params.put("state", CopyToEnvironmentItem.State.PROCESSING);
-                            params.put("itemIds", itemIds);
-                            _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
-                            counter = 0;
-                            itemIds = new ArrayList<String>();
-                        }
-                    }
-                    if (counter > 0) {
-                        params = new HashMap<String, Object>();
-                        params.put("state", CopyToEnvironmentItem.State.PROCESSING);
-                        params.put("itemIds", itemIds);
-                        _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
-                    }
-                    _sqlMapClient.commitTransaction();
-                }
-                else {
-                    logger.info("Deployment queue is empty.");
-                    retQueue = null; // since other paths return null as empty (consider changing this)
-                }
-            } else {
+            if (retQueue == null || retQueue.size() < 1) {
+                retQueue = new ArrayList<CopyToEnvironmentItem>();
                 logger.info("Deployment queue is empty.");
             }
         } catch (SQLException e) {
-            logger.error("Error while getting deployment work queue", e);
-        }  finally {
-            try {
-                _sqlMapClient.endTransaction();
-            } catch (SQLException e) {
-                logger.error("Error while ending transaction", e);
-            }
+            logger.error("Error while getting deployment work queue\nSQL state: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            retQueue = new ArrayList<CopyToEnvironmentItem>();
         }
 
         return retQueue;
     }
 
     @Override
-    public void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) {
+    public void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentDALException {
         List<CopyToEnvironmentItem> items = createItems(site, environment, paths, scheduledDate, approver, submissionComment);
         try {
-            int counter = 0;
-            int numberOfRowsInserted = 0;
+            List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(items, _sqlBatchMaxSize);
             _sqlMapClient.startTransaction();
-            _sqlMapClient.startBatch();
-            for (CopyToEnvironmentItem item : items) {
-                _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
-                counter++;
-                if (counter >= _sqlBatchMaxSize) {
-                    numberOfRowsInserted += _sqlMapClient.executeBatch();
-                    counter = 0;
+            for (List<CopyToEnvironmentItem> batch : batches) {
+                _sqlMapClient.startBatch();
+                for (CopyToEnvironmentItem item : batch) {
+                    _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
                 }
-            }
-            if (counter > 0) {
-                numberOfRowsInserted += _sqlMapClient.executeBatch();
+                _sqlMapClient.executeBatch();
             }
             _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
-            logger.error("Error while inserting items for deploy", e);
+            logger.error("Error while inserting items for deploy\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while inserting items for deploy", e);
         } finally {
             try {
                 _sqlMapClient.endTransaction();
@@ -236,36 +202,31 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 return queue;
             } else {
                 logger.info("Deployment queue is empty.");
-                return null;
+                return new ArrayList<PublishingSyncItem>();
             }
         } catch (SQLException e) {
-            logger.error("Error while getting deployment work queue", e);
-            return null;
+            logger.error("Error while getting deployment work queue\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            return new ArrayList<PublishingSyncItem>();
         }
     }
 
     @Override
-    public void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
+    public void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentDALException {
         List<CopyToEnvironmentItem> items = createDeleteItems(site, environment, paths, approver, scheduledDate);
         try {
-            int counter = 0;
-            int numberOfRowsInserted = 0;
+            List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(items, _sqlBatchMaxSize);
             _sqlMapClient.startTransaction();
-            _sqlMapClient.startBatch();
-            for (CopyToEnvironmentItem item : items) {
-                _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
-                counter++;
-                if (counter >= _sqlBatchMaxSize) {
-                    numberOfRowsInserted += _sqlMapClient.executeBatch();
-                    counter = 0;
+            for (List<CopyToEnvironmentItem> batch : batches) {
+                _sqlMapClient.startBatch();
+                for (CopyToEnvironmentItem item : items) {
+                    _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_DEPLOYMENT, item);
                 }
-            }
-            if (counter > 0) {
-                numberOfRowsInserted += _sqlMapClient.executeBatch();
+                _sqlMapClient.executeBatch();
             }
             _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
-            logger.error("Error while inserting items for deploy", e);
+            logger.error("Error while inserting items for deploy\nSQL State: \"{0}\"\nError Code \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while inserting items for deploy", e);
         }  finally {
             try {
                 _sqlMapClient.endTransaction();
@@ -299,27 +260,28 @@ public class DeploymentDALImpl implements DeploymentDAL {
     }
 
     @Override
-    public void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) {
+    public void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException {
         List<PublishingSyncItem> items = createItems(site, environment, itemsToDeploy);
-
         try {
-            int counter = 0;
-            int numberOfRowsInserted = 0;
-            _sqlMapClient.startBatch();
-            for (PublishingSyncItem item : items) {
-                _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_TARGETS_SYNC, item);
-
-                counter++;
-                if (counter >= _sqlBatchMaxSize) {
-                    numberOfRowsInserted += _sqlMapClient.executeBatch();
-                    counter = 0;
+            List<List<PublishingSyncItem>> batches = ListUtils.partition(items, _sqlBatchMaxSize);
+            _sqlMapClient.startTransaction();
+            for (List<PublishingSyncItem> batch : batches) {
+                _sqlMapClient.startBatch();
+                for (PublishingSyncItem item : batch) {
+                    _sqlMapClient.insert(STATEMENT_INSERT_ITEMS_FOR_TARGETS_SYNC, item);
                 }
+                _sqlMapClient.executeBatch();
             }
-            if (counter > 0) {
-                numberOfRowsInserted += _sqlMapClient.executeBatch();
-            }
+            _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
-            logger.error("Error while inserting items for target sync", e);
+            logger.error("Error while inserting items for target sync\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while inserting items for target sync", e);
+        }  finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error while ending transaction", e);
+            }
         }
     }
 
@@ -353,28 +315,21 @@ public class DeploymentDALImpl implements DeploymentDAL {
     }
 
     @Override
-    public void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> publishedItems, Date publishingDate) {
+    public void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> publishedItems, Date publishingDate) throws DeploymentDALException {
         List<DeploymentSyncHistoryItem> items = createItems(target, publishedItems, publishingDate);
         try {
-            int counter = 0;
-            int numberOfRowsInserted = 0;
+            List<List<DeploymentSyncHistoryItem>> batches = ListUtils.partition(items, _sqlBatchMaxSize);
             _sqlMapClient.startTransaction();
-            _sqlMapClient.startBatch();
-            for (DeploymentSyncHistoryItem item : items) {
-                _sqlMapClient.insert(STATEMENT_INSERT_DEPLOYMENT_HISTORY, item);
-                counter++;
-                if (counter >= _sqlBatchMaxSize) {
-                    numberOfRowsInserted += _sqlMapClient.executeBatch();
-                    counter = 0;
-                }
-            }
-            if (counter > 0) {
-                numberOfRowsInserted += _sqlMapClient.executeBatch();
+            for (List<DeploymentSyncHistoryItem> batch : batches) {
+                _sqlMapClient.startBatch();
+                for (DeploymentSyncHistoryItem item : batch) {
+                    _sqlMapClient.insert(STATEMENT_INSERT_DEPLOYMENT_HISTORY, item);
+                }_sqlMapClient.executeBatch();
             }
             _sqlMapClient.commitTransaction();
         } catch (SQLException e) {
-            logger.error("Error while inserting items for target sync", e);
-
+            logger.error("Error while inserting items for target sync\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while inserting items for target sync", e);
         } finally {
             try {
                 _sqlMapClient.endTransaction();
@@ -423,11 +378,11 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 return deploymentHistory;
             } else {
                 logger.info("Deployment queue is empty.");
-                return null;
+                return new ArrayList<DeploymentSyncHistoryItem>();
             }
         } catch (SQLException e) {
-            logger.error("Error while getting deployment work queue", e);
-            return null;
+            logger.error("Error while getting deployment History\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            return new ArrayList<DeploymentSyncHistoryItem>();
         }
     }
 
@@ -443,16 +398,16 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 return scheduledItems;
             } else {
                 logger.info("No scheduled items.");
-                return null;
+                return new ArrayList<CopyToEnvironmentItem>();
             }
         } catch (SQLException e) {
-            logger.error("Error while getting scheduled items ", e);
-            return null;
+            logger.error("Error while getting scheduled items\nSQL State: \"{0}\"\nError Code: \"{1}\"", e);
+            return new ArrayList<CopyToEnvironmentItem>();
         }
     }
 
     @Override
-    public void cancelWorkflow(String site, String path) {
+    public void cancelWorkflow(String site, String path) throws DeploymentDALException {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
@@ -462,7 +417,98 @@ public class DeploymentDALImpl implements DeploymentDAL {
             params.put("now", new Date());
             _sqlMapClient.update(STATEMENT_CANCEL_WORKFLOW_FOR_CONTENT, params);
         } catch (SQLException e) {
-            logger.error("Error while canceling workflow for content site \"{0}\" path \"{1}\"", e, site, path);
+            logger.error("Error while canceling workflow for content site \"{0}\" path \"{1}\"\nSQL State: \"{2}\"\nError Code: \"{3}\"", e, site, path, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while canceling workflow for content site " + site + " path " + path , e);
+        }
+    }
+
+    @Override
+    public void markItemsCompleted(String site, String environment, List<CopyToEnvironmentItem> processedItems) throws DeploymentDALException {
+        try {
+            if (processedItems != null && processedItems.size() > 0) {
+                _sqlMapClient.startTransaction();
+                List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(processedItems, _sqlBatchMaxSize);
+                for (List<CopyToEnvironmentItem> batch : batches) {
+                    List<String> itemIds = new ArrayList<String>();
+                    for (CopyToEnvironmentItem item : batch) {
+                        itemIds.add(item.getId());
+                    }
+                    Map<String, Object> params = new HashMap<String, Object>();
+                    params.put("state", CopyToEnvironmentItem.State.COMPLETED);
+                    params.put("itemIds", itemIds);
+                    _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                }
+                _sqlMapClient.commitTransaction();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while marking completed copy to environment for items\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while marking completed copy to environment for items", e);
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error releasing transaction", e);
+            }
+        }
+    }
+
+    @Override
+    public void markItemsProcessing(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException {
+        try {
+            if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
+                _sqlMapClient.startTransaction();
+                List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(itemsToDeploy, _sqlBatchMaxSize);
+                for (List<CopyToEnvironmentItem> batch : batches) {
+                    List<String> itemIds = new ArrayList<String>();
+                    for (CopyToEnvironmentItem item : batch) {
+                        itemIds.add(item.getId());
+                    }
+                    Map<String, Object> params = new HashMap<String, Object>();
+                    params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+                    params.put("itemIds", itemIds);
+                    _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                }
+                _sqlMapClient.commitTransaction();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while marking processing copy to environment for items\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while marking processing copy to environment for items", e);
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error releasing transaction", e);
+            }
+        }
+    }
+
+    @Override
+    public void markItemsReady(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException {
+        try {
+            if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
+                _sqlMapClient.startTransaction();
+                List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(itemsToDeploy, _sqlBatchMaxSize);
+                for (List<CopyToEnvironmentItem> batch : batches) {
+                    List<String> itemIds = new ArrayList<String>();
+                    for (CopyToEnvironmentItem item : batch) {
+                        itemIds.add(item.getId());
+                    }
+                    Map<String, Object> params = new HashMap<String, Object>();
+                    params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
+                    params.put("itemIds", itemIds);
+                    _sqlMapClient.update(STATEMENT_SETUP_ITEMS_DEPLOYMENT_STATE, params);
+                }
+                _sqlMapClient.commitTransaction();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while marking ready for copy to environment for items\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while marking ready for copy to environment for items", e);
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error releasing transaction", e);
+            }
         }
     }
 

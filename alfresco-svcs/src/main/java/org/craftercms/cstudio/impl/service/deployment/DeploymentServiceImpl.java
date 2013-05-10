@@ -19,6 +19,7 @@ package org.craftercms.cstudio.impl.service.deployment;
 
 import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.craftercms.cstudio.api.service.deployment.DeploymentService;
 import org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
@@ -30,7 +31,7 @@ import java.util.*;
  */
 public class DeploymentServiceImpl implements DeploymentService {
 
-    public void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) {
+    public void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentException {
 
         if (scheduledDate != null && scheduledDate.after(new Date())) {
             _contentRepository.stateTransition(site, paths, TransitionEvent.SCHEDULED_DEPLOYMENT);
@@ -64,7 +65,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) {
+    public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
         _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
     }
 
@@ -79,7 +80,7 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public void cancelWorkflow(String site, String path) {
+    public void cancelWorkflow(String site, String path) throws DeploymentException {
         _deploymentDAL.cancelWorkflow(site, path);
     }
 

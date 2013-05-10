@@ -64,6 +64,7 @@ import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
 import org.craftercms.cstudio.alfresco.service.api.*;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.util.ContentFormatUtils;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1333,7 +1334,11 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         if (node != null) {
             if (enableNewDeploymentEngine) {
                 DmPathTO dmPathTO = new DmPathTO(fullPath);
-                _deploymentService.cancelWorkflow(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                try {
+                    _deploymentService.cancelWorkflow(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                } catch (DeploymentException e) {
+                    logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
+                }
             } else {
                 List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(node);
                 if (events != null && events.size() > 0) {

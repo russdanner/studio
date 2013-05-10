@@ -338,12 +338,8 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
                 contentItemTO = (DmContentItemTO) cacheItem.getValue();
             }
         } catch (Exception e) {
-        	// TODO CodeRev: why is a cache miss an exception? Or is something throwing the exception?
-        	// TODO CodeRev: if the error is a miss... is this a real info?
-        	// TODO CodeRev: if the error is something else why are we talking about the miss and not giving
-        	// TODO CodeRev: the error to the log?
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Failed to get content item from cache: " + fullPath);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Failed to get content item from cache: " + fullPath);
             }
         }
         if (contentItemTO == null) {

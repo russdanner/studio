@@ -1,39 +1,36 @@
 /*******************************************************************************
  * Crafter Studio Web-content authoring solution
  *     Copyright (C) 2007-2013 Crafter Software Corporation.
- * 
+ *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- * 
+ *
  *     This program is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
- * 
+ *
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.craftercms.cstudio.api.service.deployment;
+package org.craftercms.cstudio.impl.service.deployment.dal;
 
-import java.util.Date;
-import java.util.List;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 
-/**
- * 	// document
- */
-public interface DeploymentService {
+public class DeploymentDALException extends DeploymentException {
+    private static final long serialVersionUID = -4244000619335132455L;
 
-    // document
-    void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentException;
+    public DeploymentDALException() {
+        super();
+    }
 
-    // document
-    void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException;
+    public DeploymentDALException(String message) {
+        super(message);
+    }
 
-    List<DeploymentSyncHistoryItem> getDeploymentHistory(String site, Date fromDate, Date toDate, String filterType, int numberOfItems);
-
-    List<CopyToEnvironmentItem> getScheduledItems(String site);
-
-    void cancelWorkflow(String site, String path) throws DeploymentException;
+    public DeploymentDALException(String message, Throwable t) {
+        super(message, t);
+    }
 }

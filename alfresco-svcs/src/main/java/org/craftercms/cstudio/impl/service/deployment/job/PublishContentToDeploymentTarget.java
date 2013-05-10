@@ -52,14 +52,16 @@ public class PublishContentToDeploymentTarget implements Job {
     }
 
     public void execute() {
-        if (singleWorkerLock.tryLock()) {
-            try {
-                Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-                _authenticationService.runAs("admin", this, processJobMethod);
-            } catch(Exception err) {
-                logger.error("unable to execute job", err);
-            } finally {
-                singleWorkerLock.unlock();
+        if (_masterPublishingNode) {
+            if (singleWorkerLock.tryLock()) {
+                try {
+                    Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
+                    _authenticationService.runAs("admin", this, processJobMethod);
+                } catch(Exception err) {
+                    logger.error("unable to execute job", err);
+                } finally {
+                    singleWorkerLock.unlock();
+                }
             }
         }
     }
@@ -253,8 +255,12 @@ public class PublishContentToDeploymentTarget implements Job {
     public Integer getMaxTolerableRetries() { return _maxTolerableRetries; }
     public void setMaxTolerableRetries(Integer maxTolerableRetries) { this._maxTolerableRetries = maxTolerableRetries; }
 
+    public boolean isMasterPublishingNode() { return _masterPublishingNode; }
+    public void setMasterPublishingNode(boolean masterPublishingNode) { this._masterPublishingNode = masterPublishingNode; }
+
     protected TransactionService _transactionService;
     protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
     protected Integer _maxTolerableRetries;
+    protected boolean _masterPublishingNode;
 }

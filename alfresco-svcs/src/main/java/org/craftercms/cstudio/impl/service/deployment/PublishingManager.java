@@ -47,7 +47,13 @@ public interface PublishingManager {
 
     void processItem(CopyToEnvironmentItem item);
 
-    void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy);
+    void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException;
 
-    void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> filteredItems, Date date);
+    void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> filteredItems, Date date) throws DeploymentException;
+
+    void markItemsCompleted(String site, String environment, List<CopyToEnvironmentItem> processedItems) throws DeploymentException;
+
+    void markItemsProcessing(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException;
+
+    void markItemsReady(String site, String liveEnvironment, List<CopyToEnvironmentItem> copyToEnvironmentItems) throws DeploymentException;
 }

@@ -32,19 +32,25 @@ public interface DeploymentDAL {
 
     List<CopyToEnvironmentItem> getItemsReadyForDeployment(String site, String environment);
 
-    void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment);
+    void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentDALException;
 
     List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version);
 
-    void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate);
+    void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentDALException;
 
-    void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy);
+    void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException;
 
-    void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> filteredItems, Date publishingDate);
+    void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> filteredItems, Date publishingDate) throws DeploymentDALException;
 
     List<DeploymentSyncHistoryItem> getDeploymentHistory(String site, Date fromDate, Date toDate, String filterType, int numberOfItems);
 
     List<CopyToEnvironmentItem> getScheduledItems(String site);
 
-    void cancelWorkflow(String site, String path);
+    void cancelWorkflow(String site, String path) throws DeploymentDALException;
+
+    void markItemsCompleted(String site, String environment, List<CopyToEnvironmentItem> processedItems) throws DeploymentDALException;
+
+    void markItemsProcessing(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException;
+
+    void markItemsReady(String site, String environment, List<CopyToEnvironmentItem> copyToEnvironmentItems) throws DeploymentDALException;
 }

@@ -43,6 +43,7 @@ import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelTO;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,9 +122,9 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         _publish(site, nodesToPublish, launchDate);
     }
 
-	@Override
-	public void publish(String site, List<String> paths, Date launchDate,
-			MultiChannelPublishingContext mcpContext) {
+    @Override
+    public void publish(String site, List<String> paths, Date launchDate,
+                        MultiChannelPublishingContext mcpContext) {
         List<String> pathsToPublish = new FastList<String>();
         for (String p : paths) {
             DmPathTO dmPathTO = new DmPathTO(p);
@@ -132,7 +133,13 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         if (launchDate == null) {
             launchDate = new Date();
         }
-        deploymentService.deploy(site, "live", pathsToPublish, launchDate);
+        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        try {
+            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, mcpContext.getSubmissionComment());
+        } catch (DeploymentException ex) {
+            logger.error("Unable to publish files due a error ", ex);
+        }
     }
 
     //@Override
@@ -422,16 +429,20 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
     }
 
     @Override
-    public void unpublish(String site, List<String> paths) {
-        unpublish(site, paths, null);
+    public void unpublish(String site, List<String> paths, String approver) {
+        unpublish(site, paths, approver, null);
     }
 
     @Override
-    public void unpublish(String site, List<String> paths, Date scheduleDate) {
+    public void unpublish(String site, List<String> paths,  String approver, Date scheduleDate) {
         if (scheduleDate == null) {
             scheduleDate = new Date();
         }
-        deploymentService.delete(site, "live", paths, scheduleDate);
+        try {
+            deploymentService.delete(site, "live", paths, approver, scheduleDate);
+        } catch (DeploymentException ex) {
+            logger.error("Unable to delete files due a error ",ex);
+        }
     }
 
     public void unpublishOld(String site, List<String> paths, Date scheduleDate) {

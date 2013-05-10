@@ -468,13 +468,28 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) {
+    public void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException {
         _deploymentDAL.setupItemsForPublishingSync(site, environment, itemsToDeploy);
     }
 
     @Override
-    public void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> publishedItems, Date publishingDate) {
+    public void insertDeploymentHistory(PublishingTargetItem target, List<PublishingSyncItem> publishedItems, Date publishingDate) throws DeploymentException {
         _deploymentDAL.insertDeploymentHistory(target, publishedItems, publishingDate);
+    }
+
+    @Override
+    public void markItemsCompleted(String site, String environment, List<CopyToEnvironmentItem> processedItems) throws DeploymentException {
+        _deploymentDAL.markItemsCompleted(site, environment, processedItems);
+    }
+
+    @Override
+    public void markItemsProcessing(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException {
+        _deploymentDAL.markItemsProcessing(site, environment, itemsToDeploy);
+    }
+
+    @Override
+    public void markItemsReady(String site, String environment, List<CopyToEnvironmentItem> copyToEnvironmentItems) throws DeploymentException {
+        _deploymentDAL.markItemsReady(site, environment, copyToEnvironmentItems);
     }
 
     public ContentRepository getContentRepository() { return _contentRepository; }

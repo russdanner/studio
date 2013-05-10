@@ -22,14 +22,16 @@ import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.service.authentication.AuthenticationService;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.craftercms.cstudio.api.service.transaction.TransactionService;
+import org.craftercms.cstudio.api.util.ListUtils;
 import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DeployContentToEnvironmentStore implements Job {
 
@@ -37,13 +39,21 @@ public class DeployContentToEnvironmentStore implements Job {
 
     private static final String LIVE_ENVIRONMENT = "live";
 
+    protected static final ReentrantLock singleWorkerLock = new ReentrantLock();
+
     public void execute() {
-        try {
-            Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-            _authenticationService.runAs("admin", this, processJobMethod);
-        }
-        catch(Exception err) {
-            logger.error("unable to execute job", err);
+        if (_masterPublishingNode) {
+            if (singleWorkerLock.tryLock()) {
+                try {
+                    Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
+                    _authenticationService.runAs("admin", this, processJobMethod);
+                }
+                catch(Exception err) {
+                    logger.error("unable to execute job", err);
+                } finally {
+                    singleWorkerLock.unlock();
+                }
+            }
         }
     }
 
@@ -58,35 +68,47 @@ public class DeployContentToEnvironmentStore implements Job {
                 tx.begin();
 
                 Set<String> siteNames = _publishingManager.getAllAvailableSites();
+                tx.commit();
                 if (siteNames != null && siteNames.size() > 0){
                     for (String site : siteNames) {
                         logger.debug("Processing content ready for deployment for site \"{0}\"", site);
                         List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
+                        tx = _transactionService.getTransaction();
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
                             logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
-                            int counter = 0;
-                            List<CopyToEnvironmentItem> processedItems = new ArrayList<CopyToEnvironmentItem>();
-                            for (CopyToEnvironmentItem item : itemsToDeploy) {
-                                logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
-                                _publishingManager.processItem(item);
-                                counter++;
-                                processedItems.add(item);
-                                if (counter >= _processingChunkSize) {
+                            logger.debug("Splitting items into chunks for processing", site, itemsToDeploy.size());
+                            List<List<CopyToEnvironmentItem>> chunks = ListUtils.partition(itemsToDeploy, _processingChunkSize);
+
+                            for (int i = 0; i < chunks.size(); i++) {
+                                tx = _transactionService.getTransaction();
+                                tx.begin();
+                                List<CopyToEnvironmentItem> itemList = chunks.get(i);
+                                try {
+
+                                    logger.debug("Mark items as processing for site \"{0}\"", site);
+                                    _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
+
+                                    for (CopyToEnvironmentItem item : itemList) {
+                                        logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
+                                        _publishingManager.processItem(item);
+                                    }
+
                                     logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
-                                    _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
-                                    counter = 0;
-                                    processedItems = new ArrayList<CopyToEnvironmentItem>();
+                                    _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                    logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
+                                    _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
+                                    tx.commit();
+                                } catch (DeploymentException err) {
+                                    logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
+                                    _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
+                                    throw err;
                                 }
-                            }
-                            if (processedItems.size() > 0) {
-                                logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
-                                _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItems);
                             }
                         }
                     }
                 }
 
-                tx.commit();
+                //tx.commit();
             } catch(Exception err) {
                 tx.rollback();
                 logger.error("Error while executing deployment to environment store", err);
@@ -113,8 +135,12 @@ public class DeployContentToEnvironmentStore implements Job {
     public int getProcessingChunkSize() {  return _processingChunkSize; }
     public void setProcessingChunkSize(int processingChunkSize) { this._processingChunkSize = processingChunkSize; }
 
+    public boolean isMasterPublishingNode() { return _masterPublishingNode; }
+    public void setMasterPublishingNode(boolean masterPublishingNode) { this._masterPublishingNode = masterPublishingNode; }
+
     protected TransactionService _transactionService;
     protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
     protected int _processingChunkSize;
+    protected boolean _masterPublishingNode;
 }
