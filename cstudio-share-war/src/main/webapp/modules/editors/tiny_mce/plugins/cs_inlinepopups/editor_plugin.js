@@ -99,6 +99,9 @@
 					f.height = 295; 
 					p.contextObj = CStudioAuthoringContext;
 					break;
+				case "merge_cells.htm": 
+					f.height = 180;
+					break;
 				default:
 					f.height = f.height || 100;
 			}

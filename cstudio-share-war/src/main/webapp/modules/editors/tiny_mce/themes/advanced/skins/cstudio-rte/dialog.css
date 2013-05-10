@@ -131,6 +131,10 @@ h3 {font-size:14px;}
 #anchor td#app_title { visibility: hidden; }
 #anchor #insert { left: 87px; top: 6px; }
 
+#merge-cells fieldset { width: 220px; margin: 40px 30px 15px 30px; }
+#merge-cells legend { font-size: 16px; margin-bottom: 2px; }
+#merge-cells #insert { left: 30px; }
+
 #table #insert, #tablerow #insert, #tablecell #insert { left: 10px; }
 #table td { max-width: 120px; }
 #table #general_panel table { max-width: 760px; }
