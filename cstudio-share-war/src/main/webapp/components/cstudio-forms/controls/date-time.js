@@ -649,6 +649,7 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		        var dateEl = document.createElement("input");
 		            dateEl.id = divPrefix + "cstudio-form-control-date-input";
 		            dateEl.className = "date-control";
+		            dateEl.readOnly = "readonly";
 		            this.dateEl = dateEl;
 
 				controlWidgetContainerEl.appendChild(dateEl);
