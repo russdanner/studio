@@ -468,6 +468,11 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
+    public void setLockBehaviourEnabled(boolean enabled) {
+        _contentRepository.setLockBehaviourEnabled(enabled);
+    }
+
+    @Override
     public void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException {
         _deploymentDAL.setupItemsForPublishingSync(site, environment, itemsToDeploy);
     }

@@ -82,9 +82,9 @@ public class DeployContentToEnvironmentStore implements Job {
                             for (int i = 0; i < chunks.size(); i++) {
                                 tx = _transactionService.getTransaction();
                                 tx.begin();
+                                _publishingManager.setLockBehaviourEnabled(false);
                                 List<CopyToEnvironmentItem> itemList = chunks.get(i);
                                 try {
-
                                     logger.debug("Mark items as processing for site \"{0}\"", site);
                                     _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
 
@@ -110,8 +110,8 @@ public class DeployContentToEnvironmentStore implements Job {
 
                 //tx.commit();
             } catch(Exception err) {
-                tx.rollback();
                 logger.error("Error while executing deployment to environment store", err);
+                tx.rollback();
             }
         }
         catch(Exception err) {

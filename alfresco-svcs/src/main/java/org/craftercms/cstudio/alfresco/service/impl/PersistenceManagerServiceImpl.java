@@ -1861,8 +1861,18 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
+    public void disableBehaviour(QName className) {
+        this.policyBehaviourFilter.disableBehaviour(className);
+    }
+
+    @Override
     public void disableBehaviour(NodeRef nodeRef, QName className) {
         this.policyBehaviourFilter.disableBehaviour(nodeRef, className);
+    }
+
+    @Override
+    public void enableBehaviour(QName className) {
+        this.policyBehaviourFilter.enableBehaviour(className);
     }
 
     @Override

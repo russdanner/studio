@@ -228,11 +228,26 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
 
     @Override
     public void createNewVersion(String site, String path, String submissionComment, boolean isMajorVersion) {
-        DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
-        if (isMajorVersion) {
-            dmVersionService.createNextMajorVersion(site, path, submissionComment);
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+        if (nodeRef != null) {
+            DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
+            if (isMajorVersion) {
+                dmVersionService.createNextMajorVersion(site, path, submissionComment);
+            } else {
+                dmVersionService.createNextMinorVersion(site, path);
+            }
+        }
+    }
+
+    @Override
+    public void setLockBehaviourEnabled(boolean enabled) {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        if (enabled) {
+            persistenceManagerService.enableBehaviour(ContentModel.ASPECT_LOCKABLE);
         } else {
-            dmVersionService.createNextMinorVersion(site, path);
+            persistenceManagerService.disableBehaviour(ContentModel.ASPECT_LOCKABLE);
         }
     }
 
@@ -251,16 +266,18 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         }
         NodeRef envNode = persistenceManagerService.getNodeRef(envRepoRoot, path);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(siteRepoRootPath, path);
-        if (envNode == null) {
-            envNode = createLiveRepositoryCopy(envRepoRoot, path, nodeRef);
-        } else {
-            persistenceManagerService.copy(nodeRef, envNode);
+        if (nodeRef != null) {
+            if (envNode == null) {
+                envNode = createLiveRepositoryCopy(envRepoRoot, path, nodeRef);
+            } else {
+                persistenceManagerService.copy(nodeRef, envNode);
+            }
+            Map<QName, Serializable> nodeProps = persistenceManagerService.getProperties(envNode);
+            for (QName propName : DmConstants.SUBMITTED_PROPERTIES) {
+                nodeProps.remove(propName);
+            }
+            persistenceManagerService.setProperties(envNode, nodeProps);
         }
-        Map<QName, Serializable> nodeProps = persistenceManagerService.getProperties(envNode);
-        for (QName propName : DmConstants.SUBMITTED_PROPERTIES) {
-            nodeProps.remove(propName);
-        }
-        persistenceManagerService.setProperties(envNode, nodeProps);
     }
 
     protected NodeRef createEnvRepository(String site, String envRepoName) {

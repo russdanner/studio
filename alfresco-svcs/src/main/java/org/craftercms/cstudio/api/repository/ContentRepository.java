@@ -141,4 +141,6 @@ public interface ContentRepository {
     void clearRenamed(String site, String path);
 
     String getContentTypeClass(String site,  String path);
+
+    void setLockBehaviourEnabled(boolean enabled);
 }

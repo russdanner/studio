@@ -717,7 +717,11 @@ public interface PersistenceManagerService {
 
     public void deleteObjectStateForPaths(String site, List<String> paths);
 
+    public void disableBehaviour(QName className);
+
     public void disableBehaviour(NodeRef nodeRef, QName className);
+
+    public void enableBehaviour(QName className);
 
     public void enableBehaviour(NodeRef nodeRef, QName className);
 
