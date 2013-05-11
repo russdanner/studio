@@ -429,17 +429,19 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                         ServicesConfig servicesConfig = getService(ServicesConfig.class);
                         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
                         String fullPath = servicesConfig.getRepositoryRootPath(site) + submittedItem;
+                        NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
                         item = persistenceManagerService.getContentItem(fullPath);
                         if(item.isSubmittedForDeletion()) {
                             deleteDependencies = true;
                         }
-                        if (deleteDependencies) {
+                        if (deleteDependencies || persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
                             if (item.isContainer()) {
                                 String folderPath = submittedItem.replace(DmConstants.INDEX_FILE, "");
                                 // The purpose is to set children for this node.
                                 item = dmContentService.getItems(item, site, null, folderPath, -1, false, "default", true);
                             }
                         }
+
                         retrieveDependencyItems(item, includedDependencies, deleteDependencies, site);
                         addDependencyItem(site, items, includedItems, includedDependencies, item, comparator, deleteDependencies);
                         if (!delDep) {

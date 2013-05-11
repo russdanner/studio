@@ -643,10 +643,10 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                         //Set proper information of all renameItems before send them to GoLive 
                         for(int i=0;i<renameItems.size();i++){
                             DmDependencyTO renamedItem = renameItems.get(i);
-                            if (renamedItem.getScheduledDate() != null && !renamedItem.getScheduledDate().after(new Date())) {
-                                renamedItem.setNow(true);
-                            } else {
+                            if (renamedItem.getScheduledDate() != null && renamedItem.getScheduledDate().after(new Date())) {
                                 renamedItem.setNow(false);
+                            } else {
+                                renamedItem.setNow(true);
                             }
                             renameItems.set(i, renamedItem);
                         }
@@ -703,35 +703,36 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
     }
 
     protected List<DmDependencyTO> getChildrenForRenamedItem(String site, DmDependencyTO renameItem) {
-        List<DmDependencyTO> toRet = new FastList<DmDependencyTO>();
         ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
-        DmDependencyService dmDependencyService = getServicesManager().getService(DmDependencyService.class);
-        String fullPath = servicesConfig.getRepositoryRootPath(site) + renameItem.getUri();
-        NodeRef renamedNodeRef = persistenceManagerService.getNodeRef(fullPath);
-        FileInfo renamedFileInfo = persistenceManagerService.getFileInfo(renamedNodeRef);
-        if (renamedFileInfo.getName().equalsIgnoreCase(DmConstants.INDEX_FILE)) {
-            renamedNodeRef = persistenceManagerService.getPrimaryParent(renamedNodeRef).getParentRef();
-            renamedFileInfo = persistenceManagerService.getFileInfo(renamedNodeRef);
-            List<FileInfo> children = persistenceManagerService.list(renamedNodeRef);
-            for (FileInfo fileInfo : children) {                /*
-				 * if
-				 * (!fileInfo.getName().equalsIgnoreCase(DmConstants.INDEX_FILE
-				 * )) { if (fileInfo.isFolder()) { NodeRef nodeRef =
-				 * persistenceManagerService
-				 * .getChildByName(fileInfo.getNodeRef(),
-				 * ContentModel.ASSOC_CONTAINS, DmConstants.INDEX_FILE); if
-				 * (nodeRef != null) { fileInfo =
-				 * persistenceManagerService.getFileInfo(nodeRef); } } DmPathTO
-				 * childPathTO = new
-				 * DmPathTO(persistenceManagerService.getNodePath
-				 * (fileInfo.getNodeRef())); DmDependencyTO childDep =
-				 * dmDependencyService.getDependencies(site, null,
-				 * childPathTO.getRelativePath(), false, true); if (childDep !=
-				 * null) { toRet.add(childDep);
-				 * toRet.addAll(getChildrenForRenamedItem(site, childDep)); } }
-				 */
-                toRet.addAll(getChildrenDependenciesForRenamedItem(site, fileInfo));
+        String siteRoot = servicesConfig.getRepositoryRootPath(site);
+        List<DmDependencyTO> toRet = new FastList<DmDependencyTO>();
+        List<DmDependencyTO> children = renameItem.getChildren();
+        Date date = renameItem.getScheduledDate();
+        if (children != null) {
+            Iterator<DmDependencyTO> childItr = children.iterator();
+            while (childItr.hasNext()) {
+                DmDependencyTO child = childItr.next();
+                Date pageDate = child.getScheduledDate();
+                if ((date == null && pageDate != null) || (date != null && !date.equals(pageDate))) {
+                    if (!renameItem.isNow()) {
+                        child.setNow(false);
+                        if (date != null && (pageDate != null && pageDate.before(date))) {
+                            child.setScheduledDate(date);
+                        }
+                    }
+                    toRet.add(child);
+                    List<DmDependencyTO> childDeps = child.flattenChildren();
+                    for (DmDependencyTO childDep : childDeps) {
+                        String depPath = siteRoot + childDep.getUri();
+                        ObjectStateService.State depState = persistenceManagerService.getObjectState(depPath);
+                        if (ObjectStateService.State.isUpdateOrNew(depState)) {
+                            toRet.add(childDep);
+                        }
+                    }
+                    child.setReference(false);
+                    childItr.remove();
+                }
             }
         }
         return toRet;

@@ -576,34 +576,10 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
 
     @Override
     public void cancelScheduledItem(String site, String path) {
-        ServicesConfig servicesConfig = getService(ServicesConfig.class);
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        String liveRepoPath = servicesConfig.getLiveRepositoryPath(site);
-        String fullPath = liveRepoPath + path;
-        NodeRef liveRepoNode = persistenceManagerService.getNodeRef(fullPath);
-        if (liveRepoNode != null) {
-            List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(liveRepoNode);
-            if (events != null && events.size() > 0) {
-                for (PublishingEvent event : events) {
-                    if (event.getScheduledTime() != null && event.getScheduledTime().after(Calendar.getInstance())) {
-                        Set<NodeRef> eventNodes = event.getPackage().getNodesToPublish();
-                        List<NodeRef> nodesToPublish = new FastList<NodeRef>();
-                        for (NodeRef eventNode : eventNodes) {
-                            if (!eventNode.equals(liveRepoNode)) nodesToPublish.add(eventNode);
-                        }
-                        Calendar scheduledDate = event.getScheduledTime();
-                        String channelId = event.getChannelId();
-                        persistenceManagerService.cancelPublishingEvent(event.getId());
-                        if (nodesToPublish.size() > 0) {
-                            PublishingDetails publishingDetails = persistenceManagerService.createPublishingDetails();
-                            publishingDetails.addNodesToPublish(nodesToPublish);
-                            publishingDetails.setSchedule(scheduledDate);
-                            publishingDetails.setPublishChannelId(channelId);
-                            persistenceManagerService.scheduleNewEvent(publishingDetails);
-                        }
-                    }
-                }
-            }
+        try {
+            deploymentService.cancelWorkflow(site, path);
+        } catch (DeploymentException e) {
+            logger.error(String.format("Error while canceling workflow for content at %s, site %s", path, site), e);
         }
     }
 

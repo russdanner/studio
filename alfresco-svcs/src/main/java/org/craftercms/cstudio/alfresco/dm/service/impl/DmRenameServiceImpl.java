@@ -277,11 +277,13 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         Set<String>uris = new HashSet<String>();
         Map<String, String> submittedBy = new FastMap<String, String>();
         DmContentService dmContentService = getService(DmContentService.class);
+        DmPublishService dmPublishService = getService(DmPublishService.class);
         SearchService searchService = getService(SearchService.class);
         for (String path : paths) {
             String uri = path.substring(pathPrefix.length());
             uris.add(uri);
             DmUtils.addToSubmittedByMapping(persistenceManagerService, dmContentService, searchService, site, uri, submittedBy, approver);
+            dmPublishService.cancelScheduledItem(site, uri);
         }
         GoLiveContext context = new GoLiveContext(approver, site);
         SubmitLifeCycleOperation operation = null;
