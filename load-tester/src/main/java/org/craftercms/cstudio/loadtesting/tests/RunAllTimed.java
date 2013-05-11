@@ -78,7 +78,7 @@ public class RunAllTimed extends TestingBase {
 		ArrayList<String> contents = new ArrayList<String>();
 		int numOfItems = rand.nextInt(max) + 1;
 		int numOfSkips = rand.nextInt(maxSkipGoLiveCount - minSkipGoLiveCount + 1) + minSkipGoLiveCount;
-		int currItems = 0;
+		int totalLive = 0;
 		int currSkips = 0;
 		do {
 			System.out.println("[COUNT] " + username + ": total count: " + totalCount + ", number of Items to go live: " + numOfItems);
@@ -109,14 +109,13 @@ public class RunAllTimed extends TestingBase {
 						currSkips++;
 					} else {
 						contents.add(contentPath + "/index.xml");
-						currItems++;
 					}
 					if (totalItems == 1) {
 						contentPath = TestingConstants.ROOT_PATH + destination;
 						folderName = destination.substring(destination.lastIndexOf('/') + 1);
 						writeContent.writeContent(contentPath, baseFolderName, baseFolderType, "index.xml", folderName, false);
 					}
-					System.out.println("[COUNT] " + username + ": currItems: " + currItems + ", numToGoLive: " + numOfItems + ", totalItems: " + totalItems + ", currSkips: " + currSkips + ", total Skips: " + numOfSkips);
+					System.out.println("[COUNT] " + username + ": currItems: " + contents.size() + ", numToGoLive: " + numOfItems + ", totalItems: " + totalItems + ", currSkips: " + currSkips + ", total Skips: " + numOfSkips);
 				} catch (Exception e) {
 					System.out.println("[FAILURE] " + username + ": write content " + contentPath + '\n' + e.getMessage());
 				}
@@ -124,16 +123,16 @@ public class RunAllTimed extends TestingBase {
 				Thread.sleep(timeInSec * 1000);
 				
 				// once it reaches a certain number of items, go live and reset the counter
-				if (numOfItems == currItems) {
+				if (numOfItems == contents.size()) {
 					System.out.println("[COUNT] " + username + ": items created: " + contents);
 					try {
 						goLive(goLive, contents);
+						totalLive += contents.size();
 					} catch (Exception e) {
 						System.out.println("[FAILURE] " + username + ": go live of " + contents);
 					}
 					numOfItems = rand.nextInt(max) + 1;
 					numOfSkips = rand.nextInt(maxSkipGoLiveCount - minSkipGoLiveCount + 1) + minSkipGoLiveCount;
-					currItems = 0;
 					currSkips = 0;
 					contents.clear();
 					Thread.sleep(timeInSec * 1000);
@@ -159,6 +158,7 @@ public class RunAllTimed extends TestingBase {
 		if (!contents.isEmpty()) {
 			try {
 				goLive(goLive, contents);
+				totalLive += contents.size();
 			} catch (Exception e) {
 				System.out.println("[FAILURE] " + username + ": go live of " + contents);
 			}
@@ -166,6 +166,7 @@ public class RunAllTimed extends TestingBase {
 		}
 		if (!keepFolders)
 			deleteOne(destination, 5);
+		System.out.println("[TOTAL] " + username + ": items created: " + totalItems + ", items published: " + totalLive);
 	}
 
 	/**
