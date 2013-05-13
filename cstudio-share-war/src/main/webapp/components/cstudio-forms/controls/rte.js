@@ -572,8 +572,12 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 	 * handle element clicks
 	 */
 	_handleElementDoubleClick: function(editor, event) {
-		if(event.target.nodeName == "IMG" || event.target.nodeName == "img") {
+		var n = event.target;
+
+		if(n.nodeName == "IMG") {
 			this._handleImageDoubleClick(editor, event);
+		} else if (n.nodeName == "A") {
+			editor.execCommand("mceLink");
 		}
 	},
 
