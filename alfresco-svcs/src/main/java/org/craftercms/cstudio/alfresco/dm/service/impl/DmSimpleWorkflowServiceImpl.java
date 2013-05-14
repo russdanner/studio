@@ -27,9 +27,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.Status;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -511,6 +509,34 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         }
     }
 
+    public boolean isRescheduleRequest(DmDependencyTO dependencyTO, String site) {
+        if ((dependencyTO.isDeleted() || (!dependencyTO.isSubmitted() && !dependencyTO.isInProgress()))) {
+            DmContentService dmContentService = getService(DmContentService.class);
+            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+            String path = dmContentService.getContentFullPath(site, dependencyTO.getUri());
+            try {
+                DmContentItemTO to = persistenceManagerService.getContentItem(path);
+                Date newDate = dependencyTO.getScheduledDate();
+                Date oldDate = to.getScheduledDateAsDate();
+                return !areEqual(oldDate, newDate);
+            } catch (ServiceException e) {
+                logger.warn("Error while checking for rescheduledRequest",e);
+            }
+
+        }
+        return false;
+    }
+
+    protected boolean areEqual(Date oldDate, Date newDate) {
+        if (oldDate == null && newDate == null) {
+            return true;
+        }
+        if (oldDate != null && newDate != null) {
+            return oldDate.equals(newDate);
+        }
+        return false;
+    }
+
     protected void applyDeleteDependencyRule(String site, SubmitPackage pack, DmDependencyTO dmDependencyTO) {
         pack.addToPackage(dmDependencyTO);
         DmContentService dmContentService = getService(DmContentService.class);
@@ -580,32 +606,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         String rootPath = servicesConfig.getRepositoryRootPath(site);
         String fullPath = rootPath + url;
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
-       
-        String currentUser = persistenceManagerService.getCurrentUserName();
-        List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(nodeRef);
-        if (events != null && events.size() > 0) {
-            for (PublishingEvent event : events) {
-                if (event.getStatus().equals(Status.SCHEDULED)) {
-                    Set<NodeRef> eventNodes = event.getPackage().getNodesToPublish();
-                    List<NodeRef> nodesToPublish = new FastList<NodeRef>();
-                    for (NodeRef eventNode : eventNodes) {
-                        if (!eventNode.equals(nodeRef)) nodesToPublish.add(eventNode);
-                    }
-                    Calendar scheduledDate = event.getScheduledTime();
-                    String channelId = event.getChannelId();
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                    persistenceManagerService.cancelPublishingEvent(event.getId());
-                    if (nodesToPublish.size() > 0) {
-                        PublishingDetails publishingDetails = persistenceManagerService.createPublishingDetails();
-                        publishingDetails.addNodesToPublish(nodesToPublish);
-                        publishingDetails.setSchedule(scheduledDate);
-                        publishingDetails.setPublishChannelId(channelId);
-                        persistenceManagerService.scheduleNewEvent(publishingDetails);
-                    }
-                    AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
-                }
-            }
-        }
+        _cancelWorkflow(site, nodeRef);
         return true;
     }
 

@@ -19,6 +19,7 @@ package org.craftercms.cstudio.alfresco.dm.service.impl;
 import javolution.util.FastList;
 import javolution.util.FastMap;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
@@ -578,6 +579,11 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
     public void cancelScheduledItem(String site, String path) {
         try {
             deploymentService.cancelWorkflow(site, path);
+            ServicesConfig servicesConfig = getService(ServicesConfig.class);
+            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+            String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
+            NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+            persistenceManagerService.removeProperty(nodeRef, WCMWorkflowModel.PROP_LAUNCH_DATE);
         } catch (DeploymentException e) {
             logger.error(String.format("Error while canceling workflow for content at %s, site %s", path, site), e);
         }
