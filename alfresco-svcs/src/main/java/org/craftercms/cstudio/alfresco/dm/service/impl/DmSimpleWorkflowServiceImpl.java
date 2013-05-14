@@ -511,6 +511,34 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         }
     }
 
+    public boolean isRescheduleRequest(DmDependencyTO dependencyTO, String site) {
+        if ((dependencyTO.isDeleted() || (!dependencyTO.isSubmitted() && !dependencyTO.isInProgress()))) {
+            DmContentService dmContentService = getService(DmContentService.class);
+            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+            String path = dmContentService.getContentFullPath(site, dependencyTO.getUri());
+            try {
+                DmContentItemTO to = persistenceManagerService.getContentItem(path);
+                Date newDate = dependencyTO.getScheduledDate();
+                Date oldDate = to.getScheduledDateAsDate();
+                return !areEqual(oldDate, newDate);
+            } catch (ServiceException e) {
+                logger.warn("Error while checking for rescheduledRequest",e);
+            }
+
+        }
+        return false;
+    }
+
+    protected boolean areEqual(Date oldDate, Date newDate) {
+        if (oldDate == null && newDate == null) {
+            return true;
+        }
+        if (oldDate != null && newDate != null) {
+            return oldDate.equals(newDate);
+        }
+        return false;
+    }
+
     protected void applyDeleteDependencyRule(String site, SubmitPackage pack, DmDependencyTO dmDependencyTO) {
         pack.addToPackage(dmDependencyTO);
         DmContentService dmContentService = getService(DmContentService.class);
