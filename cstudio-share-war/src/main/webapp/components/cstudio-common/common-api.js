@@ -438,12 +438,9 @@ YConnect.failureEvent.subscribe(function() {
                     dialogue.centreY();
 
                     //set z-index to 101 so that dialog will display over context nav bar
-                    if (setZIndex && dialogue.element && dialogue.element.style.zIndex != "") {
-                        if (!isNaN(dialogue.element.style.zIndex) && parseInt(dialogue.element.style.zIndex, 10) >= 102) {
-                        } else {
-                            dialogue.element.style.zIndex = "102";
-                            dialogue.mask.style.zIndex = "101";
-                        }
+                    if (setZIndex && dialogue.element && dialogue.element.style.zIndex != "") {                        
+                        dialogue.element.style.zIndex = "102000";
+                        dialogue.mask.style.zIndex = "101000";
                     }
                 }
                 var params = ["component-dialogue"];
@@ -519,7 +516,7 @@ YConnect.failureEvent.subscribe(function() {
                             dialogue.show();
                         });
                     }
-                });
+                }, true);
             },
 
 			/**

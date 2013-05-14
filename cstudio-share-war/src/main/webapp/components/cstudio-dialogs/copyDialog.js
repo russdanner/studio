@@ -39,6 +39,7 @@ CStudioAuthoring.Dialogs.DialogCopy = CStudioAuthoring.Dialogs.DialogCopy || {
         this.item = content.item;
         this.dialog = this.createDialog(site, this.item);
         this.dialog.show();
+        this.dialog.cfg.setProperty("zIndex", 100001);  // Update the z-index value to make it go over the site content nav
 
         //set focus on Copy button
         var copyButton = YDom.get("copyButton");
@@ -169,22 +170,14 @@ CStudioAuthoring.Dialogs.DialogCopy = CStudioAuthoring.Dialogs.DialogCopy || {
             modal:true,
             close:false,
             constraintoviewport : true,
-            underlay:"none"
+            underlay:"none",
+            autofillheight: null
         });
 
         // Render the Dialog
         content_type_dialog.setBody("bd");
         content_type_dialog.render();
 
-        content_type_dialog.cfg.subscribe("configChanged", function (p_sType, p_aArgs) {
-            var aProperty = p_aArgs[0],
-                    sPropertyName = aProperty[0],
-                    oPropertyValue = aProperty[1];
-            if (sPropertyName == 'zindex') {
-                var siteContextNavZIndex = 100;
-                YDom.get("cstudio-wcm-popup-div").parentNode.style.zIndex = oPropertyValue + siteContextNavZIndex;
-            }
-        });     
         var eventParams = {
             self: this
             //			path: path,
