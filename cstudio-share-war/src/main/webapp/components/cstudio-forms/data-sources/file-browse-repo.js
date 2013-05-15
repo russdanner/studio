@@ -44,9 +44,9 @@ YAHOO.extend(CStudioForms.Datasources.FileBrowseRepo, CStudioForms.CStudioFormDa
 				control.addContainerEl = null;
 				control.containerEl.removeChild(addContainerEl);
 				
-			    CStudioAuthoring.Operations.uploadAsset(CStudioAuthoringContext.site, _self.repoPath, true, { 
+			    CStudioAuthoring.Operations.uploadAsset(CStudioAuthoringContext.site, _self.processPathsForMacros(_self.repoPath), true, { 
 					success: function(fileData) {
-						var item = _self.repoPath + "/" + fileData.fileName;
+						var item = _self.processPathsForMacros(_self.repoPath) + "/" + fileData.fileName;
 						control.insertItem(item, item, fileData.fileExtension);
 						control._renderItems();
 					}, 
@@ -57,10 +57,6 @@ YAHOO.extend(CStudioForms.Datasources.FileBrowseRepo, CStudioForms.CStudioFormDa
 					context: this });	
 			}, createEl);		   	 
 			
-			
-				
-											   	 
-	
 			 var browseEl = document.createElement("div");
 			 browseEl.innerHTML = "Browse for Existing";
 			 YAHOO.util.Dom.addClass(browseEl, 'cstudio-form-control-node-selector-add-container-item');
@@ -70,7 +66,7 @@ YAHOO.extend(CStudioForms.Datasources.FileBrowseRepo, CStudioForms.CStudioFormDa
 				control.addContainerEl = null;
 				control.containerEl.removeChild(addContainerEl);
 
-				CStudioAuthoring.Operations.openBrowse("", _self.repoPath, "-1", "select", true, { 
+				CStudioAuthoring.Operations.openBrowse("", _self.processPathsForMacros(_self.repoPath), "-1", "select", true, { 
 					success: function(searchId, selectedTOs) {
 
 						for(var i=0; i<selectedTOs.length; i++) {

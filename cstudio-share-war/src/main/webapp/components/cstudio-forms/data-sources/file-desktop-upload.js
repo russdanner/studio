@@ -27,10 +27,18 @@ YAHOO.extend(CStudioForms.Datasources.FileDesktopUpload, CStudioForms.CStudioFor
 		var path = this._self.repoPath;
 		var isUploadOverwrite = true;
 
+		for(var i=0; i<this.properties.length; i++) {
+			if(this.properties[i].name == "repoPath") {
+				path = this.properties[i].value;
+			
+				path = this.processPathsForMacros(path);
+			}
+		}
+
 		var callback = { 
 			success: function(fileData) {
 				if (control) {
-					control.insertItem(this.context._self.repoPath + "/" + fileData.fileName, this.context._self.repoPath + "/" + fileData.fileName, fileData.fileExtension);
+					control.insertItem(path + "/" + fileData.fileName, path + "/" + fileData.fileName, fileData.fileExtension);
 					control._renderItems();
 				}
 			},
@@ -44,7 +52,7 @@ YAHOO.extend(CStudioForms.Datasources.FileDesktopUpload, CStudioForms.CStudioFor
 			context: this 
 		};
 
-		CStudioAuthoring.Operations.uploadAsset(site, this._self.repoPath, isUploadOverwrite, callback);
+		CStudioAuthoring.Operations.uploadAsset(site, path, isUploadOverwrite, callback);
 	},
 
 	edit: function(key, control) {
@@ -54,11 +62,19 @@ YAHOO.extend(CStudioForms.Datasources.FileDesktopUpload, CStudioForms.CStudioFor
 		var path = this._self.repoPath;
 		var isUploadOverwrite = true;
 
+		for(var i=0; i<this.properties.length; i++) {
+			if(this.properties[i].name == "repoPath") {
+				path = this.properties[i].value;
+
+				path = this.processPathsForMacros(path);
+			}
+		}
+
 		var callback = { 
 			success: function(fileData) {
 				if (control) {
 					control.deleteItem(key);
-					control.insertItem(this.context._self.repoPath + "/" + fileData.fileName, this.context._self.repoPath + "/" + fileData.fileName, fileData.fileExtension);
+					control.insertItem(path + "/" + fileData.fileName, path + "/" + fileData.fileName, fileData.fileExtension);
 					control._renderItems();
 				}
 			},
@@ -71,8 +87,8 @@ YAHOO.extend(CStudioForms.Datasources.FileDesktopUpload, CStudioForms.CStudioFor
 
 			context: this 
 		};
-		
-		CStudioAuthoring.Operations.uploadAsset(site, this._self.repoPath, isUploadOverwrite, callback);
+
+		CStudioAuthoring.Operations.uploadAsset(site, path, isUploadOverwrite, callback);
 	},
 
     getLabel: function() {
