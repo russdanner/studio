@@ -5468,7 +5468,7 @@ YConnect.failureEvent.subscribe(function() {
 				return scheduledDate;
 			},
 
-			buildToolTip: function (itemNameLabel, label, style, status, editedDate, modifier, schedDate, lockOwner) {
+            buildToolTip: function (itemNameLabel, label, style, status, editedDate, modifier, lockOwner, schedDate) {
 				var schedInfo = "";
 				if (schedDate) {
 				schedInfo = CStudioAuthoring.StringUtils.format(["</tr><tr>",
@@ -5573,8 +5573,8 @@ YConnect.failureEvent.subscribe(function() {
 									statusStr,
 									formattedEditDate,
 									modifier,
-									formattedSchedDate,
-                                    lockOwner);
+                                    lockOwner,
+                                    formattedSchedDate);
 				} else {
 
 					retTitle = this.buildToolTip(itemNameLabel, label,
