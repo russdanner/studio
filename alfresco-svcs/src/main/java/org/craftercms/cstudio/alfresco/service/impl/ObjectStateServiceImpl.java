@@ -368,6 +368,35 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
     }
 
     @Override
+    public boolean isScheduled(String path) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        return isScheduled(persistenceManagerService.getNodeRef(path));
+    }
+
+    @Override
+    public boolean isScheduled(NodeRef nodeRef) {
+        GeneralLockService nodeLockService = getService(GeneralLockService.class);
+        ObjectStateTO state;
+        nodeLockService.lock(nodeRef.getId());
+        try {
+            state = objectStateDAOService.getObjectState(nodeRef.getId());
+            if (state == null) {
+                PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+                DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
+                objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                state = objectStateDAOService.getObjectState(nodeRef.getId());
+            }
+        } finally {
+            nodeLockService.unlock(nodeRef.getId());
+        }
+        if (state != null) {
+            return ObjectStateService.State.isScheduled(state.getState());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public State[][] getTransitionMapping() {
         return this.transitionTable;
     }

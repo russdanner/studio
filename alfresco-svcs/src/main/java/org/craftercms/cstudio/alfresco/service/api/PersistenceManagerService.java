@@ -728,4 +728,8 @@ public interface PersistenceManagerService {
     public void transitionBulk(List<String> objectIds, ObjectStateService.TransitionEvent event, ObjectStateService.State defaultTargetState);
 
     public void createLiveRepository(String site);
+
+    public boolean isScheduled(String fullPath);
+
+    public boolean isScheduled(NodeRef nodeRef);
 }

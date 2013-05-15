@@ -1614,4 +1614,71 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
     private List<CopyToEnvironmentItem> findScheduledItems(String site) {
         return this._deploymentService.getScheduledItems(site);
     }
+
+    @Override
+    public List<DmContentItemTO> getWorkflowAffectedPaths(String site, String path) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
+        List<String> affectedPaths = new ArrayList<String>();
+        List<DmContentItemTO> affectedItems = new ArrayList<DmContentItemTO>();
+        if (persistenceManagerService.isScheduled(fullPath)) {
+            affectedPaths.add(path);
+            boolean isNew = persistenceManagerService.isNew(fullPath);
+            NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+            boolean isRenamed = persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED);
+            if (isNew || isRenamed) {
+                getMandatoryChildren(fullPath, affectedPaths);
+            }
+
+            List<String> dependencyPaths = getDependencyCandidates(site, affectedPaths);
+            affectedPaths.addAll(dependencyPaths);
+            Set<String> candidates = new HashSet<String>();
+            candidates.addAll(affectedPaths);
+            List<String> filteredPaths = new ArrayList<String>();
+            for (String cp : candidates) {
+                String candidatePath = servicesConfig.getRepositoryRootPath(site) + cp;
+                if (persistenceManagerService.isScheduled(candidatePath)) {
+                    filteredPaths.add(cp);
+                }
+            }
+            affectedItems = getWorkflowAffectedItems(site, filteredPaths);
+        }
+
+        return affectedItems;
+    }
+
+    private void getMandatoryChildren(String fullPath, List<String> affectedPaths) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        String parentPath = fullPath.replace("/" + DmConstants.INDEX_FILE, "");
+        List<FileInfo> children = persistenceManagerService.list(parentPath);
+        for (FileInfo child : children) {
+            NodeRef childRef = child.getNodeRef();
+            String childPath = persistenceManagerService.getNodePath(childRef);
+            DmPathTO dmPathTO = new DmPathTO(childPath);
+            if (!affectedPaths.contains(dmPathTO.getRelativePath())) {
+                affectedPaths.add(dmPathTO.getRelativePath());
+                getMandatoryChildren(childPath, affectedPaths);
+            }
+        }
+    }
+
+    private List<String> getDependencyCandidates(String site, List<String> affectedPaths) {
+        List<String> dependenciesPaths = new ArrayList<String>();
+        for (String path : affectedPaths) {
+            getAllDependenciesRecursive(site, path, dependenciesPaths);
+        }
+        return dependenciesPaths;
+    }
+
+    protected void getAllDependenciesRecursive(String site, String path, List<String> dependecyPaths) {
+        DmDependencyService dmDependencyService = _servicesManager.getService(DmDependencyService.class);
+        List<String> depPaths = dmDependencyService.getDependencyPaths(site, path);
+        for (String depPath : depPaths) {
+            if (!dependecyPaths.contains(depPath)) {
+                dependecyPaths.add(depPath);
+                getAllDependenciesRecursive(site, depPath, dependecyPaths);
+            }
+        }
+    }
 }

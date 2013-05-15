@@ -1842,6 +1842,31 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
+    public boolean isScheduled(String fullPath) {
+        NodeRef nodeRef = getNodeRef(fullPath);
+        if (nodeRef == null) {
+            return false;
+        }
+        return isScheduled(nodeRef);
+    }
+
+    @Override
+    public boolean isScheduled(NodeRef nodeRef) {
+        if (nodeRef == null) {
+            return false;
+        }
+        ObjectStateService objectStateService = getService(ObjectStateService.class);
+        FileInfo fileInfo = getFileInfo(nodeRef);
+        if (fileInfo.isFolder()) {
+            return false;
+        }
+        if (objectStateService.isScheduled(nodeRef)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void initializeCacheScope(String site) {
         initializeCacheScope(site, 5000);
     }

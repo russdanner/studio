@@ -1334,11 +1334,17 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         if (node != null) {
             if (enableNewDeploymentEngine) {
                 DmPathTO dmPathTO = new DmPathTO(fullPath);
-                try {
-                    _deploymentService.cancelWorkflow(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
-                } catch (DeploymentException e) {
-                    logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
+                List<DmContentItemTO> allItemsToCancel = getWorkflowAffectedPaths(site, dmPathTO.getRelativePath());
+                List<String> nodeRefs = new ArrayList<String>();
+                for (DmContentItemTO item : allItemsToCancel) {
+                    try {
+                        _deploymentService.cancelWorkflow(site, item.getUri());
+                        nodeRefs.add(item.getBrowserUri());
+                    } catch (DeploymentException e) {
+                        logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
+                    }
                 }
+                persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.REJECT, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
             } else {
                 List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(node);
                 if (events != null && events.size() > 0) {

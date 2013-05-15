@@ -17,11 +17,10 @@
 package org.craftercms.cstudio.alfresco.service.api;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.craftercms.cstudio.alfresco.to.ObjectStateTO;
 
 import java.util.Arrays;
 import java.util.List;
-
-import org.craftercms.cstudio.alfresco.to.ObjectStateTO;
 
 public interface ObjectStateService {
 
@@ -289,4 +288,7 @@ public interface ObjectStateService {
      */
     List<ObjectStateTO> getObjectStateByStates(String site, List<ObjectStateService.State> states);
 
+    public boolean isScheduled(String path);
+
+    public boolean isScheduled(NodeRef nodeRef);
 }
