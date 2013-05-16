@@ -619,7 +619,7 @@ var CStudioForms = CStudioForms || function() {
                             var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
 
                             if((edit && edit=="true") || readOnly == true){
-                                CStudioAuthoring.Service.getContent(path, false, getContentCallback);
+                                CStudioAuthoring.Service.getContent(path, !readOnly, getContentCallback);
                             }
 							else {
 								// new content item
