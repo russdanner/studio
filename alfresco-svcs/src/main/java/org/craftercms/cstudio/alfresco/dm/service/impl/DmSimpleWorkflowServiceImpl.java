@@ -1633,8 +1633,12 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
 
             List<String> dependencyPaths = getDependencyCandidates(site, affectedPaths);
             affectedPaths.addAll(dependencyPaths);
-            Set<String> candidates = new HashSet<String>();
-            candidates.addAll(affectedPaths);
+            List<String> candidates = new ArrayList<String>();
+            for (String p : affectedPaths) {
+                if (!candidates.contains(p)) {
+                    candidates.add(p);
+                }
+            }
             List<String> filteredPaths = new ArrayList<String>();
             for (String cp : candidates) {
                 String candidatePath = servicesConfig.getRepositoryRootPath(site) + cp;

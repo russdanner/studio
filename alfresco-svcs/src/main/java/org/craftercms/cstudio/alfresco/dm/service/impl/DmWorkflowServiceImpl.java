@@ -1339,7 +1339,8 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
                 for (DmContentItemTO item : allItemsToCancel) {
                     try {
                         _deploymentService.cancelWorkflow(site, item.getUri());
-                        nodeRefs.add(item.getBrowserUri());
+                        NodeRef nodeRef = new NodeRef(item.getNodeRef());
+                        nodeRefs.add(nodeRef.getId());
                     } catch (DeploymentException e) {
                         logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
                     }
