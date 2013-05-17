@@ -205,11 +205,11 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
                     InputStream existingContent = persistenceManagerService.getReader(parentContent).getContentInputStream();
                     String existingMd5 = DmUtils.getMd5ForFile(existingContent);
                     String newMd5 = DmUtils.getMd5ForFile(input);
-                    updateLastEditedProperties(parentContent,user);
                     if (!existingMd5.equals(newMd5)) {
                         updateFile(site, parentContent, contentPath, input, user, isPreview, unlock);
                         content.addProperty(DmConstants.KEY_ACTIVITY_TYPE, ActivityService.ActivityType.UPDATED.toString());
                     } else {
+                        updateLastEditedProperties(parentContent,user);
                         if (!isPreview) {
                             DmPathTO pathTO = new DmPathTO(contentPath);
                             if (cancelWorkflow(site, pathTO.getRelativePath())) {
@@ -246,11 +246,11 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
                         InputStream existingContent = persistenceManagerService.getReader(fileNode).getContentInputStream();
                         String existingMd5 = DmUtils.getMd5ForFile(existingContent);
                         String newMd5 = DmUtils.getMd5ForFile(input);
-                        updateLastEditedProperties(fileNode,user);
                         if (!existingMd5.equals(newMd5)) {
                             updateFile(site, fileNode, fileFullPath, input, user, isPreview, unlock);
                             content.addProperty(DmConstants.KEY_ACTIVITY_TYPE, ActivityService.ActivityType.UPDATED.toString());
                         } else {
+                            updateLastEditedProperties(fileNode,user);
                             if (!isPreview) {
                                 DmPathTO pathTO = new DmPathTO(fileFullPath);
                                 if (cancelWorkflow(site, pathTO.getRelativePath())) {
@@ -349,6 +349,7 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
                 Map<QName, Serializable> nodeProperties = new FastMap<QName, Serializable>();
                 nodeProperties.put(CStudioContentModel.PROP_CONTENT_TYPE, contentType);
                 nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
+                nodeProperties.put(ContentModel.PROP_MODIFIED, new Date());
                 nodeProperties.put(CStudioContentModel.PROP_CREATED_BY, user);
                 nodeProperties.put(ContentModel.PROP_MODIFIER, user);
                 nodeProperties.put(CStudioContentModel.PROP_STATUS, DmConstants.DM_STATUS_IN_PROGRESS);
@@ -471,6 +472,7 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
             Map<QName, Serializable> nodeProperties = persistenceManagerService.getProperties(contentNode);
             nodeProperties.put(ContentModel.PROP_MODIFIER, user);
             nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
+            nodeProperties.put(ContentModel.PROP_MODIFIED, new Date());
             nodeProperties.put(ContentModel.PROP_AUTO_VERSION, false);
             nodeProperties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
             persistenceManagerService.setProperties(contentNode, nodeProperties);
