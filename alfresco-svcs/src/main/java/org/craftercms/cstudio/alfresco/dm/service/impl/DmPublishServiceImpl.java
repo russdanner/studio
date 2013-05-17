@@ -441,6 +441,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         }
         try {
             deploymentService.delete(site, "live", paths, approver, scheduleDate);
+            getService(DmContentService.class).generateDeleteActivity(site,paths,approver);
         } catch (DeploymentException ex) {
             logger.error("Unable to delete files due a error ",ex);
         }

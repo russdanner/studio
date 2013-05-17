@@ -395,4 +395,5 @@ public interface DmContentService {
 
 	boolean isPathFullPath(String path);
 
+    void generateDeleteActivity(String site, List<String> paths, String approver);
 }

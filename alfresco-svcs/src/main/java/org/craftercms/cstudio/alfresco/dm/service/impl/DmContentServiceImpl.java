@@ -1991,6 +1991,16 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
         }
     }
 
+    @Override
+    public void generateDeleteActivity(String site, List<String> paths, String approver) {
+        for (String path : paths) {
+            DmPathTO dmPath = new DmPathTO();
+            dmPath.setRelativePath(path);
+            dmPath.setAreaName(DmConstants.DM_WORK_AREA_REPO_FOLDER);
+            generateDeleteActivity(site, dmPath, approver);
+        }
+    }
+
     /**
      * generate delete activity
      *
