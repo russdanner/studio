@@ -17,102 +17,106 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.util;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.alfresco.service.namespace.NamespaceService;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.craftercms.cstudio.alfresco.service.api.ActivityService;
 import org.craftercms.cstudio.alfresco.service.api.ActivityService.ActivityType;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 
 public class ContentUtils {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ContentUtils.class);
 
-	/**
-	 * release resources
-	 * 
-	 * @param in
-	 */
-	public static void release(final InputStream in, final OutputStream out) {
-		try {
-			if (in != null) {
-				in.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to relase a resource.", e);
-		}
-		try {
-			if (out != null) {
-				out.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to relase a resource.", e);
-		}
-	}
+    /**
+     * release resources
+     *
+     * @param in
+     */
+    public static void release(final InputStream in, final OutputStream out) {
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to release a resource.", e);
+        }  finally {
+            IOUtils.closeQuietly(in);
+        }
+        try {
+            if (out != null) {
+                out.close();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to release a resource.", e);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+    }
 
-	/**
-	 * release resource
-	 * 
-	 * @param in
-	 */
-	public static void release(InputStream in) {
-		try {
-			if (in != null) {
-				in.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to relase a resource.", e);
-		}
-	}
+    /**
+     * release resource
+     *
+     * @param in
+     */
+    public static void release(InputStream in) {
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to relase a resource.", e);
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+    }
 
-	/**
-	 * release resource
-	 * 
-	 * @param out
-	 */
-	public static void release(OutputStream out) {
-		try {
-			if (out != null) {
-				out.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to relase a resource.", e);
-		}
-	}
+    /**
+     * release resource
+     *
+     * @param out
+     */
+    public static void release(OutputStream out) {
+        try {
+            if (out != null) {
+                out.close();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to relase a resource.", e);
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+    }
 
 
-	/**
-	 * release a reader
-	 * 
-	 * @param reader
-	 */
-	public static void release(Reader reader) {
-		try {
-			if (reader != null) {
-				reader.close();
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to relase a reader.", e);
-		}
-	}
+    /**
+     * release a reader
+     *
+     * @param reader
+     */
+    public static void release(Reader reader) {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to relase a reader.", e);
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
+    }
+
 	/**
 	 * check if two serializable values are the same
 	 * 

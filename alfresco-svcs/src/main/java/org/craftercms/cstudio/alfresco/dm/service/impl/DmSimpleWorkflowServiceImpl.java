@@ -755,6 +755,8 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
             // group submitted items into packages by their scheduled date
             Map<Date, List<DmDependencyTO>> groupedPackages = groupByDate(submittedItems, now);
 
+            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+            persistenceManagerService.disableBehaviour(ContentModel.ASPECT_LOCKABLE);
             for (Date scheduledDate : groupedPackages.keySet()) {
                 List<DmDependencyTO> goLivePackage = groupedPackages.get(scheduledDate);
                 if (goLivePackage != null) {
@@ -817,6 +819,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
                     }
                 }
             }
+            persistenceManagerService.enableBehaviour(ContentModel.ASPECT_LOCKABLE);
         }
         if (logger.isDebugEnabled()) {
             long end = System.currentTimeMillis();
