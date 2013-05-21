@@ -1353,38 +1353,38 @@ YConnect.failureEvent.subscribe(function() {
                 },"","auto");
 			},			
 
-			openCopyDialog:function(site, uri, callback,args) {
-				var folderPath = uri.substring(0, uri.lastIndexOf("index.xml"));                
-                var cut= args.cut;
-				var openCopyDialog = {
-					success:function(response) {
-					   var copyTree= eval("(" + response.responseText + ")");
-						var submitDialogCb = {
-							moduleLoaded: function(moduleName, dialogClass, moduleConfig) {
+            openCopyDialog:function(site, uri, callback, args) {
 
-								dialogClass.showDialog(moduleConfig.site,moduleConfig.contentItems,cut);
-							}
-						}
+                var cut = false,  // args.cut was the original value, but this parameter is always returning undefined
+                    folderPath = uri.substring(0, uri.lastIndexOf("index.xml")),
+                    serviceUri = "/proxy/alfresco/cstudio/wcm/content/get-pages?site=" + site + "&path=" + folderPath + "&depth=-1&order=default",
+                    getCopyTreeItemRequest = CStudioAuthoring.Service.createServiceUri(serviceUri);
 
-						var moduleConfig = {
-							contentItems: copyTree,
-							site: site
-						};
+                    submitDialogCb = {
+                        moduleLoaded: function(moduleName, dialogClass, moduleConfig) {
+                            dialogClass.createDialog(cut, site);
 
-						CStudioAuthoring.Module.requireModule("dialog-copy",
-								"/components/cstudio-dialogs/copyDialog.js",
-								moduleConfig,
-								submitDialogCb);
+                            var fillCopyDialog = {
+                                success:function(response) {
+                                    var copyTree= eval("(" + response.responseText + ")");
 
-					},
-					failure:function() {
+                                    dialogClass.updateDialog(copyTree, cut);
 
-					}
-				};
-				var serviceUri = "/proxy/alfresco/cstudio/wcm/content/get-pages?site=" + site + "&path=" + folderPath + "&depth=-1&order=default";
-				var getCopyTreeItemReuest = CStudioAuthoring.Service.createServiceUri(serviceUri);
-				YConnect.asyncRequest('GET', getCopyTreeItemReuest, openCopyDialog);
-			},
+                                },
+                                failure:function() {
+                                    alert("Unable to load contents. Please close the dialogue window and try again.");                                    
+                                }
+                            };
+                            // Call to get the dialog contents
+                            YConnect.asyncRequest('GET', getCopyTreeItemRequest, fillCopyDialog);
+                        }
+                    };
+
+                CStudioAuthoring.Module.requireModule("dialog-copy",
+                                "/components/cstudio-dialogs/copyDialog.js",
+                                {},
+                                submitDialogCb);
+            },
 
 			/**
 			 * Assign a new template to an existing content item
