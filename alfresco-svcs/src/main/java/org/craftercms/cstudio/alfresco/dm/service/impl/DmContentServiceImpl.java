@@ -2027,24 +2027,26 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
         }
         String relativePath = path.getRelativePath();
         NodeRef node = persistenceManagerService.getNodeRef(fullPath);
-        Serializable value = persistenceManagerService.getProperty(node, CStudioContentModel.PROP_WEB_WF_SUBMITTED_BY);
-        String user = (value != null && !StringUtils.isEmpty((String) value)) ? (String) value : approver;
-        Map<String, String> extraInfo = new HashMap<String, String>();
-        if (relativePath.endsWith(DmConstants.XML_PATTERN)) {
-            extraInfo.put(DmConstants.KEY_CONTENT_TYPE, this.getContentType(site, relativePath));
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("[DELETE] posting delete activity on " + relativePath + " by " + user + " in " + site);
-        }
-        ActivityService activityService = getService(ActivityService.class);
-        activityService.postActivity(site, user, relativePath, ActivityType.DELETED, extraInfo);
-        // process content life cycle
-        if (relativePath.endsWith(DmConstants.XML_PATTERN)) {
-            Serializable contentTypeValue = persistenceManagerService.getProperty(node, CStudioContentModel.PROP_CONTENT_TYPE);
-            String contentType = (contentTypeValue != null) ? (String) contentTypeValue : null;
-            DmContentLifeCycleService dmContentLifeCycleService = getService(DmContentLifeCycleService.class);
-            dmContentLifeCycleService.process(site, user, relativePath,
-                    contentType, ContentLifeCycleOperation.DELETE, null);
+        if (node != null) {
+            Serializable value = persistenceManagerService.getProperty(node, CStudioContentModel.PROP_WEB_WF_SUBMITTED_BY);
+            String user = (value != null && !StringUtils.isEmpty((String) value)) ? (String) value : approver;
+            Map<String, String> extraInfo = new HashMap<String, String>();
+            if (relativePath.endsWith(DmConstants.XML_PATTERN)) {
+                extraInfo.put(DmConstants.KEY_CONTENT_TYPE, this.getContentType(site, relativePath));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("[DELETE] posting delete activity on " + relativePath + " by " + user + " in " + site);
+            }
+            ActivityService activityService = getService(ActivityService.class);
+            activityService.postActivity(site, user, relativePath, ActivityType.DELETED, extraInfo);
+            // process content life cycle
+            if (relativePath.endsWith(DmConstants.XML_PATTERN)) {
+                Serializable contentTypeValue = persistenceManagerService.getProperty(node, CStudioContentModel.PROP_CONTENT_TYPE);
+                String contentType = (contentTypeValue != null) ? (String) contentTypeValue : null;
+                DmContentLifeCycleService dmContentLifeCycleService = getService(DmContentLifeCycleService.class);
+                dmContentLifeCycleService.process(site, user, relativePath,
+                        contentType, ContentLifeCycleOperation.DELETE, null);
+            }
         }
         // return authentication after posting activity
         AuthenticationUtil.setFullyAuthenticatedUser(currentUser);

@@ -1330,8 +1330,8 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         DmContentService dmContentService = getService(DmContentService.class);
         String currentUser = persistenceManagerService.getCurrentUserName();
-        String fullPath = persistenceManagerService.getNodePath(node);
         if (node != null) {
+            String fullPath = persistenceManagerService.getNodePath(node);
             if (enableNewDeploymentEngine) {
                 DmPathTO dmPathTO = new DmPathTO(fullPath);
                 List<DmContentItemTO> allItemsToCancel = getWorkflowAffectedPaths(site, dmPathTO.getRelativePath());
