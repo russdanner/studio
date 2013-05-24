@@ -34,7 +34,7 @@ public class WorkflowManager {
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowManager.class);
 
 	protected final String MSG_NO_HANDLERS_FOR_WORKFLOW_STATE = "no_handlers_for_workflow_state";
-    protected final String MSG_NO_HANDLERS_FOR_WORKFLOW = "no_handlers_for_workflow";
+	protected final String MSG_NO_HANDLERS_FOR_WORKFLOW = "no_handlers_for_workflow";
 	
 	/**
 	 * create a new workflow manager
@@ -52,31 +52,35 @@ public class WorkflowManager {
 			Map<String, JobStateHandler> handlers = _jobStateHandlers.get(job.getProcessName());
 			
 			if(handlers != null) {
-				JobStateHandler handler = handlers.get(job.getCurrentStatus());
+				String currentState = job.getCurrentStatus();
+				JobStateHandler handler = handlers.get(currentState);
 				
 				if(handler != null) {
-					String currentState = job.getCurrentStatus();
 					
 					String nextState = handler.handleState(job);
 					
-					if(nextState == null) {
-						
+					if (nextState != null) {
+						if(nextState != currentState) {
+							job.setCurrentStatus(nextState);
+							_workflowService.updateJob(job);
+						}
+						// This is the only successful path
+						return;
 					}
-					else if(nextState != currentState) {
-						job.setCurrentStatus(nextState);
-						_workflowService.updateJob(job);
-					}
+					// No next state defined (job is done)
 				}
 				else {
-					logger.error(MSG_NO_HANDLERS_FOR_WORKFLOW_STATE, job.getCurrentStatus(), job.getCurrentStatus(), job.toString());
+					logger.error(MSG_NO_HANDLERS_FOR_WORKFLOW_STATE, job.getProcessName(), job.getCurrentStatus(), job.toString());
 				}
 			}
 			else {
-				logger.error(MSG_NO_HANDLERS_FOR_WORKFLOW, job.getProcessName(), job.getCurrentStatus(), job.toString());				
+				logger.error(MSG_NO_HANDLERS_FOR_WORKFLOW, job.getProcessName(), job.getCurrentStatus(), job.toString());
 			}
+			// Clean up after all failure conditions
+			_workflowService.deleteJob(job.getId());
 		}
 	}
-    
+
 	/** getter job state handlers */
 	public Map<String, Map<String, JobStateHandler>> getJobStateHandlers() { return _jobStateHandlers; }
 	/** setter for job state handlers */

@@ -17,7 +17,6 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.workflow.job;
 
-import java.util.Set;
 import java.util.List;
 import java.lang.Class;
 import java.lang.reflect.Method;
@@ -57,11 +56,10 @@ public class ProcessInFlightJobs implements Job {
 	
 	public void processJobs() {
 
-
 		logger.info(MSG_PROCESSING_ACTIVE_WORKFLOW_JOBS);
-		List<WorkflowJob> activeJobs = _workflowService.getActiveJobs();
+		List<WorkflowJob> allJobs = _workflowService.getJobsInState(null);
 
-		for(WorkflowJob job : activeJobs) {
+		for (WorkflowJob job : allJobs) {
 			try {
 				UserTransaction tx = _transactionService.getTransaction();
 				try {

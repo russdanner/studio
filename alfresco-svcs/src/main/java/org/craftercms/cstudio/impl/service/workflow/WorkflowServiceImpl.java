@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.craftercms.cstudio.api.log.*;
-
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.impl.service.workflow.dal.*;
 
@@ -50,7 +48,14 @@ public class WorkflowServiceImpl implements WorkflowService {
 	}
 	
 	public List<WorkflowJob> getActiveJobs() {
-		return _workflowJobDAL.getJobsByState(null);
+		List<WorkflowJob> allJobs = _workflowJobDAL.getJobsByState(null);
+		// Reverse scan and delete STATE_ENDED jobs from list
+		for (int i = allJobs.size(); i > 0;) {
+			WorkflowJob job = allJobs.get(--i);
+			if (job.getCurrentStatus().equals(WorkflowService.STATE_ENDED))
+				allJobs.remove(i);
+		}
+		return allJobs;
 	}
 	
 	public List<WorkflowJob> getJobsInState(Set<String> states) {
