@@ -17,9 +17,7 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.translation.provider.demo;
 
-
 import java.io.ByteArrayInputStream;
-import java.lang.Byte;
 import java.lang.Integer;
 import java.io.InputStream;
 import java.util.Map;
@@ -28,12 +26,8 @@ import java.util.List;
 
 import org.dom4j.io.SAXReader;
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Document;
 import org.dom4j.Node;
 
-import org.craftercms.cstudio.api.service.translation.*;
-import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.impl.service.translation.*;
 
 import org.apache.commons.io.IOUtils;
@@ -65,14 +59,8 @@ public class DemoTranslationProvider implements TranslationProvider {
 		_content = new HashMap<String, byte[]>();
 	}
 
-	/**
-	 * translate or submit content for translation
-	 * @param sourceLanguage the ISO code for the source content's language
-	 * @param targetLanguage the ISO country code for the target translation's language
-	 * @param the file name of the content to translate (path)
-	 * @param the raw bits of the content to translate
-	 */
-	public void translate(String sourceLanguage, String targetLanguage, String filename, InputStream content) {
+	@Override
+	public void translate(String siteName, String sourceLanguage, String targetLanguage, String filename, InputStream content) {
 		
 		try {
 			if(content != (InputStream)null) {
@@ -87,12 +75,9 @@ public class DemoTranslationProvider implements TranslationProvider {
 		_progress.put(filename, 0);
 			
 	}
-	
-	/**
-	 * return a percentage complete from the translation provider
-	 * @param filename the file to get status on
-	 */
-	public int getTranslationStatusForItem(String path) {
+
+	@Override
+	public int getTranslationStatusForItem(String siteName, String targetLanguage, String path) {
 		int progress = 0;
 		int value = 0;
 		
@@ -114,11 +99,8 @@ public class DemoTranslationProvider implements TranslationProvider {
 		return progress;
 	}
 
-	/**
-	 * retrieve the translated content from the system
-	 * @param filename the path of the content (filename)
-	 */
-	public InputStream getTranslatedContentForItem(String path) {
+	@Override
+	public InputStream getTranslatedContentForItem(String siteName, String targetLanguage, String path) {
 		InputStream retTranslatedContent = null;
 		byte[] contentBytes = _content.get(path);
 		

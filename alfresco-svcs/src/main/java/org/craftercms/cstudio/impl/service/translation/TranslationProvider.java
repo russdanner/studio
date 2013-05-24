@@ -27,22 +27,27 @@ public interface TranslationProvider {
 	
 	/**
 	 * translate or submit content for translation
+	 * @param sourceSite the site name of the content to be translated
 	 * @param sourceLanguage the ISO code for the source content's language
 	 * @param targetLanguage the ISO country code for the target translation's language
 	 * @param the file name of the content to translate (path)
 	 * @param the raw bits of the content to translate
 	 */
-	void translate(String sourceLanguage, String targetLanguage, String filename, InputStream content);
+	void translate(String sourceSite, String sourceLanguage, String targetLanguage, String filename, InputStream content);
 	
 	/**
 	 * retrieve the translated content from the system
+	 * @param sourceSite the site name of the content to be translated
+	 * @param targetLanguage the ISO country code for the target translation's language
 	 * @param filename the path of the content (filename)
 	 */
-	InputStream getTranslatedContentForItem(String filename);
+	InputStream getTranslatedContentForItem(String sourceSite, String targetLanguage, String filename);
 	
 	/**
 	 * return a percentage complete from the translation provider
+	 * @param sourceSite the site name of the content to be translated
+	 * @param targetLanguage the ISO country code for the target translation's language
 	 * @param filename the file to get status on
 	 */
-	int getTranslationStatusForItem(String filename);
+	int getTranslationStatusForItem(String sourceSite, String targetLanguage, String filename);
 }

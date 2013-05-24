@@ -21,7 +21,6 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import java.util.Set;
 import java.util.List;
 
 import org.craftercms.cstudio.api.log.*;
@@ -40,30 +39,15 @@ public class TranslationServiceImpl implements TranslationService {
 
 	protected final String MSG_ERROR_SUBMITTING_ITEM_FOR_TRANSLATION = "err_submit_item_for_translation";
 	protected final String MSG_ERR_TRANSLATION_CLOSE_STREAM_ON_SOURCE_CONTENT = "err_close_stream_on_translation_source_content";
-	/**
-	 * given a source site, a set of paths and a target site calcualate the files in the srcPaths set that need to be 
-	 * translated because they exist in the target site.
-     *
-	 * If the target site and the source site are the same (perhaps you are managing translations as branches in the same site)
-	 * The intersaction is the same.
-	 * @param srcSite the id of source site
-	 * @param srcPaths the paths of the content updated in the source site
-	 * @param targetSite the id of the target site
-	 * @return a list of file paths that represent the set
-	 */
+
+	@Override
 	public List<String> calculateTargetTranslationSet(String srcSite, List<String> srcPaths, String targetSite) {
 		return _translationContentDAL.calculateTargetTranslationSet(srcSite, srcPaths, targetSite);
 	}
 
-	/**
-	 * given a site, a source language, a target language and a path submit the item for translation
-	 * @param the site where content is house
-	 * @param the source language for the content
-	 * @param the target language for the translation
-	 * @param the path to the content
-	 */
-	public void translate(String site, String sourceLanguage, String targetLanguage, String path) {
-		InputStream untranslatedContentStream = _translationContentDAL.getContent(site, path);
+	@Override
+	public void translate(String sourceSite, String sourceLanguage, String targetLanguage, String path) {
+		InputStream untranslatedContentStream = _translationContentDAL.getContent(sourceSite, path);
 		
 		if(untranslatedContentStream != null) {
 			try {
@@ -71,10 +55,10 @@ public class TranslationServiceImpl implements TranslationService {
 				byte[] untranslatedBytes = IOUtils.toByteArray(untranslatedContentStream);
 				ByteArrayInputStream detachedContentStream = new ByteArrayInputStream(untranslatedBytes);
 				
-				_translationProvider.translate(sourceLanguage, targetLanguage, path, detachedContentStream);
+				_translationProvider.translate(sourceSite, sourceLanguage, targetLanguage, path, detachedContentStream);
 			}
 			catch(Exception err) {
-				logger.error(MSG_ERROR_SUBMITTING_ITEM_FOR_TRANSLATION, err, site, sourceLanguage, targetLanguage, path);
+				logger.error(MSG_ERROR_SUBMITTING_ITEM_FOR_TRANSLATION, err, sourceSite, sourceLanguage, targetLanguage, path);
 			}
 			finally {
 				if(untranslatedContentStream !=null) {
@@ -82,40 +66,26 @@ public class TranslationServiceImpl implements TranslationService {
 						untranslatedContentStream.close();
 					}
 					catch(Exception err) {
-						logger.error(MSG_ERR_TRANSLATION_CLOSE_STREAM_ON_SOURCE_CONTENT, err, site, sourceLanguage, targetLanguage, path);
+						logger.error(MSG_ERR_TRANSLATION_CLOSE_STREAM_ON_SOURCE_CONTENT, err, sourceSite, sourceLanguage, targetLanguage, path);
 					}
 				}
 			}
 		}
 	}
 
-	/**
-	 * get a percent complete status update on in flight translation
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
-	 */
-	public int getTranslationStatusForItem(String path) {
-		return _translationProvider.getTranslationStatusForItem(path);
+	@Override
+	public int getTranslationStatusForItem(String sourceSite, String targetLanguage, String path) {
+		return _translationProvider.getTranslationStatusForItem(sourceSite, targetLanguage, path);
 	}
 
-	
-	/**
-	 * return the translated version of the content for a given item
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
-	 */
-	public InputStream getTranslatedContentForItem(String path) {
-		return _translationProvider.getTranslatedContentForItem(path);
+	@Override
+	public InputStream getTranslatedContentForItem(String sourceSite, String targetLanguage, String path) {
+		return _translationProvider.getTranslatedContentForItem(sourceSite, targetLanguage, path);
 	}
-	
-	/**
-	 * update site content with the translated content.  
-	 * Service will help make associations to source content?
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
-	 */
-	public void updateSiteWithTranslatedContent(String site, String path, InputStream content) {
-		_translationContentDAL.updateSiteWithTranslatedContent(site, path, content);
+
+	@Override
+	public void updateSiteWithTranslatedContent(String targetSite, String path, InputStream content) {
+		_translationContentDAL.updateSiteWithTranslatedContent(targetSite, path, content);
 	}
 
 	/** getter translation dal */

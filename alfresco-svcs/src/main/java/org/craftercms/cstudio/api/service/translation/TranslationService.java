@@ -18,7 +18,6 @@
 package org.craftercms.cstudio.api.service.translation;
 
 import java.io.InputStream;
-import java.util.Set;
 import java.util.List;
 
 /**
@@ -29,9 +28,9 @@ import java.util.List;
 public interface TranslationService {
 
 	/**
-	 * given a source site, a set of paths and a target site calcualate the files in the srcPaths set that need to be 
+	 * Given a source site, a set of paths and a target site calcualate the files in the srcPaths set that need to be 
 	 * translated because they exist in the target site.
-     *
+	 *
 	 * If the target site and the source site are the same (perhaps you are managing translations as branches in the same site)
 	 * The intersaction is the same.
 	 * @param srcSite the id of source site
@@ -42,34 +41,37 @@ public interface TranslationService {
 	List<String> calculateTargetTranslationSet(String srcSite, List<String> srcPaths, String targetSite);
 
 	/**
-	 * given a site, a source language, a target language and a path submit the item for translation
-	 * @param the site where content is house
-	 * @param the source language for the content
-	 * @param the target language for the translation
-	 * @param the path to the content
+	 * Given a site, a source language, a target language and a path submit the item for translation
+	 * @param sourceSite the source site where the source content is house
+	 * @param sourceLanguage the source language for the content
+	 * @param targetLanguage the target language for the translation
+	 * @param path the path to the content
 	 */
-	void translate(String site, String sourceLanguage, String targetLanguage, String path);
+	void translate(String sourceSite, String sourceLanguage, String targetLanguage, String path);
 
 	/**
-	 * get a percent complete status update on in flight translation
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
+	 * Get a percent complete status update on in flight translation
+	 * @param sourceSite the site name of the content to be translated
+	 * @param targetLanguage the target language for the translation
+	 * @param path the path to content
 	 */
-	int getTranslationStatusForItem(String path);
+	int getTranslationStatusForItem(String sourceSite, String targetLanguage, String path);
 
 
 	/**
-	 * return the translated version of the content for a given item
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
+	 * Return the translated version of the content for a given item
+	 * @param sourceSite the source site name of the content to be translated
+	 * @param targetLanguage the target language for the translation
+	 * @param path the path to content
 	 */
-	InputStream getTranslatedContentForItem(String path);
+	InputStream getTranslatedContentForItem(String sourceSite, String targetLanguage, String path);
 
 	/**
-	 * update site content with the translated content.  
+	 * Update site content with the translated content.
 	 * Service will help make associations to source content?
-	 * @param path to content 
-	 * -- note it's clear this method will require more information
+	 * @param targetSite the site name of the content to be translated
+	 * @param path the path to content
+	 * @param content the content stream
 	 */
-	void updateSiteWithTranslatedContent(String site, String path, InputStream content);
+	void updateSiteWithTranslatedContent(String targetSite, String path, InputStream content);
 }

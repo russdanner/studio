@@ -18,10 +18,11 @@
 package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 
 import java.io.InputStream;
+import java.util.Map;
+
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.api.service.translation.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
-import org.craftercms.cstudio.impl.service.translation.workflow.*;
 
 /**
  * Job is started. Send content to translation service  and change state to in progress.
@@ -38,13 +39,13 @@ public class UpdateProjectWithTranslationHandler implements JobStateHandler {
 		String retState = job.getCurrentStatus();
 		String path = job.getItems().get(0).getPath();
 
-		String sourceSite = job.getProperties().get("sourceSite");
-		String sourceLanguage = job.getProperties().get("sourceLanguage");
-		String targetSite = job.getProperties().get("targetSite");
-		String basePath = job.getProperties().get("basePath");
-		String targetLanguage = job.getProperties().get("targetLanguage");
-		
-		InputStream translatedContent = _translationService.getTranslatedContentForItem(path);
+		Map<String, String> prop = job.getProperties();
+		String sourceSite = prop.get("sourceSite");
+		String targetSite = prop.get("targetSite");
+		String basePath = prop.get("basePath");
+		String targetLanguage = prop.get("targetLanguage");
+
+		InputStream translatedContent = _translationService.getTranslatedContentForItem(sourceSite, targetLanguage, path);
 		
 		if(translatedContent != null) {
 			if(!"/".equals(basePath)) {

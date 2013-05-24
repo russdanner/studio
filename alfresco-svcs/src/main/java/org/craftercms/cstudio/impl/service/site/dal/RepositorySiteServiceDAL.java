@@ -28,7 +28,13 @@ import org.craftercms.cstudio.impl.service.site.AbstractSiteServiceDAL;
  * @author russdanner
  */
 public class RepositorySiteServiceDAL extends AbstractSiteServiceDAL {
-	
+
+	private String configFilePath = "/site-config.xml";
+
+	public void setConfigFilePath(String configFilePath) {
+		this.configFilePath = configFilePath;
+	}
+
 	/**
 	 * given a site ID return the configuration as a document
 	 * This method allows extensions to add additional properties to the configuration that
@@ -41,7 +47,7 @@ public class RepositorySiteServiceDAL extends AbstractSiteServiceDAL {
 		Document retConfigDoc = null;
 		
 		try {
-			retConfigDoc = _contentRepository.getContentAsDocument("/cstudio/config/sites/"+site+"/site-config.xml");
+			retConfigDoc = _contentRepository.getContentAsDocument("/cstudio/config/sites/"+site+configFilePath);
 		}
 		catch(Exception err) {
 			throw new SiteConfigNotFoundException();
