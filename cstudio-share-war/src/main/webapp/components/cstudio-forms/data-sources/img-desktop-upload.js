@@ -74,30 +74,6 @@ YAHOO.extend(CStudioForms.Datasources.ImgDesktopUpload, CStudioForms.CStudioForm
 
 	deleteImage : function(path) {
 
-//		var deleteUrl = CStudioAuthoringContext.authoringAppBaseUri 
-//				+ "/proxy/alfresco/cstudio/wcm/content/delete-content"
-//				+ "?site=" + CStudioAuthoringContext.site
-//				+ "&path=" + path;
-//		var callback = {
-//			success : function(response) {
-//				//alert("success");
-//			},
-//			failure : function(response) {
-//				alert("Failed to delete");
-//			}
-//		};
-//		
-//		try {
-//            var url = deleteUrl;
-//    		if(url.indexOf("?") != -1) {
-//    			url += "&draft=true";
-//    		} else {
-//    			url += "?draft=true";
-//    		}
-//			YAHOO.util.Connect.asyncRequest('GET', url, callback);
-//		} catch (error) {
-//			alert("failed get request," + error);
-//		}
 	},
 
    	getInterface: function() {

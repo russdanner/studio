@@ -24,7 +24,7 @@ YAHOO.extend(CStudioForms.Datasources.ImgRepoUpload, CStudioForms.CStudioFormDat
 	 * action called when user clicks insert image
 	 */
 	insertImageAction: function(insertCb) {
-		_self = this;
+		var _self = this;
 
 		CStudioAuthoring.Operations.openBrowse("", _self.repoPath, "1", "select", true, { 
 			success: function(searchId, selectedTOs) {
