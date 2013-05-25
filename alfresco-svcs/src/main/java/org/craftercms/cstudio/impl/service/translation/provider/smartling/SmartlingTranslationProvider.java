@@ -18,9 +18,6 @@
 package org.craftercms.cstudio.impl.service.translation.provider.smartling;
 
 import java.io.InputStream;
-import java.util.List;
-import org.craftercms.cstudio.api.service.translation.*;
-import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.impl.service.translation.*;
 
 /**
@@ -29,30 +26,18 @@ import org.craftercms.cstudio.impl.service.translation.*;
  */
 public class SmartlingTranslationProvider implements TranslationProvider {
 
-	/**
-	 * translate or submit content for translation
-	 * @param sourceLanguage the ISO code for the source content's language
-	 * @param targetLanguage the ISO country code for the target translation's language
-	 * @param the file name of the content to translate (path)
-	 * @param the raw bits of the content to translate
-	 */
-	public void translate(String sourceLanguage, String targetLanguage, String filename, InputStream content) {
+	@Override
+	public void translate(String sourceSite, String sourceLanguage, String targetLanguage, String filename, InputStream content) {
 		System.out.println("submitting job for translation");
 	}
 
-	/**
-	 * return a percentage complete from the translation provider
-	 * @param filename the file to get status on
-	 */
-	public int getTranslationStatusForItem(String path) {
+	@Override
+	public int getTranslationStatusForItem(String sourceSite, String targetLanguage, String path) {
 		return 0;
 	}
 
-	/**
-	 * retrieve the translated content from the system
-	 * @param filename the path of the content (filename)
-	 */
-	public InputStream getTranslatedContentForItem(String path) {
+	@Override
+	public InputStream getTranslatedContentForItem(String sourceSite, String targetLanguage, String path) {
 		return null;
 	}
 }

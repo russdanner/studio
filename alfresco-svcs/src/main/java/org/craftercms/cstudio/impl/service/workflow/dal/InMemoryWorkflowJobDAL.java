@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.craftercms.cstudio.api.service.workflow.*;
-import org.craftercms.cstudio.impl.service.workflow.dal.*;
 
 /**
  * The in memory workflow job DAL is a simple map based implementation
@@ -64,14 +63,10 @@ public class InMemoryWorkflowJobDAL extends AbstractWorkflowJobDAL {
 		for(String id : ids) {
 			WorkflowJob job = _jobs.get(id);
 
-			if(states == null && !WorkflowService.STATE_ENDED.equals(job.getCurrentStatus())) {
-				retJobs.add(job);
-			}
-			else if(!WorkflowService.STATE_ENDED.equals(job.getCurrentStatus()) && states.contains(job.getCurrentStatus())) {
+			if (states == null || states.contains(job.getCurrentStatus())) {
 				retJobs.add(job);
 			}
 		}
-		
 		return retJobs;
 	}
 	

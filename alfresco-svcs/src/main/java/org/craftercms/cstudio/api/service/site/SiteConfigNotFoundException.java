@@ -22,4 +22,13 @@ package org.craftercms.cstudio.api.service.site;
  * @author russdanner
  */
 public class SiteConfigNotFoundException extends Exception {
+
+	private static final long serialVersionUID = 6908641308010258410L;
+
+	public SiteConfigNotFoundException() {
+	}
+
+	public SiteConfigNotFoundException(String message) {
+		super(message);
+	}
 }

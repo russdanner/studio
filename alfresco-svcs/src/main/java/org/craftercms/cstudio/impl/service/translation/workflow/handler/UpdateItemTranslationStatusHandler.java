@@ -17,10 +17,11 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 
+import java.util.Map;
+
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.api.service.translation.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
-import org.craftercms.cstudio.impl.service.translation.workflow.*;
 
 /**
  * Job is started. Send content to translation service  and change state to in progress.
@@ -36,7 +37,10 @@ public class UpdateItemTranslationStatusHandler implements JobStateHandler {
 	public String handleState(WorkflowJob job) {
 		String retState = "WAITING-FOR-TRANSLATION";
 		String path = job.getItems().get(0).getPath();
-		int percentComplete = _translationService.getTranslationStatusForItem(path);
+		Map<String, String> prop = job.getProperties();
+		String sourceSite = prop.get("sourceSite");
+		String targetLanguage = prop.get("targetLanguage");
+		int percentComplete = _translationService.getTranslationStatusForItem(sourceSite, targetLanguage, path);
 
 		if(percentComplete == 100) {
 			retState = "TRANSLATION-COMPLETE";
