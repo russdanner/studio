@@ -61,6 +61,5 @@
     width: 120px;
 }
 
-.CodeMirror-scroll.cm-s-default > div {
-    text-align: left;
-}
+.CodeMirror-scroll.cm-s-default > div { text-align: left; }
+.CodeMirror-lines { color: #111; }  /* default text color */
