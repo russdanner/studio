@@ -151,7 +151,7 @@ CStudioAuthoring.Module.requireModule(
 			var serviceUrl = CStudioAuthoring.Service.getContentUri 
 		               + "?site=" + CStudioAuthoringContext.site 
 		               + "&path=" + pagePath 
-		               + "&edit=true";
+		               + "&edit=false";
 
 			var callback = {
 				success: function(model) {
