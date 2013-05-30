@@ -108,7 +108,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 				var groupEl = document.createElement("div");
 				groupEl.className = "checkbox-group";
 
-				if (_self.selectAll) {
+				if (_self.selectAll && !_self.readonly) {
 					rowEl = document.createElement("label");
 					rowEl.className = "checkbox select-all";
 					rowEl.setAttribute("for", _self.id + "-all");
