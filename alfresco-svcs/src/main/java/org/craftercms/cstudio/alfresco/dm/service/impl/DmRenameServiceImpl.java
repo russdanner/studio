@@ -612,10 +612,14 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         try{
             PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
             DmWorkflowService dmWorkflowService = getService(DmWorkflowService.class);
+            List<String> transitionNodes = new ArrayList<String>();
             for(String childUri: childUris){
-                if(dmWorkflowService.removeFromWorkflow(site, sub, childUri, true)){
-                    persistenceManagerService.transition(getIndexNode(site, childUri), ObjectStateService.TransitionEvent.SAVE);
-                }
+                dmWorkflowService.removeFromWorkflow(site, sub, childUri, true);
+                NodeRef nodeRef = getIndexNode(site, childUri);
+                transitionNodes.add(nodeRef.getId());
+            }
+            if (!transitionNodes.isEmpty()) {
+                persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
             }
         }catch(Exception e){
             throw new ServiceException("Error during clean workflow",e);
@@ -651,9 +655,7 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         String srcFullPath = dmContentService.getContentFullPath(site, path);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         NodeRef node = persistenceManagerService.getNodeRef(srcFullPath);
-        if (node != null) {
-            persistenceManagerService.transition(node, ObjectStateService.TransitionEvent.SAVE); //change the node renamed to inprogress
-        }
+        List<String> transitionNodes = new ArrayList<String>();
         if (node == null) {
             srcFullPath = srcFullPath.replace("/" + DmConstants.INDEX_FILE, "");
             oldPath = oldPath.replace("/" + DmConstants.INDEX_FILE, "");
@@ -670,6 +672,20 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
             // for the file content, update the file itself
             NodeRef parent = persistenceManagerService.getNodeRef(srcFullPath);
             updateChildNodes(site, parent, oldPath, path, addNodeProperty, user, true);
+        }
+        List<String> childUris = new FastList<String>();
+        if (node != null) {
+            transitionNodes.add(node.getId());
+            getChildrenUri(site, node, childUris);
+        }
+        for (String childUri : childUris) {
+            NodeRef childNode = persistenceManagerService.getNodeRef(childUri);
+            if (childNode != null) {
+                transitionNodes.add(childNode.getId());
+            }
+        }
+        if (!transitionNodes.isEmpty()) {
+            persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
         }
     }
 
@@ -696,11 +712,8 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
             Map<String,String> extraInfo = new HashMap<String,String>();
             String relativePath = new DmPathTO(cStudioNodeService.getNodePath(node)).getRelativePath();
             addNodePropertyToChildren(site, cStudioNodeService.getNodePath(node), parentNewPath, parentOldPath, addNodeProperty, user, fileContent);
-            persistenceManagerService.transition(node, ObjectStateService.TransitionEvent.SAVE); //change the node renamed to inprogress
             extraInfo.put(DmConstants.KEY_CONTENT_TYPE, dmContentService.getContentType(site, getIndexFilePath(relativePath)));
             activityService.postActivity(site, user, getIndexFilePath(relativePath), ActivityService.ActivityType.UPDATED, extraInfo);
-            
-
         }
     }
 
@@ -711,25 +724,26 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         String oldUri = (fileContent) ? oldPath : childUri.replace(DmUtils.getParentUrl(renamedPath), DmUtils.getParentUrl(oldPath));
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         NodeRef node = persistenceManagerService.getNodeRef(fullPath);
+        Map<QName, Serializable> nodeProperties = persistenceManagerService.getProperties(node);
 
-    
-	        if (addNodeProperty && getStoredStagingUri(site,childUri) == null && fileContent) {
-	        	persistenceManagerService.addAspect(node, CStudioContentModel.ASPECT_RENAMED, new HashMap< QName, Serializable>());
-	        	if(persistenceManagerService.getProperty(node,CStudioContentModel.PROP_RENAMED_OLD_URL)==null)
-	        	   persistenceManagerService.setProperty(node, CStudioContentModel.PROP_RENAMED_OLD_URL, oldUri);
-	        } else {
-	            String indexFilePath = getIndexFilePath(fullPath);
-	            NodeRef indexNode = persistenceManagerService.getNodeRef(indexFilePath);
-	            persistenceManagerService.addAspect(indexNode, CStudioContentModel.ASPECT_RENAMED, new HashMap<QName, Serializable>());
-	            if(persistenceManagerService.getProperty(indexNode,CStudioContentModel.PROP_RENAMED_OLD_URL)==null)
-	            	persistenceManagerService.setProperty(indexNode, CStudioContentModel.PROP_RENAMED_OLD_URL, oldUri);
-
+        if (addNodeProperty && getStoredStagingUri(site,childUri) == null && fileContent) {
+            persistenceManagerService.addAspect(node, CStudioContentModel.ASPECT_RENAMED, new HashMap< QName, Serializable>());
+            if (nodeProperties.get(CStudioContentModel.PROP_RENAMED_OLD_URL) == null) {
+                nodeProperties.put(CStudioContentModel.PROP_RENAMED_OLD_URL, oldUri);
+            }
+        } else {
+            String indexFilePath = getIndexFilePath(fullPath);
+            NodeRef indexNode = persistenceManagerService.getNodeRef(indexFilePath);
+            persistenceManagerService.addAspect(indexNode, CStudioContentModel.ASPECT_RENAMED, new HashMap<QName, Serializable>());
+            if (nodeProperties.get(CStudioContentModel.PROP_RENAMED_OLD_URL) == null) {
+                nodeProperties.put(CStudioContentModel.PROP_RENAMED_OLD_URL, oldUri);
+            }
         }
         persistenceManagerService.updateObjectPath(node, path.getRelativePath());
-        persistenceManagerService.setProperty(node,ContentModel.PROP_MODIFIER, user);
-        persistenceManagerService.setProperty(node,CStudioContentModel.PROP_LAST_MODIFIED_BY, user);	
-        
-     
+        nodeProperties.put(ContentModel.PROP_MODIFIER, user);
+        nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
+        persistenceManagerService.setProperties(node, nodeProperties);
+
 
         //dependencies also has to be moved post rename
         try{

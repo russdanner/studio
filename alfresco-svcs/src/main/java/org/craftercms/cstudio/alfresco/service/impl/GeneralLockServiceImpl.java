@@ -16,13 +16,12 @@
  */
 package org.craftercms.cstudio.alfresco.service.impl;
 
+import javolution.util.FastMap;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
+import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
 
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javolution.util.FastMap;
-import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
 
 public class GeneralLockServiceImpl extends AbstractRegistrableService implements GeneralLockService {
 
@@ -46,6 +45,21 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
             }
         }
         nodeLock.lock();
+    }
+
+    @Override
+    public boolean tryLock(String objectId) {
+        ReentrantLock nodeLock;
+
+        synchronized (this) {
+            if (nodeLocks.containsKey(objectId)) {
+                nodeLock = nodeLocks.get(objectId);
+            } else {
+                nodeLock = new ReentrantLock();
+                nodeLocks.put(objectId, nodeLock);
+            }
+        }
+        return nodeLock.tryLock();
     }
 
     @Override
