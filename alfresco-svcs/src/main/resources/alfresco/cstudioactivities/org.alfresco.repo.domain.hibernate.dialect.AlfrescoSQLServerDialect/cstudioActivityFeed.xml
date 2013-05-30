@@ -79,12 +79,12 @@ CREATE TABLE [dbo].[cstudio_activity](
       and site_network = #siteNetwork#
       and summary_format = #summaryFormat#
       and [id] in
-        (select top #feedSize:int# [id] from cstudio_activity
+        (select top (#feedSize:int#) [id] from cstudio_activity
         where post_user_id = #userId#
         and site_network = #siteNetwork#
         and summary_format = #summaryFormat#
          and id not in
-          (select top #startPos:int# [id]
+          (select top (#startPos:int#) [id]
           from cstudio_activity
           where post_user_id = #userId#
           and site_network = #siteNetwork#
@@ -172,14 +172,14 @@ CREATE TABLE [dbo].[cstudio_activity](
         ]]>
    </update>
 
-   
+
 	<update id="updateurl" parameterClass="java.util.HashMap">
       <![CDATA[
       update cstudio_activity set content_id=#newUrl# where content_id = #oldUrl# and site_network=#site#
       ]]>
    </update>
-   
-   
+
+
    	<delete id="deleteOldActivity" parameterClass="java.util.HashMap">
       <![CDATA[
     	DELETE FROM cstudio_activity  where site_network=#site# and  content_id=#newUrl#
