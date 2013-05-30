@@ -14,6 +14,7 @@ CStudioForms.Controls.FileName = CStudioForms.Controls.FileName ||
         this.contentAsFolder = (form.definition) ? form.definition.contentAsFolder : null;
         this.readonly = readonly;
         this.defaultValue = "";
+        this.showWarnOnEdit = true;
 
         return this;
     }
@@ -268,29 +269,7 @@ YAHOO.extend(CStudioForms.Controls.FileName, CStudioForms.CStudioFormField, {
 
         this.renderHelp(config, controlWidgetContainerEl);
 
-        if(CStudioAuthoring.Utils.getQueryVariable(location.search, "edit")){
-            var editFileNameEl = document.createElement("div");
-            YAHOO.util.Dom.addClass(editFileNameEl, 'cstudio-form-control-filename-edit');
-            var editFileNameBtn = document.createElement("input");
-            editFileNameBtn.type="button";
-            editFileNameBtn.value="Edit";
-            YAHOO.util.Dom.addClass(editFileNameBtn, 'cstudio-button');
-            editFileNameEl.appendChild(editFileNameBtn);
-            controlWidgetContainerEl.appendChild(editFileNameEl);
-
-            inputEl.disabled=true;
-
-            YAHOO.util.Event.on(editFileNameBtn, 'click',function(){
-                if(confirm("Changing this value may result in broken links")){
-                    // Added as a closure due some of the elements
-                    // are not globaly access
-
-                    //Reset display
-                    inputEl.disabled = false;
-                    editFileNameEl.style.display='none';
-                }
-            });
-        }
+        this._renderEdit(controlWidgetContainerEl);
 
         var descriptionEl = document.createElement("span");
         YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
@@ -300,6 +279,33 @@ YAHOO.extend(CStudioForms.Controls.FileName, CStudioForms.CStudioFormField, {
         containerEl.appendChild(titleEl);
         containerEl.appendChild(controlWidgetContainerEl);
 
+    },
+
+    _renderEdit: function(containerEl){
+    	var _self = this;
+        if(CStudioAuthoring.Utils.getQueryVariable(location.search, "edit")){
+            var editFileNameEl = document.createElement("div");
+            YAHOO.util.Dom.addClass(editFileNameEl, 'cstudio-form-control-filename-edit');
+            var editFileNameBtn = document.createElement("input");
+            editFileNameBtn.type="button";
+            editFileNameBtn.value="Edit";
+            YAHOO.util.Dom.addClass(editFileNameBtn, 'cstudio-button');
+            editFileNameEl.appendChild(editFileNameBtn);
+            containerEl.appendChild(editFileNameEl);
+
+            this.inputEl.disabled=true;
+
+            YAHOO.util.Event.on(editFileNameBtn, 'click', function(){
+            	var edit = true;
+            	if(_self.showWarnOnEdit){
+            		edit = confirm("Changing this value may result in broken links");
+            	}
+                if(edit){
+                    _self.inputEl.disabled = false;
+                    editFileNameEl.style.display='none';
+                }
+            });
+        }
     },
 
     getValue: function() {
