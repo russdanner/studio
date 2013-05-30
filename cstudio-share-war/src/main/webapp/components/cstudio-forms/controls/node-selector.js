@@ -331,8 +331,8 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 			this._onChange();
 		}		
 	},
-	
-	insertItem: function(key, value, fileType) {
+
+	insertItem: function(key, value, fileType, fileSize) {
 		var successful = true;
 		var message = "";
 		if(this.allowDuplicates != true){
@@ -355,15 +355,25 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		}
 
 		if(successful){
-			var item = { key: key, value: value, fileType_s: fileType };
+			var item = {};
+			if (fileType && fileSize) {
+				item = { key: key, value: value, fileType_s: fileType, fileSize_s: fileSize };
+			} else if (fileType && !fileSize) {
+				item = { key: key, value: value, fileType_s: fileType };
+			} else if (!fileType && fileSize) {
+				item = { key: key, value: value, fileSize_s: fileSize };
+			} else {
+				item = { key: key, value: value};
+			}
+
 			this.items[this.items.length] = item
-			
+
 			if(this.datasource.itemsAreContentReferences) {
 				if(key.indexOf(".xml") != -1) {
 					item.include = key;
 				}
 			}
-			
+
 			this.count();
 			this._onChange();
 		}else{
@@ -371,9 +381,8 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		}
 			this.count();
 			this._onChange();
-
 	},
-	
+
 	count: function(){
 		var itemCount = this.items.length;
 		

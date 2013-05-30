@@ -47,7 +47,7 @@ YAHOO.extend(CStudioForms.Datasources.FileBrowseRepo, CStudioForms.CStudioFormDa
 			    CStudioAuthoring.Operations.uploadAsset(CStudioAuthoringContext.site, _self.processPathsForMacros(_self.repoPath), true, { 
 					success: function(fileData) {
 						var item = _self.processPathsForMacros(_self.repoPath) + "/" + fileData.fileName;
-						control.insertItem(item, item, fileData.fileExtension);
+						control.insertItem(item, item, fileData.fileExtension, fileData.size);
 						control._renderItems();
 					}, 
 
