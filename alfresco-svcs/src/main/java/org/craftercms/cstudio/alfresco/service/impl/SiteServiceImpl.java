@@ -472,10 +472,10 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
                 }
                 this.sitesMappings = sitesMapping;
             } else {
-                LOGGER.error("[SITESERVICE] no sites found at : " + this._sitesConfigPath);
+                LOGGER.warn("[SITESERVICE] no sites found at : " + this._sitesConfigPath);
             }
 		} else {
-            LOGGER.error("[SITESERVICE] no sites found at : " + this._sitesConfigPath);
+            LOGGER.warn("[SITESERVICE] no sites found at : " + this._sitesConfigPath);
 		}
 
 	}
