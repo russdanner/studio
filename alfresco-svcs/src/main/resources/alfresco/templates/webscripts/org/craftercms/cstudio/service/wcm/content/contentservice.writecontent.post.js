@@ -32,8 +32,7 @@ var site = args.site;
 		   			fileName = oldPath.substring(oldPath.lastIndexOf("/") + 1, oldPath.length);
 		   		//}
 		   		// defaulted to create missing folders in content path
-				dmContentService.writeContent(site, oldPath, fileName, contentType, requestbody, "true", edit, unlock);
-				dmContentService.rename(site, null, oldPath, path, true);
+                dmContentService.writeContentAndRename(site, oldPath, path, fileName, contentType, requestbody, "true", edit, unlock, true);
 				
 			} else {
 				// straight write case

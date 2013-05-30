@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
+import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmRenameService;
@@ -181,6 +182,35 @@ public class DmContentServiceScript extends BaseProcessorExtension {
                                  String orderName) throws ServiceException {
         DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
         return dmContentService.reOrderContent(site, path, sub, before, after, orderName);
+    }
+
+    public void writeContentAndRename(final String site, final String path, final String targetPath, final String fileName, final String contentType, final Content input,
+                                      final String createFolders, final  String edit, final String unlock, final boolean createFolder) throws ServiceException {
+        String id = site + ":" + path + ":" + fileName + ":" + contentType;
+        GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
+        if (!generalLockService.tryLock(id)) {
+            generalLockService.lock(id);
+            generalLockService.unlock(id);
+            return;
+        }
+        try {
+            final PersistenceManagerService persistenceManagerService = servicesManager.getService(PersistenceManagerService.class);
+            final RetryingTransactionHelper txnHelper = servicesManager.getService(DmTransactionService.class).getRetryingTransactionHelper();
+            persistenceManagerService.disableBehaviour(CStudioContentModel.ASPECT_PREVIEWABLE);
+            RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
+                public String execute() throws Throwable {
+                    writeContent(site, path, fileName, contentType, input, createFolders, edit, unlock);
+                    rename(site, null, path, targetPath, createFolder);
+                    return null;
+                }
+            };
+            txnHelper.doInTransaction(renameCallBack, false, true);
+            persistenceManagerService.enableBehaviour(CStudioContentModel.ASPECT_PREVIEWABLE);
+        } catch (Throwable t) {
+            logger.error("Error while write and rename: ", t);
+        } finally {
+            generalLockService.unlock(id);
+        }
     }
 
     /**

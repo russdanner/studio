@@ -21,4 +21,6 @@ public interface GeneralLockService {
     public void lock(String objectId);
 
     public void unlock(String objectId);
+
+    public boolean tryLock(String objectId);
 }

@@ -1221,7 +1221,7 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         NodeRef node = persistenceManagerService.getNodeRef(fullPath);
         if (node != null) {
-            removeSubmittedAspect(site, fullPath, null, false, DmConstants.DM_STATUS_IN_PROGRESS);
+            //removeSubmittedAspect(site, fullPath, null, false, DmConstants.DM_STATUS_IN_PROGRESS);
             // cancel workflow if anything is pending
             if (cancelWorkflow) {
                 _cancelWorkflow(site, node);
@@ -1231,13 +1231,19 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
             DmDependencyTO depItem = dmDependencyService.getDependencies(site, null, path, false, true);
             DependencyRules dependencyRules = new DependencyRules(site, getServicesManager());
             Set<DmDependencyTO> submittedDeps = dependencyRules.applySubmitRule(depItem);
+            List<String> transitionNodes = new ArrayList<String>();
             for (DmDependencyTO dependencyTO : submittedDeps) {
                 String depFullPath = dmContentService.getContentFullPath(site, dependencyTO.getUri());
                 removeFromWorkflow(site, sub, dependencyTO.getUri(), cancelWorkflow);
                 ObjectStateService.State state = persistenceManagerService.getObjectState(depFullPath);
                 if (ObjectStateService.State.isScheduled(state) || ObjectStateService.State.isSubmitted(state)) {
-                    persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
+                    NodeRef nodeRef = persistenceManagerService.getNodeRef(depFullPath);
+                    transitionNodes.add(nodeRef.getId());
+                    //persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
                 }
+            }
+            if (!transitionNodes.isEmpty()) {
+                persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
             }
         }
         return false;
@@ -1397,8 +1403,6 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
                     }
                 }
             }
-
-            removeSubmittedAspect(site, fullPath, null, false, DmConstants.DM_STATUS_IN_PROGRESS);
         }
 
     }

@@ -22,11 +22,15 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
@@ -37,7 +41,11 @@ import org.craftercms.cstudio.alfresco.util.PreviewDeployUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 
 /**
@@ -136,14 +144,57 @@ public class PreviewableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     @Override
-    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef) {
-        PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef) {
+        final PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         String oldParentPath = DmUtils.getNodePath(persistenceManagerService, oldChildAssocRef.getParentRef());
         String oldName = oldChildAssocRef.getQName().getLocalName();
-
         deleteFile(oldParentPath + "/" + oldName);
         deployFile(newChildAssocRef.getChildRef());
-        deployChildren(newChildAssocRef.getChildRef());
+        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        final Runnable worker = new Runnable() {
+            @Override
+            public void run() {
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                TransactionService transactionService = servicesManager.getService(TransactionService.class);
+                UserTransaction tx = transactionService.getNonPropagatingUserTransaction();
+                try {
+                    tx.begin();
+                    deployChildren(newChildAssocRef.getChildRef());
+                    tx.commit();
+                } catch (Exception e) {
+                    logger.error("Error while synchronizing preview for children on parent move", e);
+                    try {
+                        tx.rollback();
+                    } catch (SystemException e1) {
+                        logger.error("Error rolling back transaction", e);
+                    }
+                } finally {
+                    tx = null;
+                }
+            }
+        };
+
+        TransactionListener listener = new TransactionListener() {
+            @Override
+            public void flush() { }
+
+            @Override
+            public void beforeCommit(boolean b) { }
+
+            @Override
+            public void beforeCompletion() { }
+
+            @Override
+            public void afterCommit() {
+                ExecutorService es = Executors.newSingleThreadExecutor();
+                es.execute(worker);
+            }
+
+            @Override
+            public void afterRollback() { }
+        };
+
+        AlfrescoTransactionSupport.bindListener(listener);
     }
 
     @Override
