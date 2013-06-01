@@ -1149,6 +1149,46 @@ CStudioAdminConsole.PropertySheet.prototype = {
 	},
 
 	renderDatasourcePropertySheet: function(item, sheetEl) {
+
+		function getSelectedOption(valueArray) {
+			var val = null;
+
+			valueArray.forEach( function(obj) {
+	            if (obj.selected) {
+	                val = obj.value;
+	            }
+	        });
+	        return val;
+		}
+
+		function updateSelected(defaultArray, selectedDefault, selectedValue) {
+
+			var sdobj, svobj;
+
+			if (selectedDefault != selectedValue) {
+				// If the selected values are the same in the default array and the value array, then 
+				// just return the default array; otherwise, update the selected values in the default array.
+				for (var idx in defaultArray) {
+					if (defaultArray[idx].value == selectedDefault) {
+						sdobj = defaultArray[idx];
+					}
+					if (defaultArray[idx].value == selectedValue) {
+						svobj = defaultArray[idx];
+						
+					}
+				}
+				if (svobj) {
+					// Only change the selected objects inside the default array if the selected value
+					// from the value array exists in the default array; otherwise, leave the default array as is.
+					svobj.selected = true;	// Update the selected value in the default array
+					sdobj.selected = false;	// Remove original selection in the default array
+				}
+			}
+			return defaultArray;
+		}
+
+		var valueSelected, defaultSelected;
+
 		this.createRowHeading("Datasource Basics", sheetEl);
 		this.createRowFn("Title", "title", item.title, "", "string",  sheetEl, function(e, el) { item.title = el.value; } );
 		this.createRowFn("Name",  "name", item.id, "", "string",  sheetEl,  function(e, el) { item.id = el.value; });
@@ -1169,9 +1209,25 @@ CStudioAdminConsole.PropertySheet.prototype = {
 				}
 			}
 
-			var value = "";
-			if(itemProperty && itemProperty.value) {
-				value = itemProperty.value;
+			if (itemProperty !== null) {
+
+				if (!Array.isArray(property.defaultValue)) {
+					value = itemProperty.value ? itemProperty.value : "";	
+				} else {
+					// Default value is an array (e.g. key-value-list)
+					// Update the value in case the default value has changed
+					valueSelected = getSelectedOption(itemProperty.value);
+					defaultSelected = getSelectedOption(property.defaultValue);
+
+					value = updateSelected(property.defaultValue, defaultSelected, valueSelected);
+				}
+			} else {
+				// The property does not currently exist in the model instance => probably a new property added to the content type
+				// Add it to the model instance, using the property's default values
+				value = property.defaultValue ? property.defaultValue : "";
+				item.properties[item.properties.length] = { name: property.name, 
+															value: value,  
+															type: property.type };
 			}
 
 			var updatePropertyFn = function(name, value) {
@@ -1437,7 +1493,9 @@ CStudioAdminConsole.Tool.ContentTypes.FormDefMain = {
 		var supportedProps = datasourcePrototype.getSupportedProperties();
 		for(var i=0; i<supportedProps.length; i++) {
 			var supportedProperty = supportedProps[i];
-			newDataSource.properties[newDataSource.properties.length] = { name:supportedProperty.name, value: ""};
+			//Assign default value if it exists
+            var val = (supportedProperty.defaultValue) ? supportedProperty.defaultValue: "";
+			newDataSource.properties[newDataSource.properties.length] = { name: supportedProperty.name, value: val };
 		}
 		
 		form.datasources[form.datasources.length] = newDataSource;

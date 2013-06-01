@@ -95,8 +95,31 @@ YAHOO.extend(CStudioForms.Datasources.KeyValueList, CStudioForms.CStudioFormData
         }
     },
 
-    getInterface: function() {
+    getInterface : function() {
         return "item";
+    },
+
+    /*
+     * Datasource controllers don't have direct access to the properties controls, only to their properties and their values.
+     * Because the property control (dropdown) and the dataType property share the property value, the dataType value must stay
+     * as an array of objects where each object corresponds to each one of the options of the control. In order to know exactly
+     * which of the options in the control is currently selected, we loop through all of the objects in the dataType value 
+     * and check their selected value.
+     */
+    getDataType : function getDataType () {
+        var val = null;
+
+        this.properties.forEach( function(prop) {
+            if (prop.name == "dataType") {
+                // return the value of the option currently selected
+                prop.value.forEach( function(opt) {
+                    if (opt.selected) {
+                        val = opt.value;
+                    }
+                });
+            }
+        });
+        return val;
     },
 
     getName: function() {
@@ -104,10 +127,44 @@ YAHOO.extend(CStudioForms.Datasources.KeyValueList, CStudioForms.CStudioFormData
     },
 
     getSupportedProperties: function() {
-        return [
-            { label: "Options", name: "options", type: "keyValueMap" },
-            { label: "Show keys (item sel. only)", name: "showkeys", type: "boolean" }
-        ];
+        return [{
+            label: "Data Type",
+            name: "dataType",
+            type: "dropdown",
+            defaultValue: [{    // Update this array if the dropdown options need to be updated
+                value: "value",
+                label: "",
+                selected: false
+            }, {
+                value: "value_s",
+                label: "String",
+                selected: false
+            }, {
+                value: "value_i",
+                label: "Integer",
+                selected: false
+            },{
+                value: "value_f",
+                label: "Float",
+                selected: true
+            },{
+                value: "value_dt",
+                label: "Date",
+                selected: false
+            },{
+                value: "value_html",
+                label: "HTML",
+                selected: false
+            }]
+        }, {
+            label: "Options",
+            name: "options",
+            type: "keyValueMap"
+        }, {
+            label: "Show keys (item sel. only)",
+            name: "showkeys",
+            type: "boolean"
+        }];
     },
 
     getSupportedConstraints: function() {

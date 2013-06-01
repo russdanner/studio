@@ -13,6 +13,9 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.id = id;
 	this.readonly = readonly;
 	this.minSize = 0;
+
+	// Stores the type of data the control is now working with (this value is fetched from the datasource controller)
+	this.dataType = null;
 	
 	return this;
 }
@@ -50,12 +53,12 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		this.owner.notifyValidation();
     },
 
-	render: function(config, containerEl) {
+	render: function(config, containerEl, isValueSet) {
 		this.containerEl = containerEl;
 		this.config = config;
 		
-		var _self = this;
-		var datasource = null;
+		var _self = this,
+			datasource = null;
 		
 		for(var i=0;i<config.constraints.length;i++){
 			var constraint = config.constraints[i];
@@ -91,6 +94,13 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		var cb = {
 			success: function(list) {
 				var keyValueList = list,
+
+					// setValue will provide an array with the values that were checked last time the form was saved (datasource A).
+					// If someone decides to tie this control to a different datasource (datasource B): none, some or all of values 
+					// from datasource A may be present in datasource B. If there were values checked in datasource A and they are 
+					// also found in datasource B, then they will remain checked. However, if there were values checked in 
+					// datasource A that are no longer found in datasource B, these need to be removed from the control's value.
+					newValue = [],		
 					rowEl, textEl, inputEl;
 				
 				containerEl.innerHTML = "";
@@ -143,7 +153,14 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		
 					inputEl = document.createElement("input");
 					inputEl.type = "checkbox";
-					inputEl.checked = _self.isSelected(item.key);
+
+					if (_self.isSelected(item.key)) {
+						newValue.push(_self.updateDataType(item));
+						inputEl.checked = true;
+					} else {
+						inputEl.checked = false;
+					}
+
 					inputEl.id = _self.id + "-" + item.key;
 					
 					if(_self.readonly == true){
@@ -159,6 +176,8 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 					rowEl.appendChild(textEl);
 					groupEl.appendChild(rowEl);
 				}
+				_self.value = newValue;
+				_self.form.updateModel(_self.id, _self.getValue());
 
 				var helpContainerEl = document.createElement("div");
                 YAHOO.util.Dom.addClass(helpContainerEl, 'cstudio-form-field-help-container');
@@ -178,8 +197,14 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
                 _self.validate();
 			}
 		}
-		
-		datasource.getList(cb);
+
+		if(isValueSet) {
+			// This render method is currently being called twice (on initialization and on the setValue).
+			// We need the value to know which checkboxes should be checked or not so restrict the rendering to only 
+			// after the value has been set.
+			this.dataType = datasource.getDataType();
+			datasource.getList(cb);
+		}
 	},
 
 	toggleAll: function (evt, el) {
@@ -192,10 +217,14 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		if (el.checked) {
 			// select all
 			checkboxes.forEach( function (el) {
+				var valObj = {}
+
 				el.checked = true;
 				if (el.item) {
 					// the select/deselect toggle button doesn't have an item attribute
-					_self.value.push({ key: el.item.key, value: el.item.value });
+					valObj.key = el.item.key;
+					valObj[this.dataType] = el.item.value;
+					_self.value.push(valObj);
 				}
 			});
 		} else {
@@ -231,7 +260,6 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 				break;
 			}
 		}
-		
 		return selected;
 	},
 
@@ -250,8 +278,13 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 	},
 	
 	selectItem: function(key, value) {
+		var valObj = {};
+
 		if(!this.isSelected(key)) {
-			this.value[this.value.length] = { key: key, value: value };
+			valObj.key = key;
+			valObj[this.dataType] = value;
+
+			this.value[this.value.length] = valObj;
 		}
 	},
 	
@@ -266,6 +299,23 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 	getValue: function() {
 		return this.value;
 	},
+
+	updateDataType : function updateDataType (valObj) {
+		if (this.dataType) {
+			for (var prop in valObj) {
+				if (prop.match(/value/)) {
+					if (prop !== this.dataType) {
+						// Rename the property (e.g. "value") to the current data type ("value_s")
+						valObj[this.dataType] = valObj[prop];
+						delete valObj[prop];
+					}
+				}
+			}
+			return valObj;	
+		} else {
+			throw new TypeError("Function updateDataType (checkbox-group.js) : module variable dataType is undefined");
+		}
+	},
 	
 	setValue: function(value) {
 		if(value === "") {
@@ -274,7 +324,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		
 		this.value = value;
 		this.form.updateModel(this.id, this.getValue());
-		this.render(this.config, this.containerEl);
+		this.render(this.config, this.containerEl, true);
 	},
 		
 	getName: function() {
