@@ -15,21 +15,20 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.craftercms.cstudio.impl.service.workflow;
+package org.craftercms.cstudio.api.service.translation;
 
-import org.craftercms.cstudio.api.service.workflow.*;
+public class ProviderException extends RuntimeException
+{
+	private static final long serialVersionUID = -8476500907489141914L;
 
-/**
- * For a given job state take an action and return the next state
- * @author rdanner
- */
-public interface JobStateHandler {
-	
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @param workflowService the current workflow service for the job.
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job, WorkflowService workflowService);
+	private boolean fatal;
+
+	public ProviderException(String message, Exception cause, boolean fatal) {
+		super(message, cause);
+		this.fatal = fatal;
+	}
+
+	public boolean isFatal() {
+		return fatal;
+	}
 }

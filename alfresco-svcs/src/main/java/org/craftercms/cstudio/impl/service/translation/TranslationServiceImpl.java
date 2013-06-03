@@ -19,6 +19,7 @@ package org.craftercms.cstudio.impl.service.translation;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -57,17 +58,15 @@ public class TranslationServiceImpl implements TranslationService {
 				
 				_translationProvider.translate(sourceSite, sourceLanguage, targetLanguage, path, detachedContentStream);
 			}
-			catch(Exception err) {
+			catch (IOException err) {
 				logger.error(MSG_ERROR_SUBMITTING_ITEM_FOR_TRANSLATION, err, sourceSite, sourceLanguage, targetLanguage, path);
 			}
 			finally {
-				if(untranslatedContentStream !=null) {
-					try {
-						untranslatedContentStream.close();
-					}
-					catch(Exception err) {
-						logger.error(MSG_ERR_TRANSLATION_CLOSE_STREAM_ON_SOURCE_CONTENT, err, sourceSite, sourceLanguage, targetLanguage, path);
-					}
+				try {
+					untranslatedContentStream.close();
+				}
+				catch(Exception err) {
+					logger.error(MSG_ERR_TRANSLATION_CLOSE_STREAM_ON_SOURCE_CONTENT, err, sourceSite, sourceLanguage, targetLanguage, path);
 				}
 			}
 		}

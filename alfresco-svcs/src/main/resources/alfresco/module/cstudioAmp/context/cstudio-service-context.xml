@@ -1017,14 +1017,11 @@
                             <bean class="org.craftercms.cstudio.impl.service.translation.workflow.handler.KickoffTranslationWorkflowForWaterfallItemsHandler">
                                 <property name="siteService" ref="cstudioSiteServiceSimple" />
                                 <property name="translationService" ref="cstudioTranslationService" />
-                                <property name="workflowService" ref="cstudioWorkflowService" />
                                 <property name="dependencyService" ref="cstudioDmDependencyService" />
                             </bean>
                         </entry>
                         <entry key="ended">
-                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.JobEndedHandler">
-                                <property name="workflowService" ref="cstudioWorkflowService" />
-                            </bean>
+                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.JobEndedHandler"/>
                         </entry>
                     </map>
                 </entry>
@@ -1054,14 +1051,10 @@
                         </entry>
                         <entry key="SITE-UPDATED-WITH-TRANSLATED-CONTENT">
                             <!-- retrieve item from translation provider, add to project and submit for review -->
-                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.SubmitContentforApprovalHandler">
-                                <property name="workflowService" ref="cstudioWorkflowService" />
-                            </bean>
+                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.SubmitContentforApprovalHandler"/>
                         </entry>
                         <entry key="ended">
-                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.JobEndedHandler">
-                                <property name="workflowService" ref="cstudioWorkflowService" />
-                            </bean>
+                            <bean class="org.craftercms.cstudio.impl.service.workflow.handler.JobEndedHandler"/>
                         </entry>
                     </map>
                 </entry>

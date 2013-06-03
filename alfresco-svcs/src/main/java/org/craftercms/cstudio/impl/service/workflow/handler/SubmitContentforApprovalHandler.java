@@ -29,12 +29,8 @@ import org.craftercms.cstudio.impl.service.workflow.*;
  */
 public class SubmitContentforApprovalHandler implements JobStateHandler {
 	
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		
 		List<String> paths = new ArrayList<String>();
 		
@@ -43,13 +39,8 @@ public class SubmitContentforApprovalHandler implements JobStateHandler {
 			paths.add(path);
 		}
 		
-		_workflowService.submitToGoLive(job.getSite(), paths, new Date(), true);
+		workflowService.submitToGoLive(job.getSite(), paths, new Date(), true);
 		
 		return WorkflowService.STATE_ENDED;
 	}
-	
-	public WorkflowService getWorkflowService() { return _workflowService; }
-	public void setWorkflowService(WorkflowService service) { _workflowService = service; }
-	
-	protected WorkflowService _workflowService;
 }

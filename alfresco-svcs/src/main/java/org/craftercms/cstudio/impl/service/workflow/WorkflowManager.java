@@ -57,7 +57,7 @@ public class WorkflowManager {
 				
 				if(handler != null) {
 					
-					String nextState = handler.handleState(job);
+					String nextState = handler.handleState(job, _workflowService);
 					
 					if (nextState != null) {
 						if(nextState != currentState) {

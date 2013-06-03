@@ -20,7 +20,7 @@ package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
- 
+
 import javolution.util.FastList;
 
 import org.dom4j.Document;
@@ -44,12 +44,8 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 	
 	private static final Logger logger = LoggerFactory.getLogger(KickoffTranslationWorkflowForWaterfallItemsHandler.class);
 	
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		// load the configuration for child sites from site config
 		String retState = job.getCurrentStatus();
 		String site = job.getSite();
@@ -93,7 +89,7 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 						List<String> submitAsSingleItemList = new ArrayList<String>();
 						submitAsSingleItemList.add(path);
 						
-						_workflowService.createJob(targetSiteId, submitAsSingleItemList,  "translate", properties);
+						workflowService.createJob(targetSiteId, submitAsSingleItemList,  "translate", properties);
 					}
 				}
 			}
@@ -116,11 +112,6 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 	/** setter for translation service property */
 	public void setTranslationService(TranslationService service) { _translationService = service; }
 
-	/** getter workflow service property */
-	public WorkflowService getWorkflowService() { return _workflowService; }
-	/** setter for workflow service property */
-	public void setWorkflowService(WorkflowService service) { _workflowService = service; }
-
 	public void setDependencyService(DmDependencyService service) { _dependencyService = service; }
 
 	private void getDependents(String site, String path, List<String> dependents) {
@@ -136,6 +127,5 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 
 	private SiteService _siteService;
 	private TranslationService _translationService;
-	private WorkflowService _workflowService;
 	private DmDependencyService _dependencyService;
 }

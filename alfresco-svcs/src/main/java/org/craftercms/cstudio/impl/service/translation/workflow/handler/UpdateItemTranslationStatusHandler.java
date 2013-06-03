@@ -29,23 +29,23 @@ import org.craftercms.cstudio.impl.service.workflow.*;
  */
 public class UpdateItemTranslationStatusHandler implements JobStateHandler {
 
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		String retState = "WAITING-FOR-TRANSLATION";
 		String path = job.getItems().get(0).getPath();
 		Map<String, String> prop = job.getProperties();
 		String sourceSite = prop.get("sourceSite");
 		String targetLanguage = prop.get("targetLanguage");
-		int percentComplete = _translationService.getTranslationStatusForItem(sourceSite, targetLanguage, path);
-
-		if(percentComplete == 100) {
-			retState = "TRANSLATION-COMPLETE";
+		try {
+			int percentComplete = _translationService.getTranslationStatusForItem(sourceSite, targetLanguage, path);
+	
+			if (percentComplete == 100)
+				retState = "TRANSLATION-COMPLETE";
 		}
-
+		catch (ProviderException ex) {
+			if (ex.isFatal())
+				retState =  WorkflowService.STATE_ENDED;
+		}
 		return retState;
 	}
 

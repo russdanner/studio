@@ -17,10 +17,11 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 
+import java.util.Map;
+
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.api.service.translation.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
-import org.craftercms.cstudio.impl.service.translation.workflow.*;
 
 /**
  * send item out for translation
@@ -28,21 +29,21 @@ import org.craftercms.cstudio.impl.service.translation.workflow.*;
  */
 public class SendItemOutForTranslationHandler implements JobStateHandler {
 
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		String path = job.getItems().get(0).getPath();
 
-		String sourceSite = job.getProperties().get("sourceSite");
-		String sourceLanguage = job.getProperties().get("sourceLanguage");
-		String targetSite = job.getProperties().get("targetSite");
-		String basePath = job.getProperties().get("basePath");
-		String targetLanguage = job.getProperties().get("targetLanguage");
-		
-		_translationService.translate(sourceSite, sourceLanguage, targetLanguage, path);
+		Map<String, String> prop = job.getProperties();
+		String sourceSite = prop.get("sourceSite");
+		String sourceLanguage = prop.get("sourceLanguage");
+		String targetLanguage = prop.get("targetLanguage");
+		try {
+			_translationService.translate(sourceSite, sourceLanguage, targetLanguage, path);
+		}
+		catch (ProviderException ex) {
+			if (ex.isFatal())
+				return WorkflowService.STATE_ENDED;
+		}
 		return "WAITING-FOR-TRANSLATION";
 	}
 

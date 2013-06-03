@@ -19,7 +19,6 @@ package org.craftercms.cstudio.impl.service.workflow.handler;
 
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
-import org.craftercms.cstudio.api.service.translation.*;
 
 
 /**
@@ -28,22 +27,10 @@ import org.craftercms.cstudio.api.service.translation.*;
  */
 public class JobEndedHandler implements JobStateHandler {
 
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */	
-	public String handleState(WorkflowJob job) {
-		_workflowService.deleteJob(job.getId());
-
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
+		workflowService.deleteJob(job.getId());
 		// no action to take
 		return null;
 	}
-
-	/** getter workflow service */
-	public WorkflowService getWorkflowService() { return _workflowService; }
-	/** setter for translation service */
-	public void setWorkflowService(WorkflowService service) { _workflowService = service; }
-
-	protected WorkflowService _workflowService;
 }

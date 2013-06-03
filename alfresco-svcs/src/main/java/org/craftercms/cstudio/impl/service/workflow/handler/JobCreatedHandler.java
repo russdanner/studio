@@ -27,12 +27,8 @@ import org.craftercms.cstudio.impl.service.workflow.*;
  */
 public class JobCreatedHandler implements JobStateHandler {
 	
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		return job.getCurrentStatus();
 	}
 }

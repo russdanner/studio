@@ -30,12 +30,8 @@ import org.craftercms.cstudio.impl.service.workflow.*;
  */
 public class UpdateProjectWithTranslationHandler implements JobStateHandler {
 
-	/**
-	 * given a job, perform an action and return the next state
-	 * @param job the job to operate on
-	 * @return the next state
-	 */
-	public String handleState(WorkflowJob job) {
+	@Override
+	public String handleState(WorkflowJob job, WorkflowService workflowService) {
 		String retState = job.getCurrentStatus();
 		String path = job.getItems().get(0).getPath();
 
@@ -44,18 +40,22 @@ public class UpdateProjectWithTranslationHandler implements JobStateHandler {
 		String targetSite = prop.get("targetSite");
 		String basePath = prop.get("basePath");
 		String targetLanguage = prop.get("targetLanguage");
-
-		InputStream translatedContent = _translationService.getTranslatedContentForItem(sourceSite, targetLanguage, path);
-		
-		if(translatedContent != null) {
-			if(!"/".equals(basePath)) {
-				path = basePath + path;
-			}
+		try {
+			InputStream translatedContent = _translationService.getTranslatedContentForItem(sourceSite, targetLanguage, path);
 			
-			_translationService.updateSiteWithTranslatedContent(targetSite, path, translatedContent);
-			retState = "SITE-UPDATED-WITH-TRANSLATED-CONTENT";
+			if(translatedContent != null) {
+				if(!"/".equals(basePath)) {
+					path = basePath + path;
+				}
+				
+				_translationService.updateSiteWithTranslatedContent(targetSite, path, translatedContent);
+				retState = "SITE-UPDATED-WITH-TRANSLATED-CONTENT";
+			}
 		}
-		
+		catch (ProviderException ex) {
+			if (ex.isFatal())
+				retState = WorkflowService.STATE_ENDED;
+		}
 		return retState;
 	}
 
