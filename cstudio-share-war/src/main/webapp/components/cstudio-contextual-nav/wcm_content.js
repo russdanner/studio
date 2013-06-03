@@ -311,7 +311,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                     // relevant flag, allowing document & banner to be editable from Search result
                     // allowing banner type component 
                     // alowing crafter-level-descriptor.xml
-                    var rflag = ((content.previewable || content.document 
+                    var rflag = ((isRelevant || content.document 
                                   || ( (content.component) && ( (content.contentType == "/cstudio-com/component/general/banner") 
                                   || (content.contentType.indexOf("level-descriptor") !=-1 ) ) )) && (state.indexOf("Delete") == -1));
 					 //if item is deleted and in the go live queue , enable edit.			  
@@ -355,9 +355,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
 	
 	                    if(content.document || content.component) { // for doc and components disable dublicate link
 	                        isRelevant = false;
-	                    } else {
-	                        isRelevant = content.previewable;	
-	                    }
+	                    } 
 	                    _this.createNavItem(option, isBulk, isAdmin, isRelevant, !isWrite);
             		}
                 }
