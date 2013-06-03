@@ -1018,6 +1018,7 @@
                                 <property name="siteService" ref="cstudioSiteServiceSimple" />
                                 <property name="translationService" ref="cstudioTranslationService" />
                                 <property name="workflowService" ref="cstudioWorkflowService" />
+                                <property name="dependencyService" ref="cstudioDmDependencyService" />
                             </bean>
                         </entry>
                         <entry key="ended">

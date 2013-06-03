@@ -18,20 +18,21 @@
 package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+ 
+import javolution.util.FastList;
 
 import org.dom4j.Document;
 import org.dom4j.Node;
 
+import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
 import org.craftercms.cstudio.api.log.*;
 
 import org.craftercms.cstudio.api.service.site.*;
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.api.service.translation.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
-import org.craftercms.cstudio.impl.service.translation.workflow.*;
 
 /**
  * given a workflow job, create a new job to submit and monitor the translation
@@ -55,10 +56,12 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 		
 		try {
 			// construct a list of file
-			List<String> paths = new ArrayList<String>();
+			List<String> paths = new FastList<String>();
 			
 			for(WorkflowItem item : job.getItems()) {
-				paths.add(item.getPath());
+				String path = item.getPath();
+				paths.add(path);
+				getDependents(site, path, paths);
 			}
 
 			// load the translation for the site
@@ -67,7 +70,7 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 			
 			List<Node> targetEls = siteConfigEl.selectNodes("/site-config/translation/targetSites//targetSite");
 
-			if(paths.size() > 0 && targetEls.size() > 0) {
+			if (paths.size() > 0) {
 				// for each configuration
 				for(Node targetEl : targetEls) {
 					String targetSiteId = targetEl.valueOf("id");
@@ -85,7 +88,7 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 					// calculate the intersection
 					List<String> targetPaths = _translationService.calculateTargetTranslationSet(site, paths, targetSiteId);
 					
-				    // submit job
+					// submit job
 					for(String path : targetPaths) {
 						List<String> submitAsSingleItemList = new ArrayList<String>();
 						submitAsSingleItemList.add(path);
@@ -93,8 +96,7 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 						_workflowService.createJob(targetSiteId, submitAsSingleItemList,  "translate", properties);
 					}
 				}
-			}			
-			
+			}
 			retState = WorkflowService.STATE_ENDED;
 		}
 		catch(Exception err) {
@@ -118,8 +120,22 @@ public class KickoffTranslationWorkflowForWaterfallItemsHandler implements JobSt
 	public WorkflowService getWorkflowService() { return _workflowService; }
 	/** setter for workflow service property */
 	public void setWorkflowService(WorkflowService service) { _workflowService = service; }
-	
-	protected SiteService _siteService;
-	protected TranslationService _translationService;
-	protected WorkflowService _workflowService;
+
+	public void setDependencyService(DmDependencyService service) { _dependencyService = service; }
+
+	private void getDependents(String site, String path, List<String> dependents) {
+		List<String> depPaths = _dependencyService.getDependencyPaths(site, path);
+		for (String depPath : depPaths) {
+			// Add only page and components
+			if (!dependents.contains(depPath) && depPath.startsWith("/site/")) {
+				dependents.add(depPath);
+				getDependents(site, depPath, dependents);
+			}
+		}
+	}
+
+	private SiteService _siteService;
+	private TranslationService _translationService;
+	private WorkflowService _workflowService;
+	private DmDependencyService _dependencyService;
 }
