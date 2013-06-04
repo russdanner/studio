@@ -4450,6 +4450,13 @@ YConnect.failureEvent.subscribe(function() {
 					return results[1];
 			},
 
+            getQueryParameterByName : function(name) {
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                    results = regex.exec(location.search);
+                return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+            },
+
 			/**
 			 * format a date
 			 */

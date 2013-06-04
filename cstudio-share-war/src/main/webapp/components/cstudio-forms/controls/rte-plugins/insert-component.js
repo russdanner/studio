@@ -120,6 +120,13 @@ CStudioForms.Controls.RTE.InsertComponent = CStudioForms.Controls.RTE.InsertComp
 								var path = this.onclick.widget.contentPath;
 								path = path.replace("{objectGroupId}", model.objectGroupId);
 								path = path.replace("{objectId}", model.objectId);
+
+								path = path.replace("{objectGroupId2}", model.objectGroupId.substring(0, 2));
+								path = path.replace("{parentPath}", CStudioAuthoring.Utils.getQueryParameterByName("path").replace(/\/[^\/]*\/[^\/]*\/(.*)\/[^\/]*\.xml/, "$1"));
+								/* Date macros */
+								var currentDate = new Date();
+								path = path.replace("{year}", currentDate.getFullYear());
+								path = path.replace("{month}", ("0" + (currentDate.getMonth() + 1)).slice(-2));
 								
 								CStudioAuthoring.Operations.openContentWebForm(
 									this.onclick.widget.contentType,
