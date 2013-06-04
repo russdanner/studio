@@ -1,0 +1,5 @@
+<webscript>
+    <shortname>Submit to go live - show dialog</shortname>
+    <description>Submit to go live - show dialog</description>
+    <url>/ui/workflow-actions/go-live-dialog?site={site}</url>
+</webscript>
