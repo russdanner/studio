@@ -21,6 +21,7 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.maxSize = 0;
 	this.readonly = readonly;
     this.defaultValue = "";
+    amplify.subscribe("/datasource/loaded", this, this.onDatasourceLoaded);
 	
 	return this;
 }
@@ -84,6 +85,12 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
     editNode: function() {
     },  
 
+    onDatasourceLoaded: function( data ) {
+    	if(this.datasourceName === data.name && !this.datasource){
+    		this._setActions();
+    	}
+    },
+
 	render: function(config, containerEl) {
 		this.maxSize = 0;
 		this.minSize = 0;
@@ -95,15 +102,13 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 				this.allowDuplicates = true;
 			}
 		}
-		
-		
+
 		var _self = this;
-		var datasourceName = "";
 		for(var i=0; i<config.properties.length; i++) {
 			var prop = config.properties[i];
 
 			if(prop.name == "itemManager") {
-				datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;
+				this.datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;
 			}
 			if(prop.name == "minSize" && prop.value != "") {
 				this.minSize = parseInt(prop.value, 10);
@@ -141,100 +146,106 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		YAHOO.util.Dom.addClass(nodeOptionsEl, 'cstudio-form-control-node-selector-options');
         nodeControlboxEl.appendChild(nodeOptionsEl);
 
-		var datasource = this.form.datasourceMap[datasourceName];
-	
-        if(datasource) {
-   			this.datasource = datasource;
-   			     	
-	        //Add button
-	        var addButtonEl = document.createElement("input")
-	        addButtonEl.type = 'button';
-	        addButtonEl.value = 'Add';
-	        YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button');
-	        YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-drop-arrow-button');
-	        nodeOptionsEl.appendChild(addButtonEl);
-	        this.addButtonEl = addButtonEl;
+	    //Add button
+	    var addButtonEl = document.createElement("input")
+	    addButtonEl.type = 'button';
+	    addButtonEl.value = 'Add';
+	    addButtonEl.disabled = true;
+	    YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button');
+	    YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-drop-arrow-button');
+	    YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button-disabled');
+	    nodeOptionsEl.appendChild(addButtonEl);
+	    this.addButtonEl = addButtonEl;
 
-			if(!datasource.add) {
-				addButtonEl.disabled = true;
-				YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button-disabled');
-			}
-			else {
-				// give control to the node selector to render the add
-				YAHOO.util.Event.on(addButtonEl, 'click', function() {
-					var selectItemsCount = _self.getItemsLeftCount();
-					if(selectItemsCount == 0){
-						alert("You can't add more items, Remove one and try again.");
-					}
-					else{
-						datasource.selectItemsCount = selectItemsCount;
-						datasource.add(_self);
-					}
-				}, addButtonEl);
-			}
+	    //Edit button
+		var editButtonEl = document.createElement("input")
+		editButtonEl.type = 'button';
+		editButtonEl.value = 'Edit';
+		editButtonEl.disabled = true;
+		YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button');
+		YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button-disabled');
+		nodeOptionsEl.appendChild(editButtonEl);
+		this.editButtonEl = editButtonEl;
+
+	    //Delete button
+		var deleteButtonEl = document.createElement("input")
+		deleteButtonEl.type = 'button';
+		deleteButtonEl.value = 'X';
+		YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button');
+		YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button-disabled');
+		nodeOptionsEl.appendChild(deleteButtonEl);
+		deleteButtonEl.disabled = true;
+		this.deleteButtonEl = deleteButtonEl;
+
+		YAHOO.util.Event.on(deleteButtonEl, 'click', function() {
+			_self.deleteItem(_self.selectedItemIndex);
+			_self._renderItems();
+		}, deleteButtonEl);
 			
-	
-	        //Edit button
-	        var editButtonEl = document.createElement("input")
-	        editButtonEl.type = 'button';
-	        editButtonEl.value = 'Edit';
-	        editButtonEl.disabled = true;
-	        YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button');
-	        YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button-disabled');
-	        nodeOptionsEl.appendChild(editButtonEl);
-	        _self.editButtonEl = editButtonEl;
+		if(this.readonly == true){
+			addButtonEl.disabled = true;
+			editButtonEl.disabled = true;
+			deleteButtonEl.disabled = true;
+			YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button-disabled');
+			YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button-disabled');
+			YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button-disabled');
+		}
 
-			if(datasource.edit) {
-				_self.allowEdit = true;
-				YAHOO.util.Event.on(editButtonEl, 'click', function() {
-					datasource.edit(_self.items[_self.selectedItemIndex].key, _self);
-				}, editButtonEl);
-			}
-	                        
-	        //Delete button
-	        var deleteButtonEl = document.createElement("input")
-	        deleteButtonEl.type = 'button';
-	        deleteButtonEl.value = 'X';
-	        YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button');
-	        YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button-disabled');
-	        nodeOptionsEl.appendChild(deleteButtonEl);
-	        deleteButtonEl.disabled = true;
-	        this.deleteButtonEl = deleteButtonEl;
-	        
-			YAHOO.util.Event.on(deleteButtonEl, 'click', function() {
-				_self.deleteItem(_self.selectedItemIndex);
-				_self._renderItems();
-			}, deleteButtonEl);
-			
-			if(this.readonly == true){
-			   addButtonEl.disabled = true;
-			   editButtonEl.disabled = true;
-			   deleteButtonEl.disabled = true;
-			   YAHOO.util.Dom.addClass(addButtonEl, 'cstudio-button-disabled');
-			   YAHOO.util.Dom.addClass(editButtonEl, 'cstudio-button-disabled');
-			   YAHOO.util.Dom.addClass(deleteButtonEl, 'cstudio-button-disabled');
-		    }
-        }
-
-        this.renderHelp(config, nodeOptionsEl);
+		this.renderHelp(config, nodeOptionsEl);
 					
-		var descriptionEl = document.createElement("span");
-		YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
-		descriptionEl.innerHTML = config.description;
-
 		var countEl = document.createElement("div");
 		YAHOO.util.Dom.addClass(countEl, 'cstudio-form-control-node-selector-count');
 		this.countEl = countEl;
-		
 		nodeOptionsEl.appendChild(countEl);
+
+		var descriptionEl = document.createElement("span");
+		YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
+		descriptionEl.innerHTML = config.description;
 		controlWidgetContainerEl.appendChild(descriptionEl);
 
 		containerEl.appendChild(titleEl);
 		containerEl.appendChild(controlWidgetContainerEl);
 		this.defaultValue = config.defaultValue;
 
-
 		this._renderItems();
+ 		this._setActions();
+	},
+
+	_setActions: function () {
+		var _self = this;
+		var datasource = this.form.datasourceMap[this.datasourceName];
+
+		if( datasource ){
+			this.datasource = datasource;
+			
+			if (datasource.add) {
+				YAHOO.util.Dom.removeClass(this.addButtonEl, 'cstudio-button-disabled');
+				this.addButtonEl.disabled = false;
+				// give control to the node selector to render the add
+				YAHOO.util.Event.on(this.addButtonEl, 'click', function() {
+					var selectItemsCount = _self.getItemsLeftCount();
+						if (selectItemsCount == 0) {
+							alert("You can't add more items, Remove one and try again.");
+						}
+						else{
+							datasource.selectItemsCount = selectItemsCount;
+							datasource.add(_self);
+						}
+				}, this.addButtonEl);
+			}
+
+			if (datasource.edit) {
+				this.allowEdit = true;
+				YAHOO.util.Event.on(editButtonEl, 'click', function() {
+					datasource.edit(_self.items[_self.selectedItemIndex].key, _self);
+				}, editButtonEl);
+			}
+
+			YAHOO.util.Event.on(deleteButtonEl, 'click', function() {
+				_self.deleteItem(_self.selectedItemIndex);
+				_self._renderItems();
+			}, deleteButtonEl);
+		}
 	},
 	
 	_renderItems: function() {

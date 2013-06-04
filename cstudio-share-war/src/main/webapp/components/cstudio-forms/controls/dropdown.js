@@ -13,6 +13,8 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.id = id;
 	this.readonly = readonly;
 	
+	amplify.subscribe("/datasource/loaded", this, this.onDatasourceLoaded);
+
 	return this;
 }
 
@@ -43,7 +45,13 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 		obj.form.updateModel(obj.id, obj.getValue());
 	},
 
-	
+	onDatasourceLoaded: function ( data ) {
+		if (this.datasourceName === data.name && !this.datasource) {
+    		var datasource = this.form.datasourceMap[this.datasourceName];
+    		this.datasource = datasource;
+			datasource.getList(this.callback);
+    	}
+	},
     	
 	render: function(config, containerEl) {
 		// we need to make the general layout of a control inherit from common
@@ -58,8 +66,7 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 				
 				if(prop.name == "datasource") {
 					if(prop.value && prop.value != "") {
-						var datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;
-						datasource = this.form.datasourceMap[datasourceName];	
+						this.datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;	
 					}
 				}
 				
@@ -134,8 +141,12 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 				}
 			};
 
+			var datasource = this.form.datasourceMap[this.datasourceName];
 			if(datasource){
+				this.datasource = datasource;
 				datasource.getList(cb);
+		    }else{
+		    	this.callback = cb;
 		    }
 					
 	},

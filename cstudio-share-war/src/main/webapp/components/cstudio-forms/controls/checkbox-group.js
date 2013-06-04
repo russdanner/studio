@@ -13,10 +13,11 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.id = id;
 	this.readonly = readonly;
 	this.minSize = 0;
-
 	// Stores the type of data the control is now working with (this value is fetched from the datasource controller)
 	this.dataType = null;
-	
+
+	amplify.subscribe("/datasource/loaded", this, this.onDatasourceLoaded);
+
 	return this;
 }
 
@@ -53,6 +54,15 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		this.owner.notifyValidation();
     },
 
+    onDatasourceLoaded: function ( data ) {
+    	if (this.datasourceName === data.name && !this.datasource) {
+    		var datasource = this.form.datasourceMap[this.datasourceName];
+    		this.datasource = datasource;
+			this.dataType = datasource.getDataType();
+			datasource.getList(this.callback);
+    	}
+    },
+
 	render: function(config, containerEl, isValueSet) {
 		this.containerEl = containerEl;
 		this.config = config;
@@ -73,8 +83,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 
 			if(prop.name == "datasource") {
 				if(prop.value && prop.value != "") {
-					var datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;
-					datasource = this.form.datasourceMap[datasourceName];	
+					this.datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;	
 				}
 			}
 
@@ -199,11 +208,17 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		}
 
 		if(isValueSet) {
+			var datasource = this.form.datasourceMap[this.datasourceName];
 			// This render method is currently being called twice (on initialization and on the setValue).
 			// We need the value to know which checkboxes should be checked or not so restrict the rendering to only 
 			// after the value has been set.
-			this.dataType = datasource.getDataType();
-			datasource.getList(cb);
+			if(datasource){
+				this.datasource = datasource;
+				this.dataType = datasource.getDataType();
+				datasource.getList(cb);
+			}else{
+				this.callback = cb;
+			}
 		}
 	},
 

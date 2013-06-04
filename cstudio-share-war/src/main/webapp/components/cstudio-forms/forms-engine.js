@@ -1196,7 +1196,8 @@ var CStudioForms = CStudioForms || function() {
 								moduleConfig.config.id,
 								this.form,
 								moduleConfig.config.properties);
-							form.datasourceMap[datasource.id] = datasource;
+                form.datasourceMap[datasource.id] = datasource;
+                amplify.publish("/datasource/loaded", { name: datasource.id});
 						} 
 						catch (e) {
 							//alert(e);
