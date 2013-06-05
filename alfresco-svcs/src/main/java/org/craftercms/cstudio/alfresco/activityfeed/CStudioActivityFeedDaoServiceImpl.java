@@ -17,16 +17,9 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.activityfeed;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
 import com.ibatis.common.jdbc.ScriptRunner;
 import com.ibatis.common.resources.Resources;
-
+import com.ibatis.sqlmap.client.SqlMapClient;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.service.api.ActivityService;
 import org.craftercms.cstudio.alfresco.to.TableIndexCheckTO;
@@ -34,9 +27,13 @@ import org.craftercms.cstudio.alfresco.util.ContentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ibatis.sqlmap.client.SqlMapClient;
-
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class CStudioActivityFeedDaoServiceImpl implements CStudioActivityFeedDaoService
 {
@@ -295,9 +292,9 @@ public class CStudioActivityFeedDaoServiceImpl implements CStudioActivityFeedDao
         String queryType = "customactivityfeed.getDeletedActivity";
 
         SqlMapClient sqlClient = getSqlMapClient();
-        CStudioActivityFeedDAO feed = (CStudioActivityFeedDAO) sqlClient.queryForObject(queryType, params);
-        if (feed != null) {
-            return feed;
+        List<CStudioActivityFeedDAO> feed = (List<CStudioActivityFeedDAO>) sqlClient.queryForList(queryType, params);
+        if (feed != null && feed.size() > 0) {
+            return feed.get(0);
         } else {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("[ACTIVITY] no feed found by [site: " + site

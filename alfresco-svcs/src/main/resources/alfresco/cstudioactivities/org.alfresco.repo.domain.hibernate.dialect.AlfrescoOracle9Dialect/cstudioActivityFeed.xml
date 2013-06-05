@@ -153,6 +153,7 @@
       where site_network = #siteNetwork#
 	  and content_id = #contentId#
 	  and activity_type = #activityType#
+	  order by modified_date DESC
 
         ]]>
    </select>
