@@ -927,7 +927,7 @@
 
     <bean id="cstudioWorkflowService" class="org.craftercms.cstudio.impl.service.workflow.WorkflowServiceImpl">
         <property name="workflowJobDAL" ref="cstudioWorkflowJobDAL" />
-        
+        <property name="notificationService" ref="cstudioNotificationService" />
         <!-- remove this asap -->
         <property name="dmWorkflowService" ref="cstudioDmWorkflowService" />
     </bean>

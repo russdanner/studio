@@ -27,12 +27,11 @@ import java.util.Date;
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.impl.service.workflow.dal.*;
 
-// no!
 import org.craftercms.cstudio.alfresco.dm.service.api.DmWorkflowService;
 import org.craftercms.cstudio.alfresco.dm.to.DmError;
 import org.craftercms.cstudio.alfresco.dm.to.DmDependencyTO;
 import org.craftercms.cstudio.alfresco.dm.workflow.RequestContext;
-
+import org.craftercms.cstudio.alfresco.service.api.NotificationService;
 
 /**
  * workflow service implementation
@@ -113,25 +112,26 @@ public class WorkflowServiceImpl implements WorkflowService {
 		try{
 			List<DmError> errors = _dmSimpleWfService.submitToGoLive(
 					submittedItems, 
-		    		scheduledDate, 
-		    		sendApprovedNotice, 
-		    		false /*submit for delete*/,  
-		    		requestContext /*request context*/, 
-		    		submissionComment);
-
+					scheduledDate, 
+					sendApprovedNotice, 
+					false /*submit for delete*/,  
+					requestContext /*request context*/, 
+					submissionComment);
 		}
 		catch(Exception err) {
 			
 		}
 	}
 
-	public WorkflowJobDAL getWorkflowJobDAL() { return _workflowJobDAL; }
 	public void setWorkflowJobDAL(WorkflowJobDAL dal) { _workflowJobDAL = dal; }
 
-	// remove
-	public DmWorkflowService getDmWorkflowService() { return _dmSimpleWfService; }
 	public void setDmWorkflowService(DmWorkflowService service) { _dmSimpleWfService = service; }
-	
-	protected WorkflowJobDAL _workflowJobDAL; 
-	protected DmWorkflowService _dmSimpleWfService;
+
+	@Override
+	public NotificationService getNotificationService() { return _notificationService; }
+	public void setNotificationService(NotificationService service) { _notificationService = service; }
+
+	private WorkflowJobDAL _workflowJobDAL; 
+	private DmWorkflowService _dmSimpleWfService;
+	private NotificationService _notificationService;
 }

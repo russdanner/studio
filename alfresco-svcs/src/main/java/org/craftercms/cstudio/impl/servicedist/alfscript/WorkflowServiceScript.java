@@ -30,8 +30,7 @@ import java.util.List;
  * @author russdanner
  */
 public class WorkflowServiceScript extends BaseProcessorExtension
-implements WorkflowService {
-
+{
 	/**
 	 * create a workflow job
 	 * @param site the site which owns the workflow
