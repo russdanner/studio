@@ -30,7 +30,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
             options: [
                 { name: "Edit", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "Edit" },
                 { name: "Submit to Go Live", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "SimpleSubmit"  },
-                { name: "Delete", allowAuthor: false, allowAdmin: true, allowBulk: true, renderId: "Delete"  },
+                { name: "Delete", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Delete"  },
                 { name: "Submit for Delete", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "ScheduleForDelete"  },
                 { name: "Reject", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Reject"  },
                 { name: "Schedule", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveSchedule"  },
@@ -429,8 +429,8 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
             },
             
             renderDelete: {
-                render: function(option, isBulk, isAdmin, state, isRelevant, isWrite) {
-                	if(isWrite) {
+                render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms) {
+                	if(isWrite && CStudioAuthoring.Service.isDeleteAllowed(perms)) {
 	                    var isRelevant = true;
 	                    var isAdminFlag = isAdmin;
 	                    if(state.indexOf("Submitted for Delete")>=0 || state.indexOf("Scheduled for Delete")>=0) {
