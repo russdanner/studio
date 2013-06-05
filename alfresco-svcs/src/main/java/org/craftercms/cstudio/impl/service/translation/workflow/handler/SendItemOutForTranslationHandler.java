@@ -17,8 +17,13 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.translation.workflow.handler;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
+import org.craftercms.cstudio.alfresco.service.api.NotificationService;
 import org.craftercms.cstudio.api.service.workflow.*;
 import org.craftercms.cstudio.api.service.translation.*;
 import org.craftercms.cstudio.impl.service.workflow.*;
@@ -41,9 +46,18 @@ public class SendItemOutForTranslationHandler implements JobStateHandler {
 			_translationService.translate(sourceSite, sourceLanguage, targetLanguage, path);
 		}
 		catch (ProviderException ex) {
+			String submitter = prop.get("submitter");
+			// Send notification only once.
+			if (prop.put("notified", submitter) == null) {
+				NotificationService service = workflowService.getNotificationService();
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("exception", Matcher.quoteReplacement(ex.dumpStackTrace()));
+				service.sendGenericNotification(sourceSite, path, submitter, submitter, "translation-submit-failed", params);
+			}
 			if (ex.isFatal())
 				return WorkflowService.STATE_ENDED;
 		}
+		prop.remove("notified");
 		return "WAITING-FOR-TRANSLATION";
 	}
 

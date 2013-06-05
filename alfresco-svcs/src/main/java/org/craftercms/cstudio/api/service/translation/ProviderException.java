@@ -17,6 +17,9 @@
  ******************************************************************************/
 package org.craftercms.cstudio.api.service.translation;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class ProviderException extends RuntimeException
 {
 	private static final long serialVersionUID = -8476500907489141914L;
@@ -30,5 +33,13 @@ public class ProviderException extends RuntimeException
 
 	public boolean isFatal() {
 		return fatal;
+	}
+
+	public String dumpStackTrace() {
+		StringWriter buf = new StringWriter();
+		PrintWriter out = new PrintWriter(buf);
+		printStackTrace(out);
+		out.flush();
+		return buf.toString();
 	}
 }

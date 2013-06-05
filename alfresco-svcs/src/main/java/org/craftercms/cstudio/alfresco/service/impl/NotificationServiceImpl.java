@@ -88,10 +88,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         this._servicesManager.registerService(NotificationService.class, this);
     }
 
-    /*
-      * (non-Javadoc)
-      * @see org.craftercms.cstudio.alfresco.service.api.NotificationService#sendNotice(java.lang.String, java.lang.String)
-      */
+    @Override
     public boolean sendNotice(String site, String action) {
         checkForUpdate(site);
         NotificationConfigTO config = _notificationConfigMap.get(site);
@@ -105,10 +102,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.service.api.NotificationService#getGeneralMessage(java.lang.String, java.lang.String)
-     */
+    @Override
     public String getGeneralMessage(String site, String key) {
         checkForUpdate(site);
         NotificationConfigTO config = _notificationConfigMap.get(site);
@@ -121,11 +115,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         return "";
     }
 
-
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.wcm.service.api.WcmNotificationService#getCannedRejectionReasons(java.lang.String)
-     */
+    @Override
     public List<MessageTO> getCannedRejectionReasons(final String site) {
         checkForUpdate(site);
         NotificationConfigTO config = _notificationConfigMap.get(site);
@@ -138,10 +128,6 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.wcm.service.api.WcmNotificationService#getCannedRejectionReasons(java.lang.String)
-     */
     public EmailMessageTemplateTO getRejectionEmailMessageTemplate(final String site) {
         checkForUpdate(site);
         NotificationConfigTO config = _notificationConfigMap.get(site);
@@ -250,10 +236,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.service.api.NotificationService#getCompleteMessage(java.lang.String, java.lang.String)
-     */
+    @Override
     public String getCompleteMessage(final String site, final String key) {
         checkForUpdate(site);
         NotificationConfigTO config = _notificationConfigMap.get(site);
@@ -275,7 +258,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
             if (messages != null) {
                 String s = messages.get(key);
                 for (Map.Entry<String, String> param : params.entrySet()) {
-                    s=s.replaceAll("$"+param.getKey(),param.getValue());
+                    s=s.replaceAll("\\$"+param.getKey(),param.getValue());
                 }
                 return s;
             }
@@ -284,11 +267,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
 
     }
 
-
-    /*
-      * (non-Javadoc)
-      * @see org.craftercms.cstudio.alfresco.service.api.ConfigurableServiceBase#loadConfiguration(java.lang.String)
-      */
+    @Override
     @SuppressWarnings("unchecked")
     protected void loadConfiguration(final String key) {
         NodeRef configRef = getConfigRef(key);
@@ -414,20 +393,15 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
             config.setEmailMessageTemplates(messageMap);
         }
     }
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.service.api.ConfigurableServiceBase#getConfigRef(java.lang.String)
-     */
+
+    @Override
     protected NodeRef getConfigRef(String key) {
         String siteConfigPath = _configPath.replaceFirst(CStudioConstants.PATTERN_SITE, key);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         return persistenceManagerService.getNodeRef(siteConfigPath + "/" + _configFileName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.service.api.ConfigurableServiceBase#getConfiguration(java.lang.String)
-     */
+    @Override
     protected TimeStamped getConfiguration(String key) {
         return _notificationConfigMap.get(key);
     }
@@ -439,6 +413,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         }
     }
 
+    @Override
     public void sendRejectionNotification(String site,String to,String browserUrl,String reason,String from, boolean isPreviewable)
     {
         try
@@ -466,9 +441,9 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         {
             LOGGER.error("Could not queue the rejection notification:",e);
         }
-
     }
 
+    @Override
     public void sendApprovalNotification(String site,String to,String browserUrl,String from)
     {
         try
@@ -505,9 +480,9 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         {
             LOGGER.error("Could not queue the approval notification:",e);
         }
-
     }
 
+    @Override
     public void sendContentSubmissionNotification(String site,String to,String browserUrl,String from,Date scheduledDate,boolean isPreviewable,boolean isDelete)
     {
         try
@@ -557,7 +532,7 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         }
     }
 
-
+    @Override
     public void sendDeleteApprovalNotification(String site,String to,String browserUrl,String from)
     {
         try
@@ -604,7 +579,6 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
             UserProfileTO profile = profileService.getUserProfile(toUser, site, false);
             userEmailAddress=profile.getProfile().get(ContentModel.PROP_EMAIL.getLocalName());
         }
-
 
         UserProfileTO fromProfile = profileService.getUserProfile(fromUser, site, false);
         final String userFirstName=fromProfile.getProfile().get(ContentModel.PROP_FIRSTNAME.getLocalName());
@@ -664,8 +638,6 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         DmPathTO path = new DmPathTO(absolutePath);
         String name = path.getName();
         String browserUri = dmContentService.getBrowserUri(site, relativeUrl, name);
-        //String relativePath = path.getRelativePath();
-        String fullPath = path.toString();
         String folderPath = (name.equals(DmConstants.INDEX_FILE)) ? relativeUrl.replace("/" + name, "") : relativeUrl;
         String internalName=folderPath;
         int index= folderPath.lastIndexOf('/');
@@ -690,7 +662,6 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
         if(replyTo != null)
             emailMessage.setReplyTo(replyTo);
 
-
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Queuing notification email request for user:"+userEmailAddress);
         emailMessages.addEmailMessage(emailMessage);
@@ -713,6 +684,37 @@ public class NotificationServiceImpl extends ConfigurableServiceBase implements 
     public void setEmailMessages(EmailMessageQueueTo emailMessages)
     {
         this.emailMessages=emailMessages;
+    }
+
+    @Override
+    public void sendGenericNotification(String site, String path, String to, String from, String key, Map<String,String> params)
+    {
+        try {
+            EmailMessageTemplateTO template = null;
+            checkForUpdate(site);
+            NotificationConfigTO config = _notificationConfigMap.get(site);
+            if (config != null) {
+                Map<String, EmailMessageTemplateTO> messages = config.getEmailMessageTemplates();
+                if (messages != null)
+                    template = messages.get(key);
+            }
+            if (template == null)
+                throw new RuntimeException("No email-message-template: " + key);
+            else {
+                String subject = template.getSubject();
+                String message = template.getMessage();
+                if (params != null) {
+                    for (String name : params.keySet()) {
+                        String value = params.get(name);
+                        message = message.replaceAll("\\$"+name, value);
+                    }
+                }
+                notifyUser(site, to, message, subject, from, path, null);
+            }
+        }
+        catch (Exception e) {
+            LOGGER.error("Could not queue the notification:", e);
+        }
     }
 
 }
