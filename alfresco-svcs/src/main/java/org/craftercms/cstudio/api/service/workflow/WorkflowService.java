@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 
-import org.craftercms.cstudio.alfresco.service.api.NotificationService;
-
 public interface WorkflowService {
 
 	public static final String STATE_CREATED = "created";
@@ -99,9 +97,4 @@ public interface WorkflowService {
 	 * @param sendApprovedNotice true triggers email to submitter on approval
 	 */
 	void submitToGoLive(String site, List<String> paths, Date scheduledDate, boolean sendApprovedNotice);
-
-	/**
-	 * Get notification service.
-	 */
-	NotificationService getNotificationService();
 }

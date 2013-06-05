@@ -119,17 +119,4 @@ public interface NotificationService {
 	 * @return true if configured to send
 	 */
 	public boolean sendNotice(String site, String action);
-
-	/**
-	 * Send a generic notification.
-	 * 
-	 * @param site the site name of this notification.
-	 * @param path the content path pertain to this notification.
-	 * @param to the recipient of the email.
-	 * @param from the sender of the email.
-	 * @param key the email message template key in notification-config.xml.
-	 * @param params the name/value pairs to be injected into the message.
-	 */
-	public void sendGenericNotification(String site, String path, String to, String from, String key, Map<String,String> params);
-
 }
