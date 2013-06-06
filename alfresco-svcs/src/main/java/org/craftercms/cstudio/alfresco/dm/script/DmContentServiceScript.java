@@ -125,12 +125,12 @@ public class DmContentServiceScript extends BaseProcessorExtension {
      * @return content item
      * @throws org.craftercms.cstudio.alfresco.service.exception.ServiceException
      */
-    public String getItem(String site, String sub, String relativePath)
+    public String getItem(String site, String sub, String relativePath, boolean populateDependencies)
             throws ServiceException {
         ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         String fullPath = servicesConfig.getRepositoryRootPath(site) + relativePath;
-        DmContentItemTO item = persistenceManagerService.getContentItem(fullPath);
+        DmContentItemTO item = persistenceManagerService.getContentItem(fullPath, populateDependencies);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(JSON_KEY_ITEM, item);
         return jsonObject.toString();

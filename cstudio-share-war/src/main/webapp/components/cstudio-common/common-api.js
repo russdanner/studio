@@ -3355,11 +3355,15 @@ YConnect.failureEvent.subscribe(function() {
 			/**
 			 * lookup Content item
 			 */
-			lookupContentItem: function(site, path, callback, isDraft) {
+			lookupContentItem: function(site, path, callback, isDraft, populateDependencies) {
 
 				var serviceUri = this.lookupContentItemServiceUri + "?site=" + site + "&path=" + path;
                 if (isDraft) {
                     serviceUri = serviceUri + "&draft=true";
+                }
+
+                if (populateDependencies != undefined && !populateDependencies) {
+                    serviceUri = serviceUri + "&populateDependencies=false";
                 }
 
 				var serviceCallback = {

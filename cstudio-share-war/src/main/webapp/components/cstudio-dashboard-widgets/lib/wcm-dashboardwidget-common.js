@@ -734,7 +734,7 @@ WcmDashboardWidgetCommon.getContentItemForMatchedElement = function(matchedEleme
         }
     };
 
-    CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, itemUrl, getContentItemsCb);
+    CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, itemUrl, getContentItemsCb, false, false);
 }
 
 /**

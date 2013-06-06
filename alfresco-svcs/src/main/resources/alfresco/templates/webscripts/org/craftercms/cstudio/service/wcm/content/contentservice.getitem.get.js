@@ -2,6 +2,8 @@
    var site = args.site;
    var path = args.path;
    var sub = args.path;
+   var populateDependencies = args.populateDependencies;
+   var popDeps = false;
    
    var valid = true;
    
@@ -19,7 +21,12 @@
      status.redirect = true;
      valid = false;
    }
+   if (populateDependencies == undefined) {
+       popDeps = true;
+   } else if (populateDependencies == "true") {
+       popDeps = true;
+   }
    if (valid)
    {
-   		model.result = dmContentService.getItem(site, sub, path);
+   		model.result = dmContentService.getItem(site, sub, path, popDeps);
    }
