@@ -328,7 +328,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			}
 			return valObj;	
 		} else {
-			return "value";    // default data type value (for backwards compatibility)
+			return valObj;    // return the value object as it was (for backwards compatibility)
 		}
 	},
 	
