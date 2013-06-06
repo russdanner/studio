@@ -215,7 +215,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		var _self = this;
 		var datasource = this.form.datasourceMap[this.datasourceName];
 
-		if( datasource ){
+		if( datasource && this.readonly == false ){
 			this.datasource = datasource;
 			
 			if (datasource.add) {

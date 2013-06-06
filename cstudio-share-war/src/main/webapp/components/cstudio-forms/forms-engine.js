@@ -611,67 +611,76 @@ var CStudioForms = CStudioForms || function() {
 			// load the definition
 			var formId = CStudioAuthoring.Utils.getQueryVariable(location.search, "form");
 			var edit = CStudioAuthoring.Utils.getQueryVariable(location.search, "edit");
-			var readonly = CStudioAuthoring.Utils.getQueryVariable(location.search, "readonly");
+			var readonly = (CStudioAuthoring.Utils.getQueryVariable(location.search, "readonly") == "true")? true: false;
 
-            var readOnly = (readonly == "true") ? true : false;
+      var formDefinition = CStudioForms.Util.loadFormDefinition(formId, {
+            success: function(formDef) {
+                CStudioForms.Util.LoadFormController(formId, {
+                    success: function(customControllerClass) {
+                        var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
+                        if( path && path.indexOf(".xml") != -1) {
+                            //Check if the form is locked
+                            CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, path, {
+                                success: function (itemTO) {
+                                    if (itemTO.item.lockOwner != "" && itemTO.item.lockOwner != CStudioAuthoringContext.user) {
+                                        readonly = true;
+                                    }
 
-			var formDefinition = CStudioForms.Util.loadFormDefinition(formId, {
-				success: function(formDef) {
+                                    CStudioAuthoring.Service.lookupContentType(
+                                        CStudioAuthoringContext.site,
+                                        formId, {
+                                            success: function (typeInfoJson) {
+                                                formDef.contentAsFolder = typeInfoJson.contentAsFolder;
 
-					CStudioForms.Util.LoadFormController(formId, {
-						success: function(customControllerClass) {
-		   			var contentTypeCb = {
-		   				success: function(typeInfoJson) {
-		   					formDef.contentAsFolder = typeInfoJson.contentAsFolder;
+                                                if((edit && edit=="true") || readonly == true){
+                                                    CStudioAuthoring.Service.getContent(path, !readonly, {
+                                                        success: function(content) {
+                                                            _self._renderFormWithContent(content, formId, formDef, style, customControllerClass, readonly);
+                                                        },
+                                                        failure: function(err) {
+                                                            alert("failed to load content");
+                                                        }
+                                                    });
+                                                }
+                                            },
+                                            failure: function () {
 
-                            var getContentCallback = {
-                                success: function(content) {
-                                    _self._renderFormWithContent(content, formId, formDef, style, customControllerClass);
+                                            }
+                                    });
                                 },
-                                failure: function(err) {
-                                    alert("failed to load content");
-                                },
+                                failure: function () {
 
-                                context: this.context
-                            }
-                            var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
+                                }
+                            }, false);
+                        } 
+                        else {
+                            // new content item
+                            var emptyContentModel = { 
+                                  responseXML: {
+                                    documentElement: {
+                                      children: []
+                                    }
+                                  }
+                                };
 
-                            if((edit && edit=="true") || readOnly == true){
-                                CStudioAuthoring.Service.getContent(path, !readOnly, getContentCallback);
-                            }
-							else {
-								// new content item
-								var emptyContentModel = { 
-										responseXML: {
-											documentElement: {
-												children: []
-											}
-										}
-								};
-								
-							    _self._renderFormWithContent(emptyContentModel, formId, formDef, style, customControllerClass);
-							}		   					
+                                _self._renderFormWithContent(emptyContentModel, 
+                                      formId, 
+                                      formDef, 
+                                      style, 
+                                      customControllerClass,
+                                      false);
+                        }
+                      },
+                      failure: function() {
 
-		   				},
+                      }
+                    });
+            },
+            failure: function(err) {
 
-		   				failure: function() {
-		   				}
-		   			};
-	
-					CStudioAuthoring.Service.lookupContentType(
-	   					CStudioAuthoringContext.site,
-	   					formId,
-	   					contentTypeCb);
-				},
-				
-			   			failure: function() {
-			   			}
-					});
-				},
-				failure: function(err) {
-				}
-			});
-		},
+            }
+      });
+    },
 
         _getPageLocation: function (path) {
             var pathStr = path.replace(/^\/site\/website\//,"");    // Remove string "/site/website/" from path(Page)
@@ -682,7 +691,7 @@ var CStudioForms = CStudioForms || function() {
             return pathStr.replace(/\//g," &raquo; ");   // Replace forward slash (/) with " >> "
         },
 
-		_renderFormWithContent: function(content, formId, formDef, style, customControllerClass) {
+		_renderFormWithContent: function(content, formId, formDef, style, customControllerClass, readOnly) {
 
             var closeAjaxOverlay = function () {
                 if (form.asyncFields == 0) {
@@ -692,7 +701,7 @@ var CStudioForms = CStudioForms || function() {
                 }
             };
 
-			var readonly = CStudioAuthoring.Utils.getQueryVariable(location.search, "readonly");
+			var readonly = readOnly || (CStudioAuthoring.Utils.getQueryVariable(location.search, "readonly") == "true")? true: false;
 			var contentType = CStudioAuthoring.Utils.getQueryVariable(location.search, "form");
 			var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
 			var edit = CStudioAuthoring.Utils.getQueryVariable(location.search, "edit");
@@ -714,7 +723,7 @@ var CStudioForms = CStudioForms || function() {
 
 			var form = new CStudioForm(formId, formDef, contentMap, style, customController);
 
-			form.readOnly = (readonly == "true") ? true : false;
+			form.readOnly = readonly;
 			form.path = path;
 
             var timezone = "GMT";
@@ -1052,19 +1061,37 @@ var CStudioForms = CStudioForms || function() {
                                         var entityId = buildEntityIdFn();
                                         showWarnMsg = false;
 
-                                        CStudioAuthoring.Service.unlockContentItem(CStudioAuthoringContext.site, entityId, {
-                                            success: function() {
-                                                _notifyServer = false;
-                                                if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                                    window.parent.location = window.parent.location;
-                                                }
-                                                else {
-                                                    window.close();
-                                                }
-                                            },
-                                            failure: function() {
-                                            }
-                                        });
+                                        CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, entityId, {
+                                              success: function (itemTO) {
+                                                  //Unlock if the item is locked by the user
+                                                  if (itemTO.item.lockOwner == CStudioAuthoringContext.user) {
+                                                      CStudioAuthoring.Service.unlockContentItem(CStudioAuthoringContext.site, entityId, {
+                                                          success: function() {
+                                                              _notifyServer = false;
+                                                              if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
+                                                                  window.parent.location = window.parent.location;
+                                                              }
+                                                              else {
+                                                                  window.close();
+                                                              }
+                                                          },
+                                                          failure: function() {
+                                                          }
+                                                      });
+                                                  } else {
+                                                      _notifyServer = false;
+                                                      if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
+                                                            window.parent.location = window.parent.location;
+                                                      }
+                                                      else {
+                                                            window.close();
+                                                      }
+                                                  }
+                                              },
+                                              failure: function() {
+
+                                              }
+                                         });
                                     }, isDefault:true },
                                         { text:"No",  handler:function(){this.hide();} } ]
                                 });

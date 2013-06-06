@@ -2565,8 +2565,30 @@ YConnect.failureEvent.subscribe(function() {
 			},
             /**
              *  unlock the content item synchronous
+             *  Used on unload event of the window
              */
             unlockContentItemSync: function(site, path){
+                var _self = this;
+                function isLockedByUser(site, path) {
+                    var value = false, response, itemTO;
+                    var serviceUrl = _self.lookupContentItemServiceUri + "?site=" + site + "&path=" + path;
+                    var xhrObj = YConnect.createXhrObject();
+                    xhrObj.conn.open("GET", _self.createServiceUri(serviceUrl), false);
+                    xhrObj.conn.send(null);
+
+                    response = xhrObj.conn.responseText;
+                    if( response && response != "") {
+                        itemTO = eval("(" + response + ")");
+                        if ( itemTO.item.lockOwner == CStudioAuthoringContext.user) {
+                            value = true;
+                        }
+                    }
+                    return value;
+                }
+
+                if ( !isLockedByUser(site, path)) 
+                    return;
+
                 var serviceUrl = this.unlockContentItemUrl +
                     "?site=" + site +
                     "&path=" + path;

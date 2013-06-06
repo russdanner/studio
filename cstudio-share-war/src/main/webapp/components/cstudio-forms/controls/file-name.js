@@ -283,7 +283,7 @@ YAHOO.extend(CStudioForms.Controls.FileName, CStudioForms.CStudioFormField, {
 
     _renderEdit: function(containerEl){
     	var _self = this;
-        if(CStudioAuthoring.Utils.getQueryVariable(location.search, "edit")){
+        if (CStudioAuthoring.Utils.getQueryVariable(location.search, "edit") && this.readonly == false ){
             var editFileNameEl = document.createElement("div");
             YAHOO.util.Dom.addClass(editFileNameEl, 'cstudio-form-control-filename-edit');
             var editFileNameBtn = document.createElement("input");
