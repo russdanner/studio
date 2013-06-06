@@ -339,6 +339,7 @@ CStudioSearch.fireSearchRequest = function(searchContext) {
 					      	}
 	
 	                        YDom.addClass(resultStatusEl, resultStatusIconStyle);
+	                        YDom.addClass(resultStatusEl, "result-item");
 
 							//Add Tool tip information for item
 							var searReultItem = (resultStatusEl) ? resultStatusEl.nextSibling: undefined;

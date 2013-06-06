@@ -3429,3 +3429,8 @@ input.drop-arrow-button {
     border-color: #777;
     color: #999;
 }
+
+.cstudio-search-result .cstudio-search-select-container,
+.cstudio-search-result .cstudio-search-result-body {
+	float: left;
+}

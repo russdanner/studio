@@ -24,6 +24,10 @@
     float: none !important;
 }
 
+.cstudio-search-result .result-item {
+    float: left !important;
+}
+
 .status-icon.new:after {
     /*
     content: "*";
