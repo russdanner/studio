@@ -214,7 +214,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			// after the value has been set.
 			if(datasource){
 				this.datasource = datasource;
-				this.dataType = datasource.getDataType();
+				this.dataType = datasource.getDataType() || "value";	// Set default value for dataType (for backwards compatibility)
 				datasource.getList(cb);
 			}else{
 				this.callback = cb;
@@ -328,7 +328,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			}
 			return valObj;	
 		} else {
-			return valObj;    // return the value object as it was (for backwards compatibility)
+			throw new TypeError("Function updateDataType (checkbox-group.js) : module variable dataType is undefined");
 		}
 	},
 	
