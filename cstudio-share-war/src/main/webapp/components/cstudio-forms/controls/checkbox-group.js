@@ -328,7 +328,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			}
 			return valObj;	
 		} else {
-			throw new TypeError("Function updateDataType (checkbox-group.js) : module variable dataType is undefined");
+			return "value";    // default data type value (for backwards compatibility)
 		}
 	},
 	
