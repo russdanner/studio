@@ -176,11 +176,6 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		nodeOptionsEl.appendChild(deleteButtonEl);
 		deleteButtonEl.disabled = true;
 		this.deleteButtonEl = deleteButtonEl;
-
-		YAHOO.util.Event.on(deleteButtonEl, 'click', function() {
-			_self.deleteItem(_self.selectedItemIndex);
-			_self._renderItems();
-		}, deleteButtonEl);
 			
 		if(this.readonly == true){
 			addButtonEl.disabled = true;
@@ -236,15 +231,15 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 
 			if (datasource.edit) {
 				this.allowEdit = true;
-				YAHOO.util.Event.on(editButtonEl, 'click', function() {
+				YAHOO.util.Event.on(this.editButtonEl, 'click', function() {
 					datasource.edit(_self.items[_self.selectedItemIndex].key, _self);
-				}, editButtonEl);
+				}, this.editButtonEl);
 			}
 
-			YAHOO.util.Event.on(deleteButtonEl, 'click', function() {
+			YAHOO.util.Event.on(this.deleteButtonEl, 'click', function() {
 				_self.deleteItem(_self.selectedItemIndex);
 				_self._renderItems();
-			}, deleteButtonEl);
+			}, this.deleteButtonEl);
 		}
 	},
 	
