@@ -3,10 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!-- ////////////////////////////////////// -->
-	<!--       Sequence Management Beans        -->
-	<!-- ////////////////////////////////////// -->
-	
+    <!-- ////////////////////////////////////// -->
+    <!--       Sequence Management Beans        -->
+    <!-- ////////////////////////////////////// -->
+    
     <bean id="cstudioSequenceDaoService" class="org.craftercms.cstudio.alfresco.sequence.SequenceDaoServiceImpl"
             init-method="initIndexes">
         <property name="sqlMapClient" ref="cstudioSequenceSqlMap" />
@@ -14,29 +14,29 @@
         <property name="initializeScriptPath">
             <value>alfresco/sequence/${hibernate.dialect}/initialize.sql</value>
         </property>
-    </bean>		    
+    </bean>
 
     <bean id="cstudioSequenceSqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
         <property name="configLocation">
             <value>classpath:alfresco/sequence/SqlMapConfig.xml</value>
         </property>
         <property name="dataSource" ref="dataSource" />
-    </bean>    
+    </bean>
 
-	<bean id="cstudioSequenceSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-	    <property name="dataSource" ref="dataSource" />
-	    <property name="hibernateProperties">
-	        <props>
-	            <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-	            <prop key="hibernate.hbm2ddl.auto">update</prop>
-	        </props>
-	    </property>
-	    <property name="mappingResources">
-	        <list>
-	            <value>alfresco/sequence/Sequence.hbm.xml</value>
-	        </list>
-	    </property>
-	</bean>
+    <bean id="cstudioSequenceSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+            </props>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <value>alfresco/sequence/Sequence.hbm.xml</value>
+            </list>
+        </property>
+    </bean>
 
     <!-- //////////////////////////////////////////////////////////// -->
     <!--       Page Navigation Order Sequence Management Beans        -->
@@ -109,7 +109,7 @@
     <!-- ////////////////////////////////////// -->
     <!--       Activity Service                 -->
     <!-- ////////////////////////////////////// -->
-	<bean id="cstudioCustomActivityService" class="org.craftercms.cstudio.alfresco.service.impl.CStudioActivityServiceImpl"
+    <bean id="cstudioCustomActivityService" class="org.craftercms.cstudio.alfresco.service.impl.CStudioActivityServiceImpl"
           parent="cstudioRegistrableService">
       <property name="feedDaoService" ref="cstudioCustomFeedDaoService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
@@ -131,21 +131,21 @@
         <property name="dataSource" ref="dataSource" />
     </bean>
 
-	<bean id="cstudioActivitySessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+    <bean id="cstudioActivitySessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource" />
-    <property name="hibernateProperties">
-      <props>
-        <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-        <prop key="hibernate.hbm2ddl.auto">update</prop>
-      </props>
-    </property>
-    <property name="mappingResources">
-      <list>
-        <value>alfresco/cstudioactivities/cstudioActivityFeed.hbm.xml</value>
-      </list>
-    	</property>
-  	</bean>
-  
+        <property name="hibernateProperties">
+          <props>
+            <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+            <prop key="hibernate.hbm2ddl.auto">update</prop>
+          </props>
+        </property>
+        <property name="mappingResources">
+          <list>
+            <value>alfresco/cstudioactivities/cstudioActivityFeed.hbm.xml</value>
+          </list>
+        </property>
+    </bean>
+
     <bean id="cstudioFeedGenerator" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">
             <ref bean="ActivitiesFeed"/>
@@ -284,10 +284,36 @@
             </list>
         </property>
     </bean>
-    
- 	<!--/////////////////////////// -->
+
+    <!--/////////////////////////// -->
+    <!-- Workflow  -->
+    <!--/////////////////////////// -->
+
+    <bean id="cstudioWorkflowSqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation">
+            <value>classpath:alfresco/workflow/SqlMapConfig.xml</value>
+        </property>
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!--bean id="cstudioWorkflowSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+            </props>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <value>alfresco/workflow/Workflow.hbm.xml</value>
+            </list>
+        </property>
+    </bean-->
+
+    <!--/////////////////////////// -->
     <!-- Cache  -->
- 	<!--/////////////////////////// -->
+    <!--/////////////////////////// -->
 
     <bean id="cstudioCacheManager" class="org.craftercms.cstudio.alfresco.cache.EhCacheManagerImpl">
         <property name="ehCacheAdapter" ref="cstudioEhCache"/>

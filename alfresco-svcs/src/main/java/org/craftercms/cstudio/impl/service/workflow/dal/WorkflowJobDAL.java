@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.List;
 
 import org.craftercms.cstudio.api.service.workflow.*;
-import org.craftercms.cstudio.impl.service.workflow.dal.*;
 
 public interface WorkflowJobDAL {
 
