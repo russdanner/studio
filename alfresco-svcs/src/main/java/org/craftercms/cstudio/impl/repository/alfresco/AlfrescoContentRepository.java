@@ -43,6 +43,7 @@ import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
+import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.repository.AbstractContentRepository;
@@ -194,11 +195,13 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     private final Map<TransitionEvent, ObjectStateService.TransitionEvent> eventConversionMap = new HashMap<TransitionEvent, ObjectStateService.TransitionEvent>() {{
         put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_SCHEDULED);
         put(TransitionEvent.DEPLOYMENT, ObjectStateService.TransitionEvent.DEPLOYMENT);
+        put(TransitionEvent.DELETE, ObjectStateService.TransitionEvent.DELETE);
     }};
 
     private final Map<TransitionEvent, ObjectStateService.State> defaultStateForEvent = new HashMap<TransitionEvent, ObjectStateService.State>() {{
         put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.State.NEW_SUBMITTED_NO_WF_SCHEDULED);
         put(TransitionEvent.DEPLOYMENT, ObjectStateService.State.EXISTING_UNEDITED_UNLOCKED);
+        put(TransitionEvent.DELETE, ObjectStateService.State.EXISTING_DELETED);
     }};
 
     @Override
@@ -457,21 +460,21 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     @Override
-    public void deleteContent(String site, String path) {
+    public void deleteContent(CopyToEnvironmentItem item) {
         PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
-        String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        String fullPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, item.getSite());
         fullPath = fullPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, WORK_AREA_REPOSITORY);
-        fullPath = fullPath + path;
+        fullPath = fullPath + item.getPath();
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
         if (nodeRef != null) {
-            try {
-                _dmContentService.deleteContent(site, path, true, true, null);
-                return;
-            } catch (ServiceException e) {
-                logger.debug("Failed to delete content at path: " + path + " site " + site);
-            }
+            //_dmContentService.deleteContent(site, path, true, true, null);
+            //return;
+            List<String> paths = new ArrayList<String>();
+            paths.add(item.getPath());
+            _dmContentService.generateDeleteActivity(item.getSite(), paths, item.getUser());
             NodeRef parentNode = persistenceManagerService.getPrimaryParent(nodeRef).getParentRef();
             persistenceManagerService.deleteNode(nodeRef);
+            persistenceManagerService.deleteObjectState(nodeRef.getId());
             List<FileInfo> children = persistenceManagerService.list(parentNode);
             while ( children == null || children.size() < 1) {
                 NodeRef helpNode = parentNode;

@@ -17,18 +17,18 @@
  ******************************************************************************/
 package org.craftercms.cstudio.api.repository;
 
-import java.io.*;
+import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
+import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
+import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
+import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+
+import javax.transaction.UserTransaction;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
-import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
-import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
-
-import javax.transaction.UserTransaction;
 
 /**
  * This interface represents the repository layer of Crafter Studio.  All interaction with the backend 
@@ -134,7 +134,7 @@ public interface ContentRepository {
 
     void publishDeployEvent(String endpoint, List<DeploymentEventItem> items);
 
-    void deleteContent(String site, String path);
+    void deleteContent(CopyToEnvironmentItem item);
 
     void deleteContent(String site, String environment, String path);
 

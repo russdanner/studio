@@ -36,6 +36,7 @@ import org.craftercms.cstudio.alfresco.dm.to.DmDependencyTO;
 import org.craftercms.cstudio.alfresco.dm.to.DmError;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.util.DmContentItemComparator;
+import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
 import org.craftercms.cstudio.alfresco.dm.util.ThreadLocalContainer;
 import org.craftercms.cstudio.alfresco.dm.workflow.MultiChannelPublishingContext;
 import org.craftercms.cstudio.alfresco.dm.workflow.RequestContext;
@@ -689,24 +690,24 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                 case DELETE:
                     responseMessageKey = NotificationService.COMPLETE_DELETE;
                     List<String> deletePaths = new FastList<String>();
+                    List<String> nodeRefs = new ArrayList<String>();
                     for (DmDependencyTO deletedItem : submittedItems) {
                         String fullPath = servicesConfig.getRepositoryRootPath(site) + deletedItem.getUri();
                         //deletedItem.setScheduledDate(getScheduledDate(site, format, scheduledDate));
                         deletePaths.add(fullPath);
-                        persistenceManagerService.setSystemProcessing(fullPath, true);
-                    }
-                    dmWorkflowService.doDelete(site, sub, submittedItems, approver);
-                    for (String fullPath : deletePaths) {
                         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
                         if (nodeRef != null) {
-                            if (scheduledDate != null) {
-                                persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.DELETE);
-                            } else {
-                                persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.DELETE);
-                            }
-                            persistenceManagerService.setSystemProcessing(fullPath, false);
-                        } else {
-                            if (!deploymentEngine) {
+                            nodeRefs.add(nodeRef.getId());
+                        }
+                    }
+                    persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
+                    dmWorkflowService.doDelete(site, sub, submittedItems, approver);
+                    if (!deploymentEngine) {
+                        persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.DELETE, ObjectStateService.State.EXISTING_DELETED);
+                        persistenceManagerService.setSystemProcessingBulk(nodeRefs, false);
+                        for (String fullPath : deletePaths) {
+                            NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+                            if (nodeRef == null) {
                                 DmPathTO dmPathTO = new DmPathTO(fullPath);
                                 persistenceManagerService.deleteObjectStateForPath(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
                             }
@@ -1036,6 +1037,14 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
      * @throws ServiceException
      */
     public ResultTO goDelete(String site, String sub, String request, String user) {
+        String md5 = DmUtils.getMd5ForFile(request);
+        String id = site + ":" + user + ":" + md5;
+        GeneralLockService generalLockService = _servicesManager.getService(GeneralLockService.class);
+        if (!generalLockService.tryLock(id)) {
+            generalLockService.lock(id);
+            generalLockService.unlock(id);
+            return new ResultTO();
+        }
         try {
             Map<String, String> map = new HashMap<String, String>();
             map.put(CStudioConstants.USER, user);
@@ -1043,8 +1052,8 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
             return approve(site, sub, request, Operation.DELETE);
         } finally {
             ThreadLocalContainer.remove();
+            generalLockService.unlock(id);
         }
-
     }
 
     /**

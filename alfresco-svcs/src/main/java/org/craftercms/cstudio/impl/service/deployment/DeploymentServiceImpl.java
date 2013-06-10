@@ -67,6 +67,8 @@ public class DeploymentServiceImpl implements DeploymentService {
     @Override
     public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
         _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+        _contentRepository.stateTransition(site, paths, TransitionEvent.DELETE);
+        _contentRepository.setSystemProcessing(site, paths, false);
     }
 
     @Override
