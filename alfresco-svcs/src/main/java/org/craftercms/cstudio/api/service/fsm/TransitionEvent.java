@@ -21,5 +21,6 @@ package org.craftercms.cstudio.api.service.fsm;
 public enum TransitionEvent {
 
     SCHEDULED_DEPLOYMENT,
-    DEPLOYMENT
+    DEPLOYMENT,
+    DELETE
 }

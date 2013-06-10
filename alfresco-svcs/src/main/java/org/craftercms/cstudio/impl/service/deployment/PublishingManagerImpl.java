@@ -445,7 +445,7 @@ public class PublishingManagerImpl implements PublishingManager {
                 _contentRepository.clearRenamed(item.getSite(), item.getPath());
             }
             _contentRepository.deleteContent(item.getSite(), item.getEnvironment(), item.getPath());
-            _contentRepository.deleteContent(item.getSite(), item.getPath());
+            _contentRepository.deleteContent(item);
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
             if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
