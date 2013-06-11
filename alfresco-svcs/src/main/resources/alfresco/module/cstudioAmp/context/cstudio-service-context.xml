@@ -995,7 +995,7 @@
     <!--         workflow                       -->
     <!-- ////////////////////////////////////// -->
     <!-- DALs -->
-    <bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.InMemoryWorkflowJobDAL">
+    <bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.InMemoryWorkflowJobDAL"/>
     <!--bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.DbWorkflowJobDAL"
           init-method="initTable">
         <property name="sqlMap" ref="cstudioWorkflowSqlMap"/>
