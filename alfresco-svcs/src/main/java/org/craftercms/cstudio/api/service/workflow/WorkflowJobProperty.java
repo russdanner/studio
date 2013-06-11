@@ -41,7 +41,8 @@ public class WorkflowJobProperty {
 	 * @param value
 	 * 			property value
 	 */
-	public WorkflowJobProperty(String name, String value) {
+	public WorkflowJobProperty(String jobId, String name, String value) {
+		this.jobId = jobId;
 		this.name = name;
 		this.value = value;
 	}

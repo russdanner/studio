@@ -43,13 +43,13 @@ public abstract class AbstractWorkflowJobDAL implements WorkflowJobDAL {
 	 */
 	public WorkflowJob createJob(String site, List<String> srcPaths, String processName, Map<String, String> properties) {
 		WorkflowJob retJob = newJob(site, processName, properties);
-		
-		writeNewJob(retJob);
 
 		for(String path : srcPaths) {
 			WorkflowItem item = createItem(retJob.getId(), path);
 			retJob.getItems().add(item);
 		}
+
+		writeNewJob(retJob);
 
 		return retJob;
 	}
@@ -85,10 +85,9 @@ public abstract class AbstractWorkflowJobDAL implements WorkflowJobDAL {
 		WorkflowJob retJob = new WorkflowJob();
 		Date now = new Date();
 		List<WorkflowItem> items = new ArrayList<WorkflowItem>();
-		Map<String, String> emptyProperties = new HashMap<String, String>();
 		
-		if(properties == null) {
-			properties = emptyProperties;
+		if (properties == null) {
+			properties = new HashMap<String, String>();
 		}
 		
 		retJob.setId(generateJobId());

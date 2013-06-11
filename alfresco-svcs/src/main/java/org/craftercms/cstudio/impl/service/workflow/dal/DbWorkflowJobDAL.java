@@ -27,8 +27,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import javolution.util.FastMap;
-
 import org.craftercms.cstudio.alfresco.to.TableIndexCheckTO;
 import org.craftercms.cstudio.api.service.workflow.WorkflowItem;
 import org.craftercms.cstudio.api.service.workflow.WorkflowJob;
@@ -49,30 +47,29 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 	private static final String TABLE_ITEM = "workflowItem";
 
 	/** table check and creation **/
-	private static final String STATEMENT_CHECK_TABLE_EXISTS = "workflow.checkTableExists";
+	private static final String STATEMENT_CHECK_TABLE_EXISTS = "checkTableExists";
 
 	/** table indexes **/
 	private static final String INDEX_ID = "Id";
 	private static final String INDEX_STATE = "State";
 
 	/** job table statements **/
-	private static final String STATEMENT_GET_JOB = "workflow.getJob";
-	private static final String STATEMENT_GET_JOBS_BY_STATES = "workflow.getJobsByStates";
-	private static final String STATEMENT_UPDATE_JOB = "workflow.updateJob";
-	private static final String STATEMENT_DELETE_JOB = "workflow.deleteJob";
-	private static final String STATEMENT_CREATE_JOB = "workflow.createJob";
+	private static final String STATEMENT_GET_JOB = "getJob";
+	private static final String STATEMENT_GET_JOBS_BY_STATES = "getJobsByStates";
+	private static final String STATEMENT_UPDATE_JOB = "updateJob";
+	private static final String STATEMENT_DELETE_JOB = "deleteJob";
+	private static final String STATEMENT_CREATE_JOB = "createJob";
 	
 	/** item table statements **/
-	private static final String STATEMENT_GET_ITEM = "workflow.getItem";
-	private static final String STATEMENT_GET_ITEMS_BY_JOB = "workflow.getItemsByJob";
-	private static final String STATEMENT_UPDATE_ITEM = "workflow.updateItem";
-	private static final String STATEMENT_DELETE_ITEM = "workflow.deleteItem";
-	private static final String STATEMENT_CREATE_ITEM = "workflow.createItem";
+	private static final String STATEMENT_GET_ITEM = "getItem";
+	private static final String STATEMENT_GET_ITEMS_BY_JOB = "getItemsByJob";
+	private static final String STATEMENT_UPDATE_ITEM = "updateItem";
+	private static final String STATEMENT_DELETE_ITEM = "deleteItem";
+	private static final String STATEMENT_CREATE_ITEM = "createItem";
 	
 	/** job property table statements **/
-	private static final String STATEMENT_GET_JOB_PROPERTIES = "workflow.getJobProperties";
-	private static final String STATEMENT_DELETE_JOB_PROPERTIES = "workflow.deleteJobProperties";
-	private static final String STATEMENT_CREATE_JOB_PROPERTY = "workflow.createJobProperty";
+	private static final String STATEMENT_DELETE_JOB_PROPERTIES = "deleteJobProperties";
+	private static final String STATEMENT_CREATE_JOB_PROPERTY = "createJobProperty";
 	
 	/**
 	 * alfresco dataSource
@@ -96,12 +93,9 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 			LOGGER.debug("[TRANSLATION] looking up job by id: {0}", id);
 
 			job = (WorkflowJob) sqlMap.queryForObject(STATEMENT_GET_JOB, id);
-			// read properties
-			Map<String, String> properties = getJobProperties(id);
-			job.setProperties(properties);
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while finding a job by id: {0}", id);
+			LOGGER.error("[TRANSLATION] Error while finding a job by id: {0}", e, id);
 		}
 		return job;
 	}
@@ -113,62 +107,55 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 			LOGGER.debug("[TRANSLATION] looking up job by states: {0}", states);
 
 			// TODO: might change the param type to be set and just pass a set
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("states", states);
-			jobs = (List<WorkflowJob>) sqlMap.queryForList(STATEMENT_GET_JOBS_BY_STATES, params);
-			if (jobs != null) {
-				for (WorkflowJob job : jobs) {
-					// read properties for each
-					Map<String, String> properties = getJobProperties(job.getId());
-					job.setProperties(properties);
-				}
+			Map<String, Object> params = null;
+			if (states != null && !states.isEmpty()) {
+				params = new HashMap<String, Object>();
+				params.put("states", states);
 			}
+			jobs = (List<WorkflowJob>) sqlMap.queryForList(STATEMENT_GET_JOBS_BY_STATES, params);
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while querying for jobs by states: {0}", states);
+			LOGGER.error("[TRANSLATION] Error while querying for jobs by states: {0}", e, states);
 		}
 		return jobs;
 	}
 
 	@Override
 	public WorkflowJob updateJob(WorkflowJob job) {
-		WorkflowJob updatedJob = null;
-		Map<String, Object> params = this.createJobParameters(job);
 		try {
-			LOGGER.debug("[TRANSLATION] updating job: {0}", params);
+			LOGGER.debug("[TRANSLATION] updating job: {0}", job);
 
 			sqlMap.startTransaction();
 			// update job first
-			sqlMap.update(STATEMENT_UPDATE_JOB, params);
-			LOGGER.debug("[TRANSLATION] looking up updated job by : {0}", job.getId());
+			sqlMap.update(STATEMENT_UPDATE_JOB, job);
 
-			updatedJob = (WorkflowJob) sqlMap.queryForObject(STATEMENT_GET_JOB, job.getId());
 			// delete all job properties
-			sqlMap.delete(STATEMENT_DELETE_JOB_PROPERTIES, job.getId());
+			String jobId = job.getId();
+			sqlMap.delete(STATEMENT_DELETE_JOB_PROPERTIES, jobId);
 			// create new job properties
-			sqlMap.startBatch();
 			Map<String, String> properties = job.getProperties();
-			if (properties != null) {
+			if (!properties.isEmpty()) {
+				sqlMap.startBatch();
 				for (String name : properties.keySet()) {
-					WorkflowJobProperty property = new WorkflowJobProperty(name, properties.get(name));
+					WorkflowJobProperty property = new WorkflowJobProperty(jobId, name, properties.get(name));
 					sqlMap.insert(STATEMENT_CREATE_JOB_PROPERTY, property);
 				}
+				sqlMap.executeBatch();
 			}
-			sqlMap.executeBatch();
 			sqlMap.commitTransaction();
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while updating job: {0}", job);
+			LOGGER.error("[TRANSLATION] Error while updating job: {0}", e, job);
 		}
 		finally {
 			try {
 				sqlMap.endTransaction();
 			}
 			catch (SQLException e) {
-				LOGGER.error("[TRANSLATION] Error creating a job: {0}", params);
+				LOGGER.error("[TRANSLATION] Error creating a job: {0}", e, job);
 			}
 		}
-		return updatedJob;
+		return job;
 	}
 
 	@Override
@@ -176,93 +163,72 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 		boolean result = false;
 		try {
 			LOGGER.debug("[TRANSLATION] deleting a job by id: {0}", id);
-
+			sqlMap.startTransaction();
 			sqlMap.delete(STATEMENT_DELETE_JOB, id);
+			sqlMap.delete(STATEMENT_DELETE_JOB_PROPERTIES, id);
+			sqlMap.delete("deleteJobItems", id);
+			sqlMap.commitTransaction();
 			result = true;
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while deleting a job by id: {0}", id);
-		}
-		return result;
-	}
-
-	@Override
-	protected void writeNewJob(WorkflowJob job) {
-		Map<String, Object> params = createJobParameters(job);
-		try {
-			LOGGER.debug("[TRANSLATION] creating a job: {0}", params);
-
-			sqlMap.startTransaction();
-			WorkflowJob createdJob = (WorkflowJob) sqlMap.insert(STATEMENT_CREATE_JOB, params);
-			if (createdJob != null) {
-				LOGGER.debug("[TRANSLATION] writing properties of job: {0}", job.getId());
-
-				// create job properties
-				sqlMap.startBatch();
-				Map<String, String> properties = job.getProperties();
-				if (properties != null) {
-					for (String name : properties.keySet()) {
-						WorkflowJobProperty property = new WorkflowJobProperty(name, properties.get(name));
-						sqlMap.insert(STATEMENT_CREATE_JOB_PROPERTY, property);
-					}
-				}
-				sqlMap.executeBatch();
-			}
-			sqlMap.commitTransaction();
-		}
-		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error creating a job: {0}", params);
+			LOGGER.error("[TRANSLATION] Error while deleting a job by id: {0}", e, id);
 		}
 		finally {
 			try {
 				sqlMap.endTransaction();
 			}
 			catch (SQLException e) {
-				LOGGER.error("[TRANSLATION] Error creating a job: {0}", params);
+				LOGGER.error("[TRANSLATION] Error deleting a job: {0}", e, id);
 			}
 		}
+		return result;
 	}
 
-	/**
-	 * create job parameters map 
-	 * 
-	 * @param job the target job to save
-	 * @return a map of properties
-	 */
-	private Map<String, Object> createJobParameters(WorkflowJob job) {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("id", job.getId());
-		params.put("site", job.getSite());
-		params.put("processName", job.getProcessName());
-		params.put("createdDate", job.getCreateDate());
-		params.put("modifiedDate", job.getModifiedDate());
-		params.put("state", job.getCurrentStatus());
-		return params;
-	}
-
-	/**
-	 * get properties of the job by the id given
-	 * 
-	 * @param id the job id
-	 * @return
-	 */
-	private Map<String, String> getJobProperties(String jobId) {
-		Map<String, String> properties = new FastMap<String, String>();
+	@Override
+	protected void writeNewJob(WorkflowJob job) {
 		try {
-			List<WorkflowJobProperty> jobProperties 
-				= (List<WorkflowJobProperty>) sqlMap.queryForList(STATEMENT_GET_JOB_PROPERTIES, jobId);
-			if (jobProperties != null) {
-				for (WorkflowJobProperty property : jobProperties) {
-					properties.put(property.getName(), property.getValue());
+			LOGGER.debug("[TRANSLATION] creating a job: {0}", job);
+
+			sqlMap.startTransaction();
+			sqlMap.insert(STATEMENT_CREATE_JOB, job);
+
+			String jobId = job.getId();
+			LOGGER.debug("[TRANSLATION] writing properties of job: {0}", jobId);
+
+			// create job items
+			List<WorkflowItem> items = job.getItems();
+			if (!items.isEmpty()) {
+				sqlMap.startBatch();
+				for (WorkflowItem item : items) {
+					sqlMap.insert(STATEMENT_CREATE_ITEM, item);
 				}
+				sqlMap.executeBatch();
 			}
+			// create job properties
+			Map<String, String> properties = job.getProperties();
+			if (!properties.isEmpty()) {
+				sqlMap.startBatch();
+				for (String name : properties.keySet()) {
+					WorkflowJobProperty property = new WorkflowJobProperty(jobId, name, properties.get(name));
+					sqlMap.insert(STATEMENT_CREATE_JOB_PROPERTY, property);
+				}
+				sqlMap.executeBatch();
+			}
+
+			sqlMap.commitTransaction();
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] failed to read properties by id: {0}", e, jobId);
+			LOGGER.error("[TRANSLATION] Error creating a job: {0}", e, job);
 		}
-		return properties;
+		finally {
+			try {
+				sqlMap.endTransaction();
+			}
+			catch (SQLException e) {
+				LOGGER.error("[TRANSLATION] Error creating a job: {0}", e, job);
+			}
+		}
 	}
-
 
 	@Override
 	public WorkflowItem getItem(String id) {
@@ -273,7 +239,7 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 			item = (WorkflowItem) sqlMap.queryForObject(STATEMENT_GET_ITEM, id);
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while querying for an item by id: {0}", id);
+			LOGGER.error("[TRANSLATION] Error while querying for an item by id: {0}", e, id);
 		}
 		return item;
 	}
@@ -287,32 +253,21 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 			items = (List<WorkflowItem>) sqlMap.queryForList(STATEMENT_GET_ITEMS_BY_JOB, jobId);
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while querying for itmes by job id: {0}", jobId);
+			LOGGER.error("[TRANSLATION] Error while querying for itmes by job id: {0}", e, jobId);
 		}
 		return items;
 	}
 
 	@Override
 	public WorkflowItem updateItem(WorkflowItem item) {
-		WorkflowItem updatedItem = null;
-		// TODO: might change the param type to be WorkflowItem and just pass an item
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("id", item.getId());
-		params.put("jobId", item.getJobId());
-		params.put("path", item.getPath());
-		params.put("percentComplete", item.getPercentComplete());
 		try {
-			LOGGER.debug("[TRANSLATION] updating item: {0}", params);
-
-			sqlMap.update(STATEMENT_UPDATE_ITEM, params);
-			LOGGER.debug("[TRANSLATION] looking up updated item by id: {0}", item.getId());
-
-			updatedItem = (WorkflowItem) sqlMap.queryForObject(STATEMENT_GET_ITEM, item.getId());
+			LOGGER.debug("[TRANSLATION] updating item: {0}", item);
+			sqlMap.update(STATEMENT_UPDATE_ITEM, item);
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while updating item by id: {0}", item.getId());
+			LOGGER.error("[TRANSLATION] Error while updating item by id: {0}", e, item.getId());
 		}
-		return updatedItem;	
+		return item;	
 	}
 
 	@Override
@@ -325,26 +280,21 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 			result = true;
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while deleting an item by id: {0}", id);
+			LOGGER.error("[TRANSLATION] Error while deleting an item by id: {0}", e, id);
 		}
 		return result;
 	}
 
 	@Override
 	protected void writeNewItem(WorkflowItem item) {
-		// TODO: might change the param type to be WorkflowItem and just pass an item
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("id", item.getId());
-		params.put("jobId", item.getJobId());
-		params.put("path", item.getPath());
-		params.put("percentComplete", item.getPercentComplete());
 		try {
-			LOGGER.debug("[TRANSLATION] creating an item: {0}", params);
+			LOGGER.debug("[TRANSLATION] creating an item: {0}", item);
 
-			WorkflowItem createdItem = (WorkflowItem) sqlMap.insert(STATEMENT_CREATE_ITEM, params);
+			WorkflowItem newItem = (WorkflowItem) sqlMap.insert(STATEMENT_CREATE_ITEM, item);
+			item.setId(newItem.getId());
 		}
 		catch (SQLException e) {
-			LOGGER.error("[TRANSLATION] Error while creating an item: {0}", params);
+			LOGGER.error("[TRANSLATION] Error while creating an item: {0}", e, item);
 		}
 	}
 
@@ -378,11 +328,8 @@ public class DbWorkflowJobDAL extends AbstractWorkflowJobDAL {
 				connection.setTransactionIsolation(oldval);
 			}
 		}
-		catch (SQLException e) {
-			LOGGER.error("Error while initializing Dependency table DB indexes.", e);
-		}
-		catch (IOException e) {
-			LOGGER.error("Error while initializing Sequence table DB indexes.", e);
+		catch (Exception e) {
+			LOGGER.error("Error while initializing workflow tables and indexes.", e);
 		}
 		finally {
 			closeConnection(connection);

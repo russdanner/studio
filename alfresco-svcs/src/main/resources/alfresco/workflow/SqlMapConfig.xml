@@ -6,7 +6,7 @@
 
 	<properties resource="alfresco-global.properties" />
 	
-	<settings useStatementNamespaces="true" />
+	<settings useStatementNamespaces="false" />
 	
 	<sqlMap resource="alfresco/workflow/${hibernate.dialect}/WorkflowSQLMap.xml" />
 	

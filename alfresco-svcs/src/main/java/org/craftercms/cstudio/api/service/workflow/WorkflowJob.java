@@ -18,7 +18,7 @@
 package org.craftercms.cstudio.api.service.workflow;
 
 import java.util.Date;
-import java.util.Set;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +68,14 @@ public class WorkflowJob {
 	/**  property setter */
 	public void setProperties(Map<String, String> properties) { _properties = properties; }
 
-	
+	//@Transient
+	public void setPropertyList(List<WorkflowJobProperty> list) {
+		_properties = new HashMap<String, String>();
+		for (WorkflowJobProperty prop : list) {
+			_properties.put(prop.getName(), prop.getValue());
+		}
+	}
+
 	protected String _id;
 	protected String _site;
 	protected String _processName;

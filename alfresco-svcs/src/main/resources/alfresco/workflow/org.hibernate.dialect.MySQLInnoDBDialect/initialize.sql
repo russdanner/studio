@@ -21,7 +21,7 @@ CREATE TABLE `workflow_item` (
         `id` varchar(50) NOT NULL,
         `job_id` varchar(50) NOT NULL,
         `path` text NOT NULL,
-        `percenet_complete` int NOT NULL,
+        `percent_complete` int NOT NULL,
         PRIMARY KEY (`id`),
         KEY `workflow_item_idx` (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

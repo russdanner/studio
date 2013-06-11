@@ -17,9 +17,6 @@
  ******************************************************************************/
 package org.craftercms.cstudio.api.service.workflow;
 
-
-import java.util.Map;
-
 /**
  * Item in an inflight workflow item
  * @author rdanner

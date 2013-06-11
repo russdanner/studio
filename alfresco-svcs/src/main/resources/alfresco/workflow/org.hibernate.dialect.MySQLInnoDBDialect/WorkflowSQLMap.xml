@@ -17,12 +17,12 @@
 
     <cacheModel id="workflowCache" type="LRU" readOnly="false">
         <flushInterval hours="24" />
-        <flushOnExecute statement="workflow.updateJob" />
-        <flushOnExecute statement="workflow.deleteJob" />
-        <flushOnExecute statement="workflow.createJob" />
-        <flushOnExecute statement="workflow.updateItem" />
-        <flushOnExecute statement="workflow.deleteItem" />
-        <flushOnExecute statement="workflow.createItem" />
+        <flushOnExecute statement="updateJob" />
+        <flushOnExecute statement="deleteJob" />
+        <flushOnExecute statement="createJob" />
+        <flushOnExecute statement="updateItem" />
+        <flushOnExecute statement="deleteItem" />
+        <flushOnExecute statement="createItem" />
         <property name="cache-size" value="1000" />
     </cacheModel>
 
@@ -38,9 +38,9 @@
         <result property="modifiedDate" column="modified_date" />
         <result property="currentStatus" column="state" />
         <result property="items" column="id" javaType="ArrayList"
-                select="getItemsByJob" resultMap="itemResult"/>
-        <result property="properties" column="id" javaType="HashMap"
-                select="getJobProperties" resultMap="jobPropertyResult"/>
+                select="getItemsByJob"/>
+        <result property="propertyList" column="id" javaType="ArrayList"
+                select="getJobProperties"/>
         </resultMap>
 
     <resultMap id="itemResult" class="WorkflowItem">
@@ -125,16 +125,13 @@
         </dynamic>
     </select>
 
-    <update id="updateJob" parameterClass="java.util.Map">
+    <update id="updateJob" parameterClass="WorkflowJob">
         UPDATE workflow_job
-        SET source_language = #sourceLanguage#, 
-            target_language = #targetLanguage#, 
-            source_site = #sourceSite#, 
-            target_site = #targetSite#,
-            target_root_path = #targetRootPath#, 
-            created_date = #createdDate#, 
+        SET site = #site#,
+            process_name = #processName#, 
+            created_date = #createDate#, 
             modified_date = #modifiedDate#, 
-            state = #state#
+            state = #currentStatus#
         WHERE id = #id#;
     </update>
 
@@ -143,13 +140,11 @@
         WHERE id = #id#;
     </delete>
 
-    <insert id="createJob" parameterClass="java.util.Map" >
+    <insert id="createJob" parameterClass="WorkflowJob" >
         INSERT INTO workflow_job
-            (source_language, target_language, source_site, target_site, 
-            target_root_path, created_date, modified_date, state)
+            (id, site, process_name, created_date, modified_date, state)
         VALUES
-            (#sourceLanguage#, #targetLanguage#, #sourceSite#, #targetSite#, 
-            #targetRootPath#, #createdDate#, #modifiedDate#, #state#);
+            (#id#, #site#, #processName#, #createDate#, #modifiedDate#, #currentStatus#);
     </insert>
 
     <!-- ====================================== -->
@@ -190,24 +185,29 @@
         WHERE job_id = #jobId#;
     </select>
 
-    <update id="updateItem" parameterClass="java.util.Map">
+    <update id="updateItem" parameterClass="WorkflowItem">
         UPDATE workflow_item
         SET job_id = #jobId#, 
             path = #path#, 
             percent_complete = #percentComplete#,
         WHERE id = #id#;
     </update>
-    
+
     <delete id="deleteItem" parameterClass="String">
         DELETE FROM workflow_item
         WHERE id = #id#;
     </delete>
+    
+    <delete id="deleteJobItems" parameterClass="String">
+        DELETE FROM workflow_item
+        WHERE job_id = #id#;
+    </delete>
 
-    <insert id="createItem" parameterClass="java.util.Map" >
+    <insert id="createItem" parameterClass="WorkflowItem" >
         INSERT INTO workflow_item
             (id, job_id, path, percent_complete)
         VALUES
-            (#id#, #jobId#, #path#, #percentComplete#); 
+            (#id#, #jobId#, #path#, #percentComplete#);
     </insert>
 
 </sqlMap>
