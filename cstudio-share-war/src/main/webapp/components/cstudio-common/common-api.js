@@ -145,8 +145,7 @@ YConnect.failureEvent.subscribe(function() {
 			moduleScriptLoaded: new YAHOO.util.CustomEvent("moduleScript", CStudioAuthoring),
 
 			contentSelected: new YAHOO.util.CustomEvent("contentSelected", CStudioAuthoring),
-			contentUnSelected: new YAHOO.util.CustomEvent("contentunSelected", CStudioAuthoring),
-			contentSelectUpdate: new YAHOO.util.CustomEvent("contentunSelected", CStudioAuthoring)
+			contentUnSelected: new YAHOO.util.CustomEvent("contentunSelected", CStudioAuthoring)
 		},
 		/**
 		 * general place for constants
@@ -277,7 +276,6 @@ YConnect.failureEvent.subscribe(function() {
                 if (this.at(contentTO) == -1) {
                     this.selectedContent.push(contentTO);
                     CStudioAuthoring.Events.contentSelected.fire(contentTO);
-                    CStudioAuthoring.Events.contentSelectUpdate.fire(contentTO);
                 }
             },
 
@@ -289,11 +287,8 @@ YConnect.failureEvent.subscribe(function() {
                 var position = this.at(contentTO);
 
                 if (position != -1) {
-
                     this.selectedContent.splice(position, 1);
-
                     CStudioAuthoring.Events.contentUnSelected.fire(contentTO);
-                    CStudioAuthoring.Events.contentSelectUpdate.fire(contentTO);
                 }
             },
 
