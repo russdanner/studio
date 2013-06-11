@@ -995,11 +995,12 @@
     <!--         workflow                       -->
     <!-- ////////////////////////////////////// -->
     <!-- DALs -->
-    <bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.DbWorkflowJobDAL"
+    <bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.InMemoryWorkflowJobDAL">
+    <!--bean id="cstudioWorkflowJobDAL" class="org.craftercms.cstudio.impl.service.workflow.dal.DbWorkflowJobDAL"
           init-method="initTable">
         <property name="sqlMap" ref="cstudioWorkflowSqlMap"/>
         <property name="initializeScriptPath" value="alfresco/workflow/${hibernate.dialect}/initialize.sql"/>
-    </bean>
+    </bean-->
 
     <bean id="cstudioTranslationContentDAL" class="org.craftercms.cstudio.impl.service.translation.dal.repository.RepositoryTranslationContentDAL">
         <property name="contentRepository" ref="cstudioContentRepository" />
