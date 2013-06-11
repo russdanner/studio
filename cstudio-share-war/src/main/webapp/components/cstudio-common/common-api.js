@@ -2571,7 +2571,7 @@ YConnect.failureEvent.subscribe(function() {
                 var _self = this;
                 function isLockedByUser(site, path) {
                     var value = false, response, itemTO;
-                    var serviceUrl = _self.lookupContentItemServiceUri + "?site=" + site + "&path=" + path;
+                    var serviceUrl = _self.lookupContentItemServiceUri + "?site=" + site + "&path=" + path + "&populateDependencies=false";
                     var xhrObj = YConnect.createXhrObject();
                     xhrObj.conn.open("GET", _self.createServiceUri(serviceUrl), false);
                     xhrObj.conn.send(null);
