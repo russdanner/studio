@@ -194,3 +194,5 @@ div#acn-dropdown-menu-inner div:last-child {
 .yui-resize-handle-inner-r{
 	background:none !important;
 }
+
+#alertDialog .bd span.yui-icon { margin-bottom: 30px; }

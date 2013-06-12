@@ -236,6 +236,10 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
                                 }
                             };
                             image.addEventListener('load', imageLoaded, false);
+                            image.addEventListener('error', function () {
+                                message = "Unable to load the selected image. Please try again or select another image";
+                                imagePicker.showAlert(message);
+                            });
                             image.src = imageData.previewUrl;
 
 
