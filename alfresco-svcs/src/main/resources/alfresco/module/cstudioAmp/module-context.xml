@@ -137,5 +137,6 @@
 	</bean>
 
     <import resource="classpath:alfresco/module/cstudioAmp/context/service-context-custom*.xml" />
+    <import resource="classpath*:crafter/cstudio/extension/cstudio-services-cfg.xml" />
 
 </beans>

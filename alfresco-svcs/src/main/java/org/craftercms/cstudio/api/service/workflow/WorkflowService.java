@@ -97,8 +97,9 @@ public interface WorkflowService {
 	 * @param paths the paths of the content to be submitted
 	 * @param scheduledDate A suggested launch date if appropriate.  Null for no date
 	 * @param sendApprovedNotice true triggers email to submitter on approval
+	 * @param submitter the one submitted the job.
 	 */
-	void submitToGoLive(String site, List<String> paths, Date scheduledDate, boolean sendApprovedNotice);
+	void submitToGoLive(String site, List<String> paths, Date scheduledDate, boolean sendApprovedNotice, String submitter);
 
 	/**
 	 * Get notification service.

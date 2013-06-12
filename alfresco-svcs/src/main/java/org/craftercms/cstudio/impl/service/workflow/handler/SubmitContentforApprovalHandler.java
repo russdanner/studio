@@ -38,8 +38,8 @@ public class SubmitContentforApprovalHandler implements JobStateHandler {
 			String path = item.getPath();
 			paths.add(path);
 		}
-		
-		workflowService.submitToGoLive(job.getSite(), paths, new Date(), true);
+		String submitter = job.getProperties().get("submitter");
+		workflowService.submitToGoLive(job.getSite(), paths, new Date(), true, submitter);
 		
 		return WorkflowService.STATE_ENDED;
 	}

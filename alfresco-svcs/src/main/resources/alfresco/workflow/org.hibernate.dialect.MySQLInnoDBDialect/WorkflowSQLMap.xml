@@ -30,21 +30,20 @@
     <!--           Result Mapping               -->
     <!-- ====================================== -->
 
-    <resultMap id="jobResult" class="WorkflowJob">
-        <result property="id" column="id" />
+    <resultMap id="jobResult" class="WorkflowJob" groupBy="id">
+        <result property="id" column="J.id" />
         <result property="site" column="site" />
         <result property="processName" column="process_name" />
         <result property="createDate" column="created_date" />
         <result property="modifiedDate" column="modified_date" />
         <result property="currentStatus" column="state" />
-        <result property="items" column="id" javaType="ArrayList"
-                select="getItemsByJob"/>
+        <result property="items" resultMap="workflow.itemResult" />
         <result property="propertyList" column="id" javaType="ArrayList"
                 select="getJobProperties"/>
-        </resultMap>
+    </resultMap>
 
     <resultMap id="itemResult" class="WorkflowItem">
-        <result property="id" column="id" />
+        <result property="id" column="I.id" />
         <result property="jobId" column="job_id" />
         <result property="path" column="path" />
         <result property="percentComplete" column="percent_complete" />
@@ -107,15 +106,19 @@
     <!-- ====================================== -->
 
     <select id="getJob" parameterClass="String" resultMap="jobResult" cacheModel="workflowCache">
-        SELECT id, site, process_name, created_date, modified_date, state
-        FROM workflow_job
-        WHERE id = #id#;
+        SELECT J.id, site, process_name, created_date, modified_date, state,
+               I.id, I.job_id, I.path, I.percent_complete
+        FROM workflow_job J
+             left outer join workflow_item I on J.id = I.job_id
+        WHERE J.id = #id#;
     </select>
 
     <select id="getJobsByStates" resultSetType="FORWARD_ONLY"
             resultMap="jobResult" cacheModel="workflowCache"  parameterClass="java.util.Map">
-        SELECT id, site, process_name, created_date, modified_date, state
-        FROM workflow_job
+        SELECT J.id, site, process_name, created_date, modified_date, state,
+               I.id, I.job_id, I.path, I.percent_complete
+        FROM workflow_job J
+             left outer join workflow_item I on J.id = I.job_id
         <dynamic prepend=" WHERE state IN ">
           <isNotNull property="states">
             <iterate property="states"  open="(" close=")" conjunction=",">
@@ -173,15 +176,15 @@
     <!--            Item Statements             -->
     <!-- ====================================== -->
 
-    <select id="getItem" parameterClass="String" resultMap="jobPropertyResult" cacheModel="workflowCache">
-        SELECT id, job_id, path, percent_complete
-        FROM workflow_item
+    <select id="getItem" parameterClass="String" resultMap="itemResult" cacheModel="workflowCache">
+        SELECT I.id, job_id, path, percent_complete
+        FROM workflow_item I
         WHERE id = #id#;
     </select>
 
     <select id="getItemsByJob" parameterClass="String" resultMap="itemResult" cacheModel="workflowCache">
-        SELECT id, job_id, path, percent_complete
-        FROM workflow_item
+        SELECT I.id, job_id, path, percent_complete
+        FROM workflow_item I
         WHERE job_id = #jobId#;
     </select>
 
