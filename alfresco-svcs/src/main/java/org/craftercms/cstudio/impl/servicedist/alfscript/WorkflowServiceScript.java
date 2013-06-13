@@ -114,9 +114,10 @@ public class WorkflowServiceScript extends BaseProcessorExtension
 	 * @param paths the paths of the content to be submitted
 	 * @param scheduledDate A suggested launch date if appropriate.  Null for no date
 	 * @param sendApprovedNotice true triggers email to submitter on approval
+	 * @param submitter the one submitted the job.
 	 */
-	public void submitToGoLive(String site, List<String> paths, Date scheduledDate, boolean sendApprovedNotice) {
-		_workflowService.submitToGoLive(site, paths, scheduledDate, sendApprovedNotice);
+	public void submitToGoLive(String site, List<String> paths, Date scheduledDate, boolean sendApprovedNotice, String submitter) {
+		_workflowService.submitToGoLive(site, paths, scheduledDate, sendApprovedNotice, submitter);
 	}
 
 	/** getter WorkflowService */

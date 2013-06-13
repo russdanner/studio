@@ -71,8 +71,10 @@ public class WorkflowJob {
 	//@Transient
 	public void setPropertyList(List<WorkflowJobProperty> list) {
 		_properties = new HashMap<String, String>();
-		for (WorkflowJobProperty prop : list) {
-			_properties.put(prop.getName(), prop.getValue());
+		if (list != null) {
+			for (WorkflowJobProperty prop : list) {
+				_properties.put(prop.getName(), prop.getValue());
+			}
 		}
 	}
 
