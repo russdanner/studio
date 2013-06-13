@@ -646,6 +646,27 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             success: function() {
                 Self.refreshNodes(this.tree,false);
 
+                // Refresh the "My Recent Activity" section in the dashboard
+                if (typeof WcmDashboardWidgetCommon != 'undefined') {
+                    var myRecentActivitiesInstace = WcmDashboardWidgetCommon.dashboards["MyRecentActivity"];
+                    var filterByTypeEl = YDom.get('widget-filterBy-'+myRecentActivitiesInstace.widgetId);
+                    var filterByTypeValue = 'all';
+                    if(filterByTypeEl && filterByTypeEl.value != '') {
+                        filterByTypeValue = filterByTypeEl.value;
+                    }
+
+                    var searchNumberEl = YDom.get('widget-showitems-'+myRecentActivitiesInstace.widgetId);
+                    var searchNumberValue =  myRecentActivitiesInstace.defaultSearchNumber;
+                    if(searchNumberEl && searchNumberEl.value != '') {
+                        searchNumberValue = searchNumberEl.value;
+                    }
+
+                    WcmDashboardWidgetCommon.loadFilterTableData(
+                        myRecentActivitiesInstace.defaultSortBy,
+                        YDom.get(myRecentActivitiesInstace.widgetId),
+                        myRecentActivitiesInstace.widgetId,
+                        searchNumberValue,filterByTypeValue);
+                }
             },
 
             failure: function() {
