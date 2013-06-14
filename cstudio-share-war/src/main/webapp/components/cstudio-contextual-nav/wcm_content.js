@@ -37,8 +37,8 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                     { name: "Delete", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Delete"  },
                     { name: "Submit for Delete", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "ScheduleForDelete"  },
                     { name: "Reject", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Reject"  },
-                    { name: "Schedule", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveSchedule"  },
-                    { name: "Go Live Now", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Approve"  },                
+                { name: "Schedule", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
+                { name: "Go Live Now", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
                     { name: "Duplicate", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "Duplicate" },
                     { name: "History", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "VersionHistory" }
                 ],
@@ -595,6 +595,28 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                         }
                     }
                 },
+
+
+            renderApproveCommon: {
+                render: function(option, isBulk, isAdmin,
+                                 state, isRelevant, isWrite, perms) {
+
+                    if (CStudioAuthoring.Service.isPublishAllowed(perms)) {
+
+                        var isRelevant = !(state.toLowerCase().indexOf("live") !== -1);
+
+                        option.onclick = function() {
+                            CStudioAuthoring.Operations.approveCommon(
+                                CStudioAuthoringContext.site,
+                                CStudioAuthoring.SelectedContent.getSelectedContent());
+                        };
+
+                        _this.createNavItem(option, isBulk, isAdmin, isRelevant, false);
+                    }
+
+                }
+            },
+
                 /**
                  * render approve / golive option
                  */

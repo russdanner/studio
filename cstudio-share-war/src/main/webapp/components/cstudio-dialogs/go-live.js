@@ -13,15 +13,131 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
     moduleLoaded: function(moduleName, parentClass) {
 
         var Y = YAHOO,
+            YDom = YAHOO.util.Dom,
+            YEvent = window.YEvent,
             YConnect = window.YConnect,
             CSA = CStudioAuthoring,
-            CSAContext = CStudioAuthoringContext;
+            CSAContext = CStudioAuthoringContext,
+            goLive;
+
+        var DISABLED = true,
+            ENABLED = false,
+            SPACE = ' ';
+
+        function isSchedulingOptionsReady () {
+            var checked = YDom.get('globalSetToDateTime').checked,
+                dateValue = YDom.get('datepicker').value,
+                timeValue = YDom.get('timepicker').value;
+            return (checked &&
+                dateValue !== 'Date...' && dateValue !== ''
+                    && timeValue !== 'Time...' && timeValue !== '');
+        }
+
+        function setDisabled (isDisabled) {
+            if (typeof isDisabled === 'undefined') isDisabled = ENABLED;
+            if (isDisabled === ENABLED) {
+
+                var msg = 'Go Live',
+                    btn = YDom.get('golivesubmitButton');
+
+                if (!goLive.anyoneSelected) {
+                    isDisabled = DISABLED;
+                    msg = '(no items selected)';
+                }
+
+                if ( !(YDom.get('globalSetToNow').checked) &&
+                     !isSchedulingOptionsReady() ) {
+                    isDisabled = DISABLED;
+                    msg = '(select item scheduling)';
+                }
+
+                /*if ( goLive.isMixedSchedules &&
+                    !YDom.get('mixedSchedulesOK').checked ) {
+                    isDisabled = DISABLED;
+                    msg = 'Confirm mixed schedules disclaimer';
+                }*/
+
+                btn.value = msg;
+
+            }
+            YDom.get('golivesubmitButton').disabled = isDisabled;
+            return isDisabled;
+        }
+
+        function traverse (items, referenceDate) {
+            var allHaveSameDate = true,
+                item, children;
+
+            for ( var i = 0, l = items.length;
+                  allHaveSameDate === true && i < l;
+                  ++i ) {
+
+                item = items[i];
+                children = item.children;
+
+                allHaveSameDate = (item.scheduledDate === referenceDate);
+
+                if (!allHaveSameDate) {
+                    break;
+                }
+
+                if (children.length > 0) {
+                    allHaveSameDate = traverse(children, referenceDate);
+                }
+
+            }
+
+            return allHaveSameDate;
+
+        }
 
         // Make GoLive constructor inherit from its parent (i.e. PublishDialog)
         Y.lang.extend(CSA.Dialogs.DialogGoLive, parentClass);
 
         var DialogGoLive = CSA.Dialogs.DialogGoLive,
             DialogPrototype = DialogGoLive.prototype;
+
+        DialogPrototype.setMixedSchedules = function (isMixedSchedules) {
+            this.isMixedSchedules = isMixedSchedules;
+            if (isMixedSchedules) {
+                YDom.get('warningDialog').style.display = '';
+            }
+            setDisabled();
+        }
+
+        DialogPrototype.verifyMixedSchedules = function (contentItems) {
+
+            var reference = contentItems[0].scheduledDate,
+                allHaveSameDate = traverse(contentItems, reference),
+                dp = YDom.get('datepicker'),
+                tp = YDom.get('timepicker');
+
+            if (allHaveSameDate) {
+                if (reference === '') {
+                    YDom.get('globalSetToNow').checked = true;
+                } else {
+                    var dt = CStudioAuthoring.Utils.formatDateFromString(
+                        reference, 'tooltipformat').split(SPACE),
+                        time = dt[1];
+                    dp.disabled = false;
+                    tp.disabled = false;
+                    dp.value = dt[0];
+                    tp.value = (
+                        time.substr(0, time.length - 1) + ':00 ' +
+                            (time.indexOf('P') !== -1 ? 'p.m.' : 'a.m.')
+                        );
+                    YDom.get('globalSetToDateTime').checked = true;
+                }
+            } else {
+                dp.value = 'Date...';
+                tp.value = 'Time...';
+                YDom.get('globalSetToDateTime').checked = false;
+                YDom.get('globalSetToNow').checked = false;
+            }
+
+            this.setMixedSchedules(!allHaveSameDate);
+
+        }
 
         // Extend GoLive's prototype with its own class functions
         DialogPrototype.createPanel = function (panelName, modalState, zIdx) {
@@ -39,7 +155,49 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
         };
 
         DialogPrototype.setUpGoLiveListeners = function () {
-            YEvent.addListener("globalSetToNow", "click", this.changeToNow, this, true);
+
+            var me = this;
+
+            var datepicker = YDom.get('datepicker'),
+                timepicker = YDom.get('timepicker');
+
+            YEvent.addListener('globalSetToNow', 'click', function () {
+                datepicker.value = 'Date...';
+                timepicker.value = 'Time...';
+                datepicker.disabled = true;
+                timepicker.disabled = true;
+                me.setAll('');
+                setDisabled();
+            }, this, true);
+
+            YEvent.addListener('globalSetToDateTime', 'click', function () {
+                datepicker.disabled = false;
+                timepicker.disabled = false;
+                setDisabled();
+                document.getElementById('datepicker').focus();
+            }, this, true);
+
+            /*YEvent.addListener('mixedSchedulesOK', 'click', function () {
+                setDisabled();
+            }, this, true);*/
+
+            function fn () {
+
+                var dateValue = datepicker.value,
+                    timeValue = timepicker.value;
+
+                if ( isSchedulingOptionsReady() ) {
+                    var value = me.getScheduledDateTimeForJson(dateValue, timeValue);
+                    me.setAll(value);
+                    setDisabled();
+                }
+
+            }
+
+            YEvent.addListener('timeIncrementButton', 'click', fn);
+            YEvent.addListener('timeDecrementButton', 'click', fn);
+            YEvent.addListener('datepicker', 'change', fn);
+            YEvent.addListener('timepicker', 'change', fn);
         };
 
         DialogPrototype.invokeGoLiveService = function() {
@@ -49,10 +207,10 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 return;
             }
 
-            if (this.selectedJsonObj.items.length != 0 &&
-                !this.checkParentChildSchedules(this.selectedJsonObj.items)) {
-                return;
-            }
+//            if (this.selectedJsonObj.items.length != 0 &&
+//                !this.checkParentChildSchedules(this.selectedJsonObj.items)) {
+//                return;
+//            }
 
             if (this.selectedJsonObj.items.length != 0) {
 
@@ -156,7 +314,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                             //hide loading image when submit is clicked.
                             self.hideLoadingImage("approve");
                             //re enable if service failed to submit againg
-                            YDom.get("golivesubmitButton").disabled = false;
+                            setDisabled(ENABLED);
                             YDom.get("golivecancelButton").disabled = false;
                             if (oResponse.status == -1) {
                                 alert('Go live is taking longer. The icon status will be updated once the content goes live.');
@@ -172,7 +330,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 //show loading image when submit is clicked.
                 this.showLoadingImage("approve");
                 //disable submit button to protect multipale submit at the same time.
-                YDom.get("golivesubmitButton").disabled = true;
+                setDisabled(DISABLED);
                 YDom.get("golivecancelButton").disabled = true;
                 // submit to service
                 if (YConnect._isFormSubmit) {
@@ -289,7 +447,25 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
         };
 
 
+        DialogPrototype.getModifiedPlaceholders = function () {
+            return YAHOO.util.Dom.getElementsByClassName("modified-placeholder");
+        }
 
+        DialogPrototype.setAll = function (scheduled) {
+            if (typeof scheduled === 'undefined') scheduled = '';
+
+            var items = this.getModifiedPlaceholders(),
+                tip = 'Modified to: ' + (scheduled === '' ? 'Now' : scheduled);
+
+            for (var i in items) {
+                items[i].title = tip;
+                items[i].innerHTML = '<span>*</span>';
+            }
+
+            this.dependencyJsonObj.now = scheduled === '' ? 'true' : 'false'; // set now in json obj
+            this.setAllTo(this.dependencyJsonObj.items, scheduled);
+
+        }
 
         DialogPrototype.render = function (contentItems) {
 
@@ -329,6 +505,14 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
                             dialog.setBody(respText);
                             dialog.render(document.body);
+
+                            me.verifyMixedSchedules(contentItems);
+
+                            CSA.Utils.yuiCalendar('datepicker', 'focus', 'datepicker');
+                            CSA.Utils.initCursorPosition('timepicker', ['click', 'keydown', 'keyup', 'keypress', 'mouseup', 'mousedown']);
+                            CSA.Utils.textFieldTimeHelper('timepicker', 'change', 'timepicker');
+                            CSA.Utils.textFieldTimeIncrementHelper('timeIncrementButton', 'timepicker', 'click');
+                            CSA.Utils.textFieldTimeDecrementHelper('timeDecrementButton', 'timepicker', 'click');
 
                             //set z-index for panel so that it will appear over context nav bar also.
                             var oContainerPanel = YDom.get('submitPanel_c');
@@ -444,13 +628,15 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                     var submissionCommentsValue = YDom.get("acn-submission-comment-hidden-div").innerHTML;
                     YDom.get("acn-submission-comment").value = submissionCommentsValue;
 
-                    YDom.get("golivesubmitButton").disabled = false;
                     YDom.get("golivecancelButton").disabled = false;
 
                     // There are publishing channels set
-                    self.dependencyJsonObj = eval('(' + scriptString + ')');
+                    var json = eval('(' + scriptString + ')');
+                    self.dependencyJsonObj = json;
                     self.flatMap = self.createItemMap();
                     self.uncheckedItemsArray = [];
+
+                    me.verifyMixedSchedules(json.items);
 
                     var onCheckBoxSubmittedItemClick = function (event, matchedEl) {
                         // skipping email checkbox
@@ -466,8 +652,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                             }
                         }
 
-                        var submittButton = YDom.get("golivesubmitButton");
-                        submittButton.disabled = !me.anyoneSelected;
+                        setDisabled();
                     };
 
                     // handle checkbox clicks
@@ -495,28 +680,6 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                         CSA.Utils.setDefaultFocusOn(submittButton);
                     }
 
-                    // init yui datepicker
-                    var afterRenderFn = function(sourceElementId){
-                        if (afterRenderFn.firecount == 0) {
-                            afterRenderFn.firecount++;
-                            var today = new Date();
-                            today.setDate(today.getDate() + 1);
-                            YDom.get(sourceElementId).value = [
-                                (today.getMonth()+1),
-                                today.getDate(),
-                                today.getFullYear()
-                            ].join("/");
-                        }
-                    };
-
-                    afterRenderFn.firecount = 0;
-
-                    var initCalendar = CSA.Utils.yuiCalendar('datepicker', 'focus', 'datepicker', afterRenderFn),
-                        status = CSA.Utils.initCursorPosition('timepicker', ['click', 'keydown', 'keyup', 'keypress', 'mouseup', 'mousedown']),
-                        initTimeFormat = CSA.Utils.textFieldTimeHelper('timepicker', 'blur', 'timepicker'),
-                        initTimeIncrementButton = CSA.Utils.textFieldTimeIncrementHelper('timeIncrementButton', 'timepicker', 'click'),
-                        initTimeDecrementButton = CSA.Utils.textFieldTimeDecrementHelper('timeDecrementButton', 'timepicker', 'click');
-
                     // Updating time zone name dynamically
                     if (timeZoneText) {
                         timeZoneText = timeZoneText.replace(/^\s+|\s+$/, '');
@@ -529,7 +692,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
                     if (YUISelector.query("#acnScrollBoxDiv .acnLiveCellIndented").length) {
                         // Only add notice if there are dependencies present
-                        var el = YUISelector.query('#acnVersionWrapper .acnBoxFloatLeft')[0],
+                        var el = YDom.get('dependenciesNotice'),
                             msg = document.createElement('span');
 
                         msg.className = "notice";
@@ -556,9 +719,6 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             }, xmlString);
 
         };
-
-
-
 
         DialogPrototype.closeDialog = function () {
             // remove curtain on top of nav bar
@@ -590,13 +750,13 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             YDom.get('goLivePopWrapper').style.display = 'block';
             this.elementThatClickedMiniScheduler = e;
             this.browserUriOfItemClickedInMiniScheduler = browserUri;
-            YDom.get('golivesubmitButton').disabled = true;
+            setDisabled(DISABLED);
             var scheduledDate = this.getTimeInJsonObject(this.dependencyJsonObj.items, browserUri);
             this.setTimeConfiguration(scheduledDate);
         };
 
         DialogPrototype.onDone = function () {
-            YDom.get('golivesubmitButton').disabled = !this.anyoneSelected;
+            setDisabled();
 
             var now = false;
             if (YDom.get('settime').checked == true) {
@@ -631,7 +791,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
         };
 
         // Create GoLive dialog instance
-        var goLive = new DialogGoLive();
+        goLive = new DialogGoLive();
 
         // Create a global pointer to the current dialog instance
         DialogGoLive.instance = goLive;

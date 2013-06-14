@@ -102,14 +102,19 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
      */
     this.renderItemsHeading = function() {
 
-        var widgetId = this._self.widgetId;
+        var widgetId = this._self.widgetId,
+            Common = WcmDashboardWidgetCommon;
 
-        var header = WcmDashboardWidgetCommon.getSortableRow("internalName", widgetId, "Page Name", "minimize") +
-                     WcmDashboardWidgetCommon.getSimpleRow("edit", widgetId, "Edit", "minimize") +
-                     WcmDashboardWidgetCommon.getSortableRow("browserUri", widgetId, "URL", "maximize") +
-                     '<th id="fullUri" class="width0"></th>' +
-                     WcmDashboardWidgetCommon.getSortableRow("userLastName", widgetId, "Last Edited By", "alignRight minimize") +
-                     WcmDashboardWidgetCommon.getSortableRow("eventDate", widgetId, "Last Edited", "ttThColLast alignRight minimize");
+        var header = [
+            Common.getSortableRow("internalName", widgetId, "Page Name", "minimize"),
+            Common.getSimpleRow("edit", widgetId, "Edit", "minimize"),
+            Common.getSortableRow("browserUri", widgetId, "URL", "maximize"),
+            '<th id="fullUri" class="width0"></th>',
+            Common.getSimpleRow("scheduledDate", widgetId, "Publish Date &amp; Time", ""),
+            Common.getSortableRow("userLastName", widgetId, "Last Edited By", "alignRight minimize"),
+            Common.getSortableRow("eventDate", widgetId, "Last Edited", "ttThColLast alignRight minimize")
+        ].join('');
+
         return header;
     };
 
@@ -158,7 +163,9 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
 
             var browserUri = item.browserUri,
                 displayBrowserUri = WcmDashboardWidgetCommon.getFormattedString(browserUri, (50 - removeCharCount)),
-                uri = item.uri;
+                uri = item.uri,
+
+                fmt = CStudioAuthoring.Utils.formatDateFromString;
 
             var ttSpanId =  "tt_" + this.widgetId + "_" + item.uri + "_" + (this.tooltipLabels.length + 1);
             var itemTitle = CStudioAuthoring.Utils.getTooltipContent(item);
@@ -205,12 +212,14 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
                 "</td>",
                 "<td title='",browserUri,"'>", displayBrowserUri, "</td>",
                 "<td title='fullUri' class='width0'>", uri, "</td>",
+                '<td class="">', item.scheduled ? fmt(item.scheduledDate, 'tooltipformat') : '', '</td>',
                 "<td class='alignRight'>", WcmDashboardWidgetCommon.getDisplayName(item), "</td>",
                 "<td class='alignRight ttThColLast'>", CStudioAuthoring.Utils.formatDateFromString(item.eventDate), "</td>"
             ]);
+
         }
 
-        return html.join("");
+        return html.join('');
     };
 
     /**

@@ -138,14 +138,18 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
 	 */
 	this.renderItemsHeading = function() {
 
-		var widgetId = this._self.widgetId;
+		var widgetId = this._self.widgetId,
+            Common = WcmDashboardWidgetCommon;
 
-		var header = WcmDashboardWidgetCommon.getSimpleRow("internalName",widgetId,"Page Name","minimize")+
-                     WcmDashboardWidgetCommon.getSimpleRow("edit",widgetId,"Edit","minimize")+
-		             WcmDashboardWidgetCommon.getSimpleRow("browserUri",widgetId,"URL","maximize")+
-		             '<th id="fullUri" class="width0"></th>'+
-		             WcmDashboardWidgetCommon.getSimpleRow("userLastName",widgetId,"Last Edited By","alignRight minimize")+
-                    WcmDashboardWidgetCommon.getDefaultSortRow("eventDate",widgetId,"My Last Edit","ttThColLast alignRight minimize");
+        var header = [
+            Common.getSortableRow("internalName", widgetId, "Page Name", "minimize"),
+            Common.getSimpleRow("edit", widgetId, "Edit", "minimize"),
+            Common.getSortableRow("browserUri", widgetId, "URL", "maximize"),
+            '<th id="fullUri" class="width0"></th>',
+            Common.getSimpleRow("scheduledDate", widgetId, "Publish Date &amp; Time", ""),
+            Common.getSortableRow("userLastName", widgetId, "Last Edited By", "alignRight minimize"),
+            Common.getDefaultSortRow("eventDate",widgetId,"My Last Edit","ttThColLast alignRight minimize")
+        ].join('');
 
 		return header;
 	};
@@ -157,7 +161,9 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
 
             var browserUri = item.browserUri,
                 fullUri = item.uri,
-                itemName = item.internalName;
+                itemName = item.internalName,
+
+                fmt = CStudioAuthoring.Utils.formatDateFromString;
 
             //reducing max character length to support 1024 screen resolution
             var removeCharCount = ((window.innerWidth <= 1024)?5:0);
@@ -209,10 +215,11 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
 			'</td>',
 			'<td title="', browserUri, '">', displayBrowserUri, '</td>',
 			'<td title="fullUri" class="width0">', fullUri, '</td>',
+            '<td class="">', item.scheduled ? fmt(item.scheduledDate, 'tooltipformat') : '', '</td>',
 			'<td class="alignRight">', WcmDashboardWidgetCommon.getDisplayName(item), '</td>',
 			'<td class="ttThColLast alignRight">', CStudioAuthoring.Utils.formatDateFromString(item.eventDate), '</td>'
         ];
 
-		return itemRow.join("");
+		return itemRow.join('');
 	};
 };

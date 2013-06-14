@@ -340,49 +340,74 @@ CStudioAuthoring.Dialogs.PublishDialog.prototype.toggleTimeSelection = function 
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.setAllToNow = function (items) {
-	for(var i = 0; i < items.length; i++) {
-		items[i].now = true;
-		items[i].scheduledDate = "";
-		if (items[i].children && items[i].children.length >= 1) {
-			this.setAllToNow(items[i].children);
-		}
-	}
+    this.setAllTo(items);
 };
 
+CStudioAuthoring.Dialogs.PublishDialog.prototype.setAllTo = function (items, scheduledDate) {
+
+    var isNow = false,
+        children;
+
+    if ('undefined' === typeof scheduledDate) {
+        scheduledDate = '';
+        isNow = true;
+    }
+
+    for( var i = 0, length = items.length;
+         i < length;
+         i++ ) {
+
+        items[i].now = isNow;
+        items[i].scheduledDate = scheduledDate;
+
+        children = items[i].children;
+
+        if (children && children.length > 0) {
+            this.setAllTo(children, scheduledDate);
+        }
+
+    }
+
+}
+
 CStudioAuthoring.Dialogs.PublishDialog.prototype.changeToNow = function () {
+
 	var items = YDom.getElementsBy(function(el) {
-		return el.getAttribute('title') == 'scheduledDate';
+		return (el.getAttribute('title') == 'scheduledDate');
 	}, 'a', YDom.getElementsByClassName("liveTable")[0]);
-	for (i in items) {
+
+	for (var i in items) {
 		items[i].innerHTML = 'Now';
 	}
+
 	this.dependencyJsonObj.now = "true";     // set now in json obj
 	this.setAllToNow(this.dependencyJsonObj.items);
+
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.clone_obj = function(obj) {
-	var c = obj instanceof Array ? [] : {};
-	for (var i in obj) {
-		var prop = obj[i];
-		if (typeof prop == 'object') {
-			if (prop instanceof Array) {
-			c[i] = [];
-				
-			for (var j = 0; j < prop.length; j++) {
-			if (typeof prop[j] != 'object') {
-				c[i].push(prop[j]);
-			} else {
-				c[i].push(this.clone_obj(prop[j]));
-			}
-			}
-		} else {
-			c[i] = this.clone_obj(prop);
-		}
-		} else {
-		c[i] = prop;
-		}
-	}
-	return c;
+    var c = obj instanceof Array ? [] : {};
+    for (var i in obj) {
+        var prop = obj[i];
+        if (typeof prop == 'object') {
+            if (prop instanceof Array) {
+                c[i] = [];
+
+                for (var j = 0; j < prop.length; j++) {
+                    if (typeof prop[j] != 'object') {
+                        c[i].push(prop[j]);
+                    } else {
+                        c[i].push(this.clone_obj(prop[j]));
+                    }
+                }
+            } else {
+                c[i] = this.clone_obj(prop);
+            }
+        } else {
+            c[i] = prop;
+        }
+    }
+    return c;
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.removeItem = function (jsonArray, browserUri) {
@@ -827,11 +852,13 @@ CStudioAuthoring.Dialogs.PublishDialog.prototype.appendPublishingChannelsData = 
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.showLoadingImage = function(elementId) {
-	YDom.get(elementId + "-loading").style.display = "block";
+    var elem = YDom.get(elementId + "-loading");
+    elem && (elem.style.display = "block");
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.hideLoadingImage = function(elementId) {
-	YDom.get(elementId + "-loading").style.display = "none";
+    var elem = YDom.get(elementId + "-loading");
+    elem && (elem.style.display = "none");
 };
 
 CStudioAuthoring.Dialogs.PublishDialog.prototype.setFocusOnDefaultButton = function(className) {

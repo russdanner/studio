@@ -132,10 +132,14 @@
     </td>
     <#if 0 != item.scheduledDate?length>
         <#assign scheduledTime = item.scheduledDate?datetime("yyyy-MM-dd'T'HH:mm:ss")?string("MM/dd hh:mm a")>
-        <td class="acnLiveTableRight"><div class="acnGoLiveSetTime"><a href='#' onclick='CStudioAuthoring.Dialogs.DialogGoLive.instance.openSchedulePopup(event, this, "${item.browserUri}"); return false;' class='scheduledDate' title="scheduledDate">${scheduledTime}</a></div></td>
     <#else>
-        <td class="acnLiveTableRight"><div class="acnGoLiveSetTime"><a href='#' onclick='CStudioAuthoring.Dialogs.DialogGoLive.instance.openSchedulePopup(event, this, "${item.browserUri}"); return false;' class='scheduledDate' title="scheduledDate">Now</a></div></td>
+        <#assign scheduledTime = "Now">
     </#if>
+    <td class="acnLiveTableRight">
+        <div class="acnGoLiveSetTime">
+            ${scheduledTime} <span class="modified-placeholder"></span>
+        </div>
+    </td>
 </tr>
     <#if 0 != item.children?size>
         <@getChildren item.children item.browserUri />
@@ -261,12 +265,17 @@
             ...${childNode.browserUri}
         </#if>
         </td>
+
         <#if 0 != childNode.scheduledDate?length>
             <#assign scheduledTime1 = childNode.scheduledDate?datetime("yyyy-MM-dd'T'HH:mm:ss")?string("MM/dd hh:mm a")>
-            <td class="acnLiveTableRight"><div class="acnGoLiveSetTime"><a href='#' onclick='CStudioAuthoring.Dialogs.DialogGoLive.instance.openSchedulePopup(event, this, "${childNode.browserUri}"); return false;' class='scheduledDate' title="scheduledDate">${scheduledTime1}</a></div></td>
         <#else>
-            <td class="acnLiveTableRight"><div class="acnGoLiveSetTime"><a href='#' onclick='CStudioAuthoring.Dialogs.DialogGoLive.instance.openSchedulePopup(event, this, "${childNode.browserUri}"); return false;' class='scheduledDate' title="scheduledDate">Now</a></div></td>
+            <#assign scheduledTime1 = "Now">
         </#if>
+        <td class="acnLiveTableRight">
+            <div class="acnGoLiveSetTime scheduledDate" data-property="scheduledDate">
+                ${scheduledTime1} <span class="modified-placeholder"></span>
+            </div>
+        </td>
     </tr>
     </#foreach>
 

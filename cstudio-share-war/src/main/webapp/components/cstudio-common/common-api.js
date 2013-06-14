@@ -1818,44 +1818,61 @@ YConnect.failureEvent.subscribe(function() {
 						moduleConfig,
 						submitDialogCb);
 			},
+
 			/**
 			 * approve content
 			 */
 			approveContent: function(site, contentItems) {
-				var submitDialogCb = {
+                CStudioAuthoring.Module.requireModule(
+                    'dialog-approve',
+                    '/components/cstudio-dialogs/go-live.js', {
+                        contentItems: contentItems,
+                        site: site
+                    }, {
 					moduleLoaded: function(moduleName, dialogClass, moduleConfig) {
 						// in preview, this function undefined raises error -- unlike dashboard
-						dialogClass.showDialog && dialogClass.showDialog(moduleConfig.site, moduleConfig.contentItems);
-					}
-				}
-				var moduleConfig = {
-					contentItems: contentItems,
-					site: site
-				};
-				CStudioAuthoring.Module.requireModule("dialog-approve",
-						"/components/cstudio-dialogs/go-live.js",
-						moduleConfig,
-						submitDialogCb);
+                            dialogClass.showDialog &&
+                                dialogClass.showDialog(moduleConfig.site, moduleConfig.contentItems);
+                    } });
 			},
 			/**
 			 * approve-schedule content
 			 */
 			approveScheduleContent: function(site, contentItems) {
-				var submitDialogCb = {
+				CStudioAuthoring.Module.requireModule(
+                    'dialog-schedule-to-go-live',
+                    '/components/cstudio-dialogs/schedule-to-go-live.js', {
+                        contentItems: contentItems,
+                        site: site
+                    }, {
 					moduleLoaded: function(moduleName, dialogClass, moduleConfig) {
 						// in preview, this function undefined raises error -- unlike dashboard
 						dialogClass.showDialog && dialogClass.showDialog(moduleConfig.site, moduleConfig.contentItems);
 					}
-				}
-				var moduleConfig = {
-					contentItems: contentItems,
-					site: site
-				};
-				CStudioAuthoring.Module.requireModule("dialog-schedule-to-go-live",
-						"/components/cstudio-dialogs/schedule-to-go-live.js",
-						moduleConfig,
-						submitDialogCb);
+                    });
 			},
+
+			/**
+             * Now Go Live and Schedule show the same dialog
+             * and follow the same process. This function substitutes
+             * approveContent and approveScheduleContent
+             */
+            approveCommon: function (site, items) {
+                CStudioAuthoring.Module.requireModule(
+                    'dialog-approve',
+                    '/components/cstudio-dialogs/go-live.js', {
+                        contentItems: items,
+					site: site
+                    }, {
+                    moduleLoaded: function(moduleName, dialogClass, moduleConfig) {
+                        // in preview, this function undefined raises error -- unlike dashboard
+                        dialogClass.showDialog &&
+                            dialogClass.showDialog(
+                                moduleConfig.site, moduleConfig.contentItems);
+                    } });
+			},
+
+
 			/**
 			 * reject content
 			 */
