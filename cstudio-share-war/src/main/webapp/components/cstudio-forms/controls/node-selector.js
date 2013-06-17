@@ -64,6 +64,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		
 		this.owner.notifyValidation();
 		this.form.updateModel(this.id, this.getValue());
+		this.inputEl.value = JSON.stringify(this.getValue());
 		this._renderItems();
 	},
 	
@@ -92,6 +93,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
     },
 
 	render: function(config, containerEl) {
+		containerEl.id = this.id;
 		this.maxSize = 0;
 		this.minSize = 0;
 		
@@ -122,6 +124,7 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		}
 
 		var titleEl = document.createElement("span");
+  		    YAHOO.util.Dom.addClass(titleEl, 'label');
   		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 			titleEl.innerHTML = config.title;
 		
@@ -129,8 +132,15 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-node-selector-container');
 		
 		var validEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 			YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 			controlWidgetContainerEl.appendChild(validEl);
+
+		var hiddenEl = document.createElement("input");
+		hiddenEl.type = "hidden";
+		YAHOO.util.Dom.addClass(hiddenEl, 'datum');
+		this.inputEl = hiddenEl;
+		controlWidgetContainerEl.appendChild(hiddenEl);
 
 		var nodeControlboxEl = document.createElement("div")
 		YAHOO.util.Dom.addClass(nodeControlboxEl, 'cstudio-form-control-node-selector-controlbox');
@@ -189,11 +199,13 @@ YAHOO.extend(CStudioForms.Controls.NodeSelector, CStudioForms.CStudioFormField, 
 		this.renderHelp(config, nodeOptionsEl);
 					
 		var countEl = document.createElement("div");
+		YAHOO.util.Dom.addClass(countEl, 'item-count');
 		YAHOO.util.Dom.addClass(countEl, 'cstudio-form-control-node-selector-count');
 		this.countEl = countEl;
 		nodeOptionsEl.appendChild(countEl);
 
 		var descriptionEl = document.createElement("span");
+		YAHOO.util.Dom.addClass(descriptionEl, 'description');
 		YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 		descriptionEl.innerHTML = config.description;
 		controlWidgetContainerEl.appendChild(descriptionEl);

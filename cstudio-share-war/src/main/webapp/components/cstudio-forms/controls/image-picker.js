@@ -285,6 +285,8 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
     },
 
     render: function(config, containerEl) {
+        containerEl.id = this.id;
+
         var divPrefix = config.id + "-";
         var datasource = null;
 
@@ -293,6 +295,7 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
         // we need to make the general layout of a control inherit from common
         // you should be able to override it -- but most of the time it wil be the same
         var titleEl = document.createElement("span");
+        YAHOO.util.Dom.addClass(titleEl, 'label');
         YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
         titleEl.innerHTML = config.title;
 
@@ -300,12 +303,14 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
         YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-image-picker-container');
 
         var validEl = document.createElement("span");
+        YAHOO.util.Dom.addClass(validEl, 'validation-hint');
         YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
         controlWidgetContainerEl.appendChild(validEl);
 
         var inputEl = document.createElement("input");
         this.inputEl = inputEl;
         inputEl.style.display = "none";
+        YAHOO.util.Dom.addClass(inputEl, 'datum');
         controlWidgetContainerEl.appendChild(inputEl);
 
         var urlEl = document.createElement("div");
@@ -432,6 +437,7 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
         this.renderImageConstraints(bodyEl);
 
         var descriptionEl = document.createElement("span");
+        YAHOO.util.Dom.addClass(descriptionEl, 'description');
         YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
         descriptionEl.innerHTML = config.description;
         descriptionEl.style.marginLeft = "341px";

@@ -25,12 +25,16 @@ YAHOO.extend(CStudioForms.Controls.Label, CStudioForms.CStudioFormField, {
 	render: function(config, containerEl) {
 		// we need to make the general layout of a control inherit from common
 		// you should be able to override it -- but most of the time it wil be the same
+		containerEl.id = this.id;
+
 		var titleEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(titleEl, 'label');
   		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 			titleEl.innerHTML = "&nbsp;";
 			containerEl.appendChild(titleEl);
 		
 		var controlWidgetContainerEl = document.createElement("div");
+		YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'datum');
 		YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-input-container');
         containerEl.appendChild(controlWidgetContainerEl);
 

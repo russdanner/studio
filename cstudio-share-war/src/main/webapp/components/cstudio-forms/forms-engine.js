@@ -305,6 +305,7 @@ var CStudioForms = CStudioForms || function() {
         renderHelp: function(config, containerEl){
             if(!Array.isArray(config.help) && config.help !== ""){
                 var helpEl = document.createElement("span");
+                YAHOO.util.Dom.addClass(helpEl, 'hint');
                 YAHOO.util.Dom.addClass(helpEl, 'cstudio-form-field-help');
                 helpEl.innerHTML = "&nbsp;";
                 containerEl.appendChild(helpEl);
@@ -1543,6 +1544,8 @@ var CStudioForms = CStudioForms || function() {
             }
 
             var fieldContainerEl = document.createElement("div");
+            YAHOO.util.Dom.addClass(fieldContainerEl, 'container');
+            YAHOO.util.Dom.addClass(fieldContainerEl, field.type + '-control');
             YAHOO.util.Dom.addClass(fieldContainerEl, 'cstudio-form-field-container');
             sectionEl.appendChild(fieldContainerEl);
 

@@ -13,6 +13,7 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.id = id;
 	this.readonly = readonly;
 	this.minSize = 0;
+	this.hiddenEl = null;
 	// Stores the type of data the control is now working with (this value is fetched from the datasource controller)
 	this.dataType = null;
 
@@ -64,6 +65,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
     },
 
 	render: function(config, containerEl, isValueSet) {
+		containerEl.id = this.id;
 		this.containerEl = containerEl;
 		this.config = config;
 		
@@ -114,6 +116,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 				
 				containerEl.innerHTML = "";
 				var titleEl = document.createElement("span");
+					YAHOO.util.Dom.addClass(titleEl, 'label');
 		  		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 					titleEl.innerHTML = config.title;
 				
@@ -121,8 +124,15 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 				YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-input-container');
 		
 				var validEl = document.createElement("span");
+					YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 					YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 					controlWidgetContainerEl.appendChild(validEl);
+
+				var hiddenEl = document.createElement("input");
+					hiddenEl.type = "hidden";
+					YAHOO.util.Dom.addClass(hiddenEl, 'datum');
+					controlWidgetContainerEl.appendChild(hiddenEl);
+					_self.hiddenEl = hiddenEl;
 		
 				var groupEl = document.createElement("div");
 				groupEl.className = "checkbox-group";
@@ -195,6 +205,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
                 _self.renderHelp(config, helpContainerEl);
 				
 				var descriptionEl = document.createElement("span");
+					YAHOO.util.Dom.addClass(descriptionEl, 'description');
 					YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 					descriptionEl.innerHTML = config.description;
 
@@ -238,7 +249,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 				if (el.item) {
 					// the select/deselect toggle button doesn't have an item attribute
 					valObj.key = el.item.key;
-					valObj[this.dataType] = el.item.value;
+					valObj[_self.dataType] = el.item.value || el.item[_self.dataType];
 					_self.value.push(valObj);
 				}
 			});
@@ -249,6 +260,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			});
 		}
 		this.form.updateModel(this.id, this.getValue());
+		this.hiddenEl.value = this.valueToString();
 		this.validate();
 	},
 	
@@ -256,12 +268,13 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		var checked = (el.checked);
 		
 		if(checked) {
-			this.selectItem(el.item.key, el.item.value);
+			this.selectItem(el.item.key, el.item.value || el.item[this.dataType]);
 		}
 		else {
 			this.unselectItem(el.item.key);
 		}
 		this.form.updateModel(this.id, this.getValue());
+		this.hiddenEl.value = this.valueToString();
 		this.validate();
 	},
 
@@ -315,7 +328,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		return this.value;
 	},
 
-	updateDataType : function updateDataType (valObj) {
+	updateDataType: function (valObj) {
 		if (this.dataType) {
 			for (var prop in valObj) {
 				if (prop.match(/value/)) {
@@ -340,6 +353,26 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 		this.value = value;
 		this.form.updateModel(this.id, this.getValue());
 		this.render(this.config, this.containerEl, true);
+		this.hiddenEl.value = this.valueToString();
+	},
+
+	valueToString: function() {
+		var strValue = "[";
+		var values = this.getValue();
+		var item = null;
+		if(values === '')
+			values = [];
+
+		for(var i = 0; i < values.length; i++){
+			item = values[i];
+			strValue += '{ "key": "' + item.key + '", "' + this.dataType + '":"' + item[this.dataType] + '"}';
+			if( i != values.length -1){
+				strValue += ",";
+			}
+		}
+
+		strValue += "]";
+		return strValue;
 	},
 		
 	getName: function() {

@@ -88,7 +88,10 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 	render: function(config, containerEl) {
 		// we need to make the general layout of a control inherit from common
 		// you should be able to override it -- but most of the time it wil be the same
+			containerEl.id = this.id;
+
 		var titleEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(titleEl, 'label');
   		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 			titleEl.innerHTML = config.title;
 		
@@ -96,11 +99,13 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 		YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-input-container');
 
 		var validEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 			YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 			controlWidgetContainerEl.appendChild(validEl);
 
 		var inputEl = document.createElement("input");
 			this.inputEl = inputEl;
+			YAHOO.util.Dom.addClass(inputEl, 'datum');
 			YAHOO.util.Dom.addClass(inputEl, 'cstudio-form-control-input');
 			inputEl.value = (this.value = "_not-set") ? config.defaultValue : this.value;
 			controlWidgetContainerEl.appendChild(inputEl);
@@ -131,6 +136,7 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 			}
 
 		var countEl = document.createElement("div");
+			YAHOO.util.Dom.addClass(countEl, 'char-count');
 			YAHOO.util.Dom.addClass(countEl, 'cstudio-form-control-input-count');
 			controlWidgetContainerEl.appendChild(countEl);
 			this.countEl = countEl;
@@ -143,6 +149,7 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 		this.renderHelp(config, controlWidgetContainerEl);
 		
 		var descriptionEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(descriptionEl, 'description');
 			YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 			descriptionEl.innerHTML = config.description;
 

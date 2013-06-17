@@ -101,6 +101,8 @@ YAHOO.extend(CStudioForms.Controls.PageNavOrder, CStudioForms.CStudioFormField, 
 	},
 
 	render: function(config, containerEl) {
+		containerEl.id = this.id;
+
 		var	currentValue = (this.value == "_not-set")?this.defaultValue:this.value;
 
 		for(var i=0; i<config.properties.length; i++){
@@ -112,6 +114,7 @@ YAHOO.extend(CStudioForms.Controls.PageNavOrder, CStudioForms.CStudioFormField, 
 		}
 		
 		var titleEl = document.createElement("span");
+  		    YAHOO.util.Dom.addClass(titleEl, 'label');
   		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 			titleEl.innerHTML = config.title;
 
@@ -119,10 +122,12 @@ YAHOO.extend(CStudioForms.Controls.PageNavOrder, CStudioForms.CStudioFormField, 
 		YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-page-nav-order-container');
 
 		var validEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 			YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 			controlWidgetContainerEl.appendChild(validEl);
 
 		var dropdownEl = document.createElement("select");
+			YAHOO.util.Dom.addClass(dropdownEl, 'datum');
 			YAHOO.util.Dom.addClass(dropdownEl, 'cstudio-form-control-dropdown');
 			this.dropdownEl = dropdownEl;
 
@@ -150,6 +155,7 @@ YAHOO.extend(CStudioForms.Controls.PageNavOrder, CStudioForms.CStudioFormField, 
         this.renderHelp(config, controlWidgetContainerEl);
 
 		var descriptionEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(descriptionEl, 'description');
 			YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 			descriptionEl.innerHTML = config.description;
 
