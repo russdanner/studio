@@ -315,37 +315,6 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
         List<DmDependencyTO> submittedChidren = getSubmittedItems(site, children, format, globalSchDate);
         submittedItem.setChildren(submittedChidren);
 
-        // Special use case when parent is mandatory parent for submitted child, and it has been already scheduled
-        if (submittedChidren != null && submittedChidren.size() > 0) {
-            ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
-            String fullPath = servicesConfig.getRepositoryRootPath(site) + submittedItem.getUri();
-            if (persistenceManagerService.isNew(fullPath)) {
-                try {
-                    DmContentItemTO contentItemTO = persistenceManagerService.getContentItem(fullPath);
-                    if (contentItemTO.getScheduledDateAsDate() != null) {
-                        for (DmDependencyTO child : submittedChidren) {
-                            String childFullPath = servicesConfig.getRepositoryRootPath(site) + child.getUri();
-                            if (persistenceManagerService.isNew(childFullPath)) {
-                                if (child.getScheduledDate() != null) {
-                                    if (child.getScheduledDate().after(contentItemTO.getScheduledDateAsDate())) {
-                                        submittedItem.setScheduledDate(contentItemTO.getScheduledDateAsDate());
-                                    }
-                                } else {
-                                    submittedItem.setScheduledDate(null);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                } catch (ServiceException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Failed to check if mandatory parent was already scheduled");
-                    }
-                }
-            }
-        }
-
         DmDependencyService dmDependencyService = getServicesManager().getService(DmDependencyService.class);
 
         if (uri.endsWith(DmConstants.XML_PATTERN)) {
