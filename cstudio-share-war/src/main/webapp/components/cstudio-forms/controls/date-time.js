@@ -583,13 +583,13 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		var beforeSaveCb = {
 			beforeSave: function(paramObj) {
 				var _self = this.context;
-       			var val = _self.getFieldValue();
-       			if (typeof val == "string") {
+				var val = _self.getFieldValue();
+				if (typeof val == "string") {
 					_self.value = val;
-       				_self.form.updateModel(_self.id, _self.value);
-       			} else {
-            		alert("Unable to save Date/Time field. Please contact your system administrator");
-       			}
+					_self.form.updateModel(_self.id, _self.value);
+				} else {
+					alert("Unable to save Date/Time field. Please contact your system administrator");
+				}
 			},
 			context: this
 		};
@@ -647,12 +647,14 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		
 		    if(this.showDate) {
 		        var dateEl = document.createElement("input");
-		            dateEl.id = divPrefix + "cstudio-form-control-date-input";
-		            dateEl.className = "date-control";
-		            dateEl.readOnly = "readonly";
-		            this.dateEl = dateEl;
 
-				controlWidgetContainerEl.appendChild(dateEl);
+            dateEl.id = divPrefix + "cstudio-form-control-date-input";
+            dateEl.className = "date-control";
+            dateEl.readOnly = "readonly";
+            this.dateEl = dateEl;
+
+						controlWidgetContainerEl.appendChild(dateEl);
+
 				YAHOO.util.Event.on(dateEl, 'blur', function(e, _this) { 
 					_this.validate(e, _this, true);
 				}, this);
@@ -721,7 +723,25 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 
 		    if (this.showNowLink && !this.readonly) {
 		    	// only show the link if the field is editable
-				this._renderDateLink(controlWidgetContainerEl, "Set Now");
+				  this._renderDateLink(controlWidgetContainerEl, "Set Now");
+		    }
+
+		    if (!this.readonly) {
+		    	// Render a link to clear the date and/or time values
+		    	var clearDateEl = document.createElement("a"),
+		            clearDateLabel = document.createTextNode("Clear");
+
+      		clearDateEl.className = "clear-link";
+      		clearDateEl.href = "#";
+      		clearDateEl.appendChild(clearDateLabel);
+
+      		YAHOO.util.Event.addListener(clearDateEl, 'click', function(e) {
+      				YAHOO.util.Event.preventDefault(e);
+			     		this.setDateTime('', 'date');
+			     		this.setDateTime('', 'time');
+					}, clearDateEl, this);
+						
+					controlWidgetContainerEl.appendChild(clearDateEl);
 		    }
 
 		this.renderHelp(config, controlWidgetContainerEl);
@@ -743,8 +763,18 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 	   	if (this.showDate) {
 	      var calDivId = divPrefix + "date-time-id";
  	      var minDate = (this.allowPastDate == true) ? null : mm + '/' + dd + '/' + yyyy; // today's date
+				var navConfig = {
+					strings: {
+						month: "Choose Month",
+						year: "Enter Year",
+						submit: "OK",
+						cancel: "Cancel",
+						invalidYear: "Please enter a valid year"
+					},
+					initialFocus: "year"
+				};
 
-	      var calendarComponent = new YAHOO.widget.Calendar(calDivId, calEl.id, {title: "Select Date", mindate: minDate, close:true});
+	      var calendarComponent = new YAHOO.widget.Calendar(calDivId, calEl.id, {title: "Select Date", mindate: minDate, close:true, navigator: navConfig});
           calendarComponent.render();
           calendarComponent.hide();
           YAHOO.util.Dom.removeClass(calEl, "hidden");
@@ -1002,12 +1032,11 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 	},
 
 	setDateTime: function(value, type) {
-		if (value) {
-			if (type == 'date' && this.dateEl) {
-				this.dateEl.value = value;
-			} else if (type == 'time' && this.timeEl) {
-				this.timeEl.value = value;
-			}
+
+		if (type == 'date' && this.dateEl) {
+			this.dateEl.value = value;
+		} else if (type == 'time' && this.timeEl) {
+			this.timeEl.value = value;
 		}
 		this.validate(null, this, true);
 	},
