@@ -579,6 +579,7 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 	render: function(config, containerEl) {
 		// we need to make the general layout of a control inherit from common
 		// you should be able to override it -- but most of the time it wil be the same
+		containerEl.id = this.id;
 
 		var beforeSaveCb = {
 			beforeSave: function(paramObj) {
@@ -632,6 +633,7 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		var divPrefix = this.id + "-";
 
 		var titleEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(titleEl, 'label');
 	        YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 		    titleEl.innerHTML = config.title;
 		
@@ -642,6 +644,7 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
            	}
 
 		var validEl = document.createElement("span");
+			YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 		    YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 		    controlWidgetContainerEl.appendChild(validEl);
 		
@@ -651,6 +654,8 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		            dateEl.className = "date-control";
 		            dateEl.readOnly = "readonly";
 		            this.dateEl = dateEl;
+					YAHOO.util.Dom.addClass(dateEl, 'datum');
+					YAHOO.util.Dom.addClass(dateEl, 'date');
 
 				controlWidgetContainerEl.appendChild(dateEl);
 				YAHOO.util.Event.on(dateEl, 'blur', function(e, _this) { 
@@ -673,6 +678,8 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		        timeEl.className = "time-control";
 		        timeEl.setAttribute("data-cursor", 0);
 		        this.timeEl = timeEl;
+		        YAHOO.util.Dom.addClass(timeEl, 'datum');
+				YAHOO.util.Dom.addClass(timeEl, 'time');
 
 	       		if (!this.readonly) {
 	       			incrementControlEl = document.createElement("input");
@@ -727,6 +734,7 @@ YAHOO.extend(CStudioForms.Controls.DateTime, CStudioForms.CStudioFormField, {
 		this.renderHelp(config, controlWidgetContainerEl);
 
 	    var descriptionEl = document.createElement("span");
+	    	YAHOO.util.Dom.addClass(descriptionEl, 'description');
 		    YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 		    descriptionEl.innerHTML = config.description;		
 		

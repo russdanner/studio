@@ -312,6 +312,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 			fieldContainerWidth,
 			width;
 
+		containerEl.id = this.id;
 		this.containerEl = containerEl;
 		this.fieldConfig = config;
 		this.rteConfig = rteConfig;
@@ -321,6 +322,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 		// we need to make the general layout of a control inherit from common
 		// you should be able to override it -- but most of the time it wil be the same
 		var titleEl = document.createElement("span");
+			YDom.addClass(titleEl, 'label');
   		    YDom.addClass(titleEl, 'cstudio-form-field-title');
 			titleEl.innerHTML = config.title;
 		
@@ -328,6 +330,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 		YDom.addClass(controlWidgetContainerEl, 'cstudio-form-control-rte-container');
 
 		var validEl = document.createElement("span");
+			YDom.addClass(validEl, 'validation-hint');
 			YDom.addClass(validEl, 'cstudio-form-control-validation');
 			controlWidgetContainerEl.appendChild(validEl);
 
@@ -337,6 +340,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 		 */
 		var inputEl = document.createElement("textarea");
 			controlWidgetContainerEl.appendChild(inputEl);
+			YDom.addClass(inputEl, 'datum');
 
 			this.inputEl = inputEl;
 			inputEl.value = (this.value == "_not-set") ? config.defaultValue : this.value;
@@ -345,6 +349,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 			YDom.addClass(inputEl, 'cstudio-form-control-input');
 
 		var descriptionEl = document.createElement("span");
+			YDom.addClass(descriptionEl, 'description');
 			YDom.addClass(descriptionEl, 'cstudio-form-control-rte-description');
 			descriptionEl.innerHTML = config.description;
 
@@ -517,6 +522,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
                         ctrlEl.setAttribute("colspan", "3");
 
 						countEl = document.createElement("span");
+						YDom.addClass(countEl, 'char-count');
                         ctrlEl.appendChild(countEl);
 
                         _thisControl.renderHelp(_thisControl.fieldConfig, ctrlEl);

@@ -56,6 +56,7 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 	render: function(config, containerEl) {
 		// we need to make the general layout of a control inherit from common
 		// you should be able to override it -- but most of the time it wil be the same
+		containerEl.id = this.id;
 		
 		var datasource = null;
 		var showEmptyValue = false;
@@ -85,6 +86,7 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 				success: function(list) {
 					keyValueList = list;
 					var titleEl = document.createElement("span");
+			  		    YAHOO.util.Dom.addClass(titleEl, 'label');
 			  		    YAHOO.util.Dom.addClass(titleEl, 'cstudio-form-field-title');
 						titleEl.innerHTML = config.title;
 					
@@ -92,11 +94,13 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 					    YAHOO.util.Dom.addClass(controlWidgetContainerEl, 'cstudio-form-control-dropdown-container');
 			
 					var validEl = document.createElement("span");
+						YAHOO.util.Dom.addClass(validEl, 'validation-hint');
 						YAHOO.util.Dom.addClass(validEl, 'cstudio-form-control-validation');
 						controlWidgetContainerEl.appendChild(validEl);
 			
 					var inputEl = document.createElement("select");
 						_self.inputEl = inputEl;
+						YAHOO.util.Dom.addClass(inputEl, 'datum');
 						YAHOO.util.Dom.addClass(inputEl, 'cstudio-form-control-dropdown');
 						
 						if(showEmptyValue){
@@ -130,6 +134,7 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 					_self.renderHelp(config, controlWidgetContainerEl);
 								
 					var descriptionEl = document.createElement("span");
+						YAHOO.util.Dom.addClass(descriptionEl, 'description');
 						YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
 						descriptionEl.innerHTML = config.description;
 			
