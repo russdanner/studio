@@ -239,7 +239,7 @@
         },
 
         doDeleteActionClicked: function(){
-			CStudioAuthoring.Utils.showLoadingImage("delete");
+			this.showProcessingOverlay(true);
             this.disableActions();
             this.fire("submitStart");
             var data = this.getData(),
@@ -251,7 +251,7 @@
                 url: CStudioAuthoringContext.baseUri + "/proxy/alfresco/cstudio/wcm/workflow/go-delete?deletedep=true&site="+CStudioAuthoringContext.site+"&user="+CStudioAuthoringContext.user,
                 callback: {
                     success: function(oResponse) {
-						CStudioAuthoring.Utils.hideLoadingImage("delete");
+                        _this.showProcessingOverlay(false);
                         _this.enableActions();
                         var oResp = JSON.parse(oResponse.responseText);
                         _this.afterSubmit(oResp.message);
@@ -259,7 +259,7 @@
                         _this.fire("submitComplete", oResp);
                     },
                     failure: function(oResponse) {
-                        CStudioAuthoring.Utils.hideLoadingImage("delete");
+                        _this.showProcessingOverlay(false);
 						var oResp = JSON.parse(oResponse.responseText);
                         _this.fire("submitEnd", oResp);
                         _this.enableActions();
@@ -315,43 +315,51 @@
         },
         setTimeConfiguration: function (scheduledDate) {
             if (scheduledDate) {
-            var datePick = this.getComponent("input.date-picker");
-            var timePick = this.getComponent("input.time-picker");
-            datePick.value = "Date...";
-            timePick.value = "Time...";
-            if (scheduledDate == "now") {
-            } else {
-                var shedSplit = scheduledDate.split("T");
-                if(shedSplit.length == 2) {
-                    var dateArray = shedSplit[0].split("-");
-                    if (dateArray.length == 3) {
-                        datePick.value = (isNaN(dateArray[1])?dateArray[1]:parseInt(dateArray[1], 10)) + "/" +
-                                         (isNaN(dateArray[2])?dateArray[2]:parseInt(dateArray[2], 10)) + "/" + dateArray[0];
-                    }
-                    var timeArray = shedSplit[1].split(":");
-                    if (timeArray.length == 3) {
-                        var hours = (isNaN(timeArray[0])?timeArray[0]:parseInt(timeArray[0], 10));
-                        var mins  = (isNaN(timeArray[1])?timeArray[1]:parseInt(timeArray[1], 10));
-                        var secs  = (isNaN(timeArray[2])?timeArray[2]:parseInt(timeArray[2], 10));
-                        var hr = hours;
-                        if (hours == 0) {
-                            hours = 12;
-                        } else if (hours > 12) {
-                            hours = hours - 12;
+                var datePick = this.getComponent("input.date-picker");
+                var timePick = this.getComponent("input.time-picker");
+                datePick.value = "Date...";
+                timePick.value = "Time...";
+                if (scheduledDate == "now") {
+
+                } else {
+                    var shedSplit = scheduledDate.split("T");
+                    if(shedSplit.length == 2) {
+                        var dateArray = shedSplit[0].split("-");
+                        if (dateArray.length == 3) {
+                            datePick.value = (isNaN(dateArray[1])?dateArray[1]:parseInt(dateArray[1], 10)) + "/" +
+                                             (isNaN(dateArray[2])?dateArray[2]:parseInt(dateArray[2], 10)) + "/" + dateArray[0];
                         }
-                        timeString = (hours<10?("0"+hours):hours) + ":" +
-                                     (mins<10?("0"+mins):mins) + ":" +
-                                     (secs<10?("0"+secs):secs);
-                        if (hr >= 12) {
-                            timePick.value = timeString + " p.m.";
-                        } else {
-                            timePick.value = timeString + " a.m.";
+                        var timeArray = shedSplit[1].split(":");
+                        if (timeArray.length == 3) {
+                            var hours = (isNaN(timeArray[0])?timeArray[0]:parseInt(timeArray[0], 10));
+                            var mins  = (isNaN(timeArray[1])?timeArray[1]:parseInt(timeArray[1], 10));
+                            var secs  = (isNaN(timeArray[2])?timeArray[2]:parseInt(timeArray[2], 10));
+                            var hr = hours;
+                            if (hours == 0) {
+                                hours = 12;
+                            } else if (hours > 12) {
+                                hours = hours - 12;
+                            }
+                            timeString = (hours<10?("0"+hours):hours) + ":" +
+                                         (mins<10?("0"+mins):mins) + ":" +
+                                         (secs<10?("0"+secs):secs);
+                            if (hr >= 12) {
+                                timePick.value = timeString + " p.m.";
+                            } else {
+                                timePick.value = timeString + " a.m.";
+                            }
                         }
                     }
                 }
             }
+        },
+
+        showProcessingOverlay: function (show) {
+            var elem = this.getComponent(".processing-overlay");
+            if ( elem ) {
+                elem.style.display = show ? '' : 'none';
+            }
         }
-    }
 
     });
 

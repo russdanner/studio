@@ -32,7 +32,39 @@
         .admin-delete-view table.dependencies-table .item-sch a.when {
             margin-right:5px;
         }
+        #acnVersionWrapper .item-check[type="checkbox"] {
+            margin-right: 5px;
+        }
+        .dialog-overlay,
+        .dialog-overlay-message {
+            position: absolute;
+        }
+        .dialog-overlay {
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            background-color: #eee;
+            opacity: 0.7;
+        }
+        .dialog-overlay-message {
+            top: 50%;
+            left: 50%;
+            margin-top: -20px;
+            margin-left: -150px;
+            height: 40px;
+            width: 300px;
+            font-size: 20px !important;
+            text-align: center !important;
+        }
     </style>
+
+    <div class="processing-overlay" style="display: none">
+        <div class="dialog-overlay"></div>
+        <div class="dialog-overlay-message">
+            Processing, please wait&hellip;
+        </div>
+    </div>
 
     <h3>Delete</h3>
     <div class="view-caption">
