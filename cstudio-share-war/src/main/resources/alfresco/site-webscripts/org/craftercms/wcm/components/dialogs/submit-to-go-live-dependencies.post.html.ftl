@@ -2,7 +2,7 @@
    ${jsonDependencies}
 </script>
 
-<div class="acnBox" id="acnVersionWrapper" style="width: 825px; height:450px;">
+<div class="acnBox" id="acnVersionWrapper" style="width: 825px; height:425px;">
 
     <style type="text/css">
         #acnVersionWrapper.acnBox input[type="radio"],
