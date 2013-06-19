@@ -2,31 +2,44 @@
    ${jsonDependencies}
 </script>
 
-<div class="acnBox" id="acnVersionWrapper" style="width: 825px; height:415px;">
+<div class="acnBox" id="acnVersionWrapper" style="width: 825px; height:425px;">
+
+    <style type="text/css">
+        #acnVersionWrapper.acnBox input[type="radio"],
+        #acnVersionWrapper.acnBox input[type="checkbox"] {
+            margin: 1px;
+        }
+    </style>
+
 	<h3>Submit to Go Live</h3>
 	<p>When would you like the checked item(s) to Go Live?</p>
-	<br/>
+	<br />
+
 	<div class="formRow radio">
-		<div class="field"><input type="radio" name="now" id="now" checked="checked" class="radiobutton"/></div>
-		<label>As soon as possible</label>
+        <label>
+            <input type="radio" name="now" id="now" checked="checked" class="radiobutton" />
+            As soon as possible
+        </label>
 	</div>
-	<div class="formRow radio">
-		<div class="field"><input type="radio" name="now" id="settime" class="radiobutton1" id="settime"/></div>
-    <label>At the requested time:</label>
-    <div class="textField">
-    <div style="float: left;">
-    	<input type="text" class="submitdate submitdtext datePickerInput" id="datepicker" value="Date..."/>
+    <div class="formRow radio">
+        <label>
+            <input type="radio" name="now" id="settime" class="radiobutton1" id="settime"/>
+            At the requested time:
+        </label>
+        <div class="textField">
+            <div style="float: left;">
+                <input type="text" class="submitdate submitdtext datePickerInput" id="datepicker" value="Date..."/>
+            </div>
+            <div style="position: relative; float: left;">
+                <input type="text" class="submittime submitdtext" id="timepicker" value="Time..."/>
+            </div>
+            <div class="timeButtonContainer">
+                <input id="timeIncrementButton" type="submit" value=""/>
+                <input id="timeDecrementButton" type="submit" value=""/>
+            </div>
+            <div style="float: left; margin-top: 3px"><span id="timeZone">EST</span> (<a id="schedulePolicy" href="#">Scheduling Policy</a>)</div>
+        </div>
     </div>
-    <div style="position: relative; float: left;">
-      	<input type="text" class="submittime submitdtext" id="timepicker" value="Time..."/>
-     </div>
-     <div class="timeButtonContainer">
-      	<input id="timeIncrementButton" type="submit" value=""/>
-      	<input id="timeDecrementButton" type="submit" value=""/>
-      </div>
-      <div style="float: left; margin-top: 3px"><span id="timeZone">EST</span> (<a id="schedulePolicy" href="#">Scheduling Policy</a>)</div>
-    </div>
-	</div>
 
   <div class="formRow radio padTop padBottom">
   	<div class="field"><input type="checkbox" checked="checked" name="email" id="email" class="radiobutton1"/></div>
@@ -170,27 +183,29 @@
 
     </div>
 
+        <#if hasDependencies??>
+        <div id="dependenciesWarning"
+             style="margin:10px 0; text-align: center; color: black;">
+            Dependencies must be checked before you can submit.
+        </div>
+        </#if>
 
-  <div class="acnSubmitButtons">
-    <input id="golivesubmitButton" type="submit" value="Submit" />
-    <input id="golivecancelButton" type="submit" value="Cancel" class="livecancelButton" />
-  </div>
+        <div class="acnSubmitButtons">
+            <input id="golivesubmitButton" type="submit" value="Submit" />
+            <input id="golivecancelButton" type="submit" value="Cancel" class="livecancelButton" />
+        </div>
 
-  </div>
+    </div>
 
-	<#if hasDependencies??>
-  		<div id="dependenciesWarning" style="margin-bottom:10px; text-align:center; color: black;">Dependencies must be checked before you can Submit.</div>
-	</#if>
-
-         <div class="publishing-channels" style="position: absolute; display: inline-block; left: 575px" >
-            <h3>Submission Comment</h3>
-            <div class="pub-status">
-                <div class="pub-msg" >
-                    <textarea id="acn-submission-comment" name="acn-submission-comment"></textarea>
-                </div>
+    <div class="publishing-channels" style="position: absolute; display: inline-block; left: 575px" >
+        <h3>Submission Comment</h3>
+        <div class="pub-status">
+            <div class="pub-msg" >
+                <textarea id="acn-submission-comment" name="acn-submission-comment"></textarea>
             </div>
         </div>
-        
+    </div>
+
 </div>
 
 <#macro getChildren node parentBrowserUri>
