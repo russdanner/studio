@@ -30,7 +30,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 timeValue = YDom.get('timepicker').value;
             return (checked &&
                 dateValue !== 'Date...' && dateValue !== ''
-                    && timeValue !== 'Time...' && timeValue !== '');
+                && timeValue !== 'Time...' && timeValue !== '');
         }
 
         function setDisabled (isDisabled) {
@@ -46,16 +46,16 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 }
 
                 if ( !(YDom.get('globalSetToNow').checked) &&
-                     !isSchedulingOptionsReady() ) {
+                    !isSchedulingOptionsReady() ) {
                     isDisabled = DISABLED;
                     msg = '(select item scheduling)';
                 }
 
                 /*if ( goLive.isMixedSchedules &&
-                    !YDom.get('mixedSchedulesOK').checked ) {
-                    isDisabled = DISABLED;
-                    msg = 'Confirm mixed schedules disclaimer';
-                }*/
+                 !YDom.get('mixedSchedulesOK').checked ) {
+                 isDisabled = DISABLED;
+                 msg = 'Confirm mixed schedules disclaimer';
+                 }*/
 
                 btn.value = msg;
 
@@ -117,7 +117,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                     YDom.get('globalSetToNow').checked = true;
                 } else {
                     var dt = CStudioAuthoring.Utils.formatDateFromString(
-                        reference, 'tooltipformat').split(SPACE),
+                            reference, 'tooltipformat').split(SPACE),
                         time = dt[1];
                     dp.disabled = false;
                     tp.disabled = false;
@@ -178,8 +178,8 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             }, this, true);
 
             /*YEvent.addListener('mixedSchedulesOK', 'click', function () {
-                setDisabled();
-            }, this, true);*/
+             setDisabled();
+             }, this, true);*/
 
             function fn () {
 
@@ -217,8 +217,12 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 this.appendPublishingChannelsData(this.selectedJsonObj);
 
                 // add isNow and scheduledDate fields
-                this.selectedJsonObj.now = "true";
-                this.selectedJsonObj.scheduledDate = "";
+                this.selectedJsonObj.now = YDom.get('globalSetToNow').checked;
+                if ( isSchedulingOptionsReady() ) {
+                    var datepicker = YDom.get('datepicker'), timepicker = YDom.get('timepicker');
+                    var dateValue = datepicker.value, timeValue = timepicker.value;
+                    this.selectedJsonObj.scheduledDate = this.getScheduledDateTimeForJson(dateValue, timeValue);
+                }
                 this.selectedJsonObj.submissionComment=document.getElementById("acn-submission-comment").value;
 
                 var jsonSubmitString = YAHOO.lang.JSON.stringify(this.selectedJsonObj),
@@ -464,7 +468,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
             this.dependencyJsonObj.now = scheduled === '' ? 'true' : 'false'; // set now in json obj
             this.setAllTo(this.dependencyJsonObj.items, scheduled);
-
+            this.dependencyJsonObj.scheduledDate = scheduled;
         }
 
         DialogPrototype.render = function (contentItems) {
