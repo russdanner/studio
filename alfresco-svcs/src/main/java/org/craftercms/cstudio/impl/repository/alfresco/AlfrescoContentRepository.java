@@ -366,6 +366,12 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     @Override
+    public String getAdministratorUser() {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        return persistenceManagerService.getAdministratorUserName();
+    }
+
+    @Override
     public boolean isNew(String site, String path) {
         PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
         String fullPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site) + path;

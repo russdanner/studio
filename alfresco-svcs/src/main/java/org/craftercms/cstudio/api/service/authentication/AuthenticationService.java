@@ -35,4 +35,6 @@ public interface AuthenticationService  {
 	Object runAs(String userName, Object obj, Method work, Object ... args);
 
     String getCurrentUser();
+
+    String getAdministratorUser();
 }

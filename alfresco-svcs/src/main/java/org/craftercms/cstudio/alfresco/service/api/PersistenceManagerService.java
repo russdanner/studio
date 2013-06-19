@@ -732,4 +732,6 @@ public interface PersistenceManagerService {
     public boolean isScheduled(String fullPath);
 
     public boolean isScheduled(NodeRef nodeRef);
+
+    public String getAdministratorUserName();
 }

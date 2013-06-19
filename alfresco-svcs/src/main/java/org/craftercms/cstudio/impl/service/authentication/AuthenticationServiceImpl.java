@@ -44,6 +44,11 @@ public class AuthenticationServiceImpl implements AuthenticationService  {
         return _contentRepository.getCurrentUser();
     }
 
+    @Override
+    public String getAdministratorUser() {
+        return _contentRepository.getAdministratorUser();
+    }
+
     /** getter for content repository */
 	public ContentRepository getContentRepository() { return _contentRepository; }
 	/** setter for content repository */

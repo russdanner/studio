@@ -17,18 +17,18 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.workflow.job;
 
-import java.util.List;
-import java.lang.Class;
-import java.lang.reflect.Method;
+import org.craftercms.cstudio.api.job.Job;
+import org.craftercms.cstudio.api.log.Logger;
+import org.craftercms.cstudio.api.log.LoggerFactory;
+import org.craftercms.cstudio.api.service.authentication.AuthenticationService;
+import org.craftercms.cstudio.api.service.transaction.TransactionService;
+import org.craftercms.cstudio.api.service.workflow.WorkflowJob;
+import org.craftercms.cstudio.api.service.workflow.WorkflowService;
+import org.craftercms.cstudio.impl.service.workflow.WorkflowManager;
+
 import javax.transaction.UserTransaction;
-
-import org.craftercms.cstudio.api.log.*;
-
-import org.craftercms.cstudio.api.job.*;
-import org.craftercms.cstudio.api.service.authentication.*;
-import org.craftercms.cstudio.api.service.transaction.*;
-import org.craftercms.cstudio.api.service.workflow.*;
-import org.craftercms.cstudio.impl.service.workflow.*;
+import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Job looks at active jobs and attempts to run handler for the current state of each workflow 
@@ -47,7 +47,8 @@ public class ProcessInFlightJobs implements Job {
     public void execute() {
 		try {
 			Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-			_authenticationService.runAs("admin", this, processJobMethod);
+            String adminUser = _authenticationService.getAdministratorUser();
+			_authenticationService.runAs(adminUser, this, processJobMethod);
 		}
 		catch(Exception err) {
 			logger.error(MSG_UNABLE_TO_EXECUTE_JOB, err, "admin");

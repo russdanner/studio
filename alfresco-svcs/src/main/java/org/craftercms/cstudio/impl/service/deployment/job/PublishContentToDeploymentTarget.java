@@ -56,7 +56,8 @@ public class PublishContentToDeploymentTarget implements Job {
             if (singleWorkerLock.tryLock()) {
                 try {
                     Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
-                    _authenticationService.runAs("admin", this, processJobMethod);
+                    String adminUser = _authenticationService.getAdministratorUser();
+                    _authenticationService.runAs(adminUser, this, processJobMethod);
                 } catch(Exception err) {
                     logger.error("unable to execute job", err);
                 } finally {

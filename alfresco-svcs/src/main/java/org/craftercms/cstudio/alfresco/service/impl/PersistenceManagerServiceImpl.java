@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.action.*;
@@ -1917,6 +1918,11 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     @Override
     public void createLiveRepository(String site) {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public String getAdministratorUserName() {
+        return AuthenticationUtil.getAdminUserName();
     }
 }
 

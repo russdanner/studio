@@ -122,6 +122,8 @@ public interface ContentRepository {
 
     String getCurrentUser();
 
+    String getAdministratorUser();
+
     boolean isNew(String site, String path);
 
     String getFilename(String site, String path);
