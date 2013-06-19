@@ -140,6 +140,15 @@
         #dependenciesNotice {
             text-align: center;
         }
+        #acnVersionWrapper.acnBox table.acnLiveTable td.acnLiveTableFileName {
+            width: 250px !important;
+        }
+        #acnVersionWrapper.acnBox table.acnLiveTable td.acnLiveTableFileURI {
+            width: 215px !important;
+        }
+        #acnVersionWrapper.acnBox table.acnLiveTable td.acnLiveTableRight {
+            width: 115px;
+        }
     </style>
 
     <div id="warningDialog" class="warning-dialog" style="display: none">
