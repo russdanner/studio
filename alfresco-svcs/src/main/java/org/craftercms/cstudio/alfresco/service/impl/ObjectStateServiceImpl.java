@@ -375,6 +375,7 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
 
     @Override
     public boolean isScheduled(NodeRef nodeRef) {
+        if (nodeRef == null) return false;
         GeneralLockService nodeLockService = getService(GeneralLockService.class);
         ObjectStateTO state;
         nodeLockService.lock(nodeRef.getId());
@@ -391,6 +392,36 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
         }
         if (state != null) {
             return ObjectStateService.State.isScheduled(state.getState());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isInWorkflow(String path) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        return isInWorkflow(persistenceManagerService.getNodeRef(path));
+    }
+
+    @Override
+    public boolean isInWorkflow(NodeRef nodeRef) {
+        if (nodeRef == null) return false;
+        GeneralLockService nodeLockService = getService(GeneralLockService.class);
+        ObjectStateTO state;
+        nodeLockService.lock(nodeRef.getId());
+        try {
+            state = objectStateDAOService.getObjectState(nodeRef.getId());
+            if (state == null) {
+                PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+                DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
+                objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                state = objectStateDAOService.getObjectState(nodeRef.getId());
+            }
+        } finally {
+            nodeLockService.unlock(nodeRef.getId());
+        }
+        if (state != null) {
+            return ObjectStateService.State.isInWorkflow(state.getState());
         } else {
             return false;
         }

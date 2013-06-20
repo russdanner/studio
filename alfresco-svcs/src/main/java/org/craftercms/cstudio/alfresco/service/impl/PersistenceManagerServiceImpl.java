@@ -1868,6 +1868,31 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
+    public boolean isInWorkflow(String fullPath) {
+        NodeRef nodeRef = getNodeRef(fullPath);
+        if (nodeRef == null) {
+            return false;
+        }
+        return isInWorkflow(nodeRef);
+    }
+
+    @Override
+    public boolean isInWorkflow(NodeRef nodeRef) {
+        if (nodeRef == null) {
+            return false;
+        }
+        ObjectStateService objectStateService = getService(ObjectStateService.class);
+        FileInfo fileInfo = getFileInfo(nodeRef);
+        if (fileInfo.isFolder()) {
+            return false;
+        }
+        if (objectStateService.isInWorkflow(nodeRef)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void initializeCacheScope(String site) {
         initializeCacheScope(site, 5000);
     }

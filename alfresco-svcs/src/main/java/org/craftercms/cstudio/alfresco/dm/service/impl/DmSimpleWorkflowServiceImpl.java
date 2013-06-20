@@ -1626,7 +1626,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
         List<String> affectedPaths = new ArrayList<String>();
         List<DmContentItemTO> affectedItems = new ArrayList<DmContentItemTO>();
-        if (persistenceManagerService.isScheduled(fullPath)) {
+        if (persistenceManagerService.isInWorkflow(fullPath)) {
             affectedPaths.add(path);
             boolean isNew = persistenceManagerService.isNew(fullPath);
             NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
@@ -1646,7 +1646,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
             List<String> filteredPaths = new ArrayList<String>();
             for (String cp : candidates) {
                 String candidatePath = servicesConfig.getRepositoryRootPath(site) + cp;
-                if (persistenceManagerService.isScheduled(candidatePath)) {
+                if (persistenceManagerService.isInWorkflow(candidatePath)) {
                     filteredPaths.add(cp);
                 }
             }

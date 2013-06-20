@@ -734,4 +734,8 @@ public interface PersistenceManagerService {
     public boolean isScheduled(NodeRef nodeRef);
 
     public String getAdministratorUserName();
+
+    public boolean isInWorkflow(String fullPath);
+
+    public boolean isInWorkflow(NodeRef nodeRef);
 }

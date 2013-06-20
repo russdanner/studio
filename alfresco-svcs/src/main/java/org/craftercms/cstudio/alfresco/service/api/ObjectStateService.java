@@ -155,6 +155,23 @@ public interface ObjectStateService {
                 NEW_PUBLISHING_FAILED, EXISTING_PUBLISHING_FAILED
         );
 
+        public static final List<State> WORKFLOW_STATES = Arrays.asList(
+                NEW_SUBMITTED_WITH_WF_SCHEDULED,
+                NEW_SUBMITTED_WITH_WF_SCHEDULED_LOCKED,
+                NEW_SUBMITTED_WITH_WF_UNSCHEDULED,
+                NEW_SUBMITTED_WITH_WF_UNSCHEDULED_LOCKED,
+                NEW_SUBMITTED_NO_WF_SCHEDULED,
+                NEW_SUBMITTED_NO_WF_SCHEDULED_LOCKED,
+                NEW_SUBMITTED_NO_WF_UNSCHEDULED,
+                EXISTING_SUBMITTED_WITH_WF_SCHEDULED,
+                EXISTING_SUBMITTED_WITH_WF_SCHEDULED_LOCKED,
+                EXISTING_SUBMITTED_WITH_WF_UNSCHEDULED,
+                EXISTING_SUBMITTED_WITH_WF_UNSCHEDULED_LOCKED,
+                EXISTING_SUBMITTED_NO_WF_SCHEDULED,
+                EXISTING_SUBMITTED_NO_WF_SCHEDULED_LOCKED,
+                EXISTING_SUBMITTED_NO_WF_UNSCHEDULED
+        );
+
         public static final boolean isNew(State state) {
             return NEW_STATES.contains(state);
         }
@@ -193,6 +210,10 @@ public interface ObjectStateService {
 
         public static boolean isPublishingFailed(State state) {
             return PUBLISHING_FAILED.contains(state);
+        }
+
+        public static boolean isInWorkflow(State state) {
+            return WORKFLOW_STATES.contains(state);
         }
     }
 
@@ -291,4 +312,8 @@ public interface ObjectStateService {
     public boolean isScheduled(String path);
 
     public boolean isScheduled(NodeRef nodeRef);
+
+    public boolean isInWorkflow(String path);
+
+    public boolean isInWorkflow(NodeRef nodeRef);
 }
