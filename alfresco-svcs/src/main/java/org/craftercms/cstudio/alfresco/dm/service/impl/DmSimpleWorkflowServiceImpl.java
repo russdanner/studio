@@ -734,6 +734,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
                 nodeProps.remove(propName);
             }
             persistenceManagerService.setProperties(node, nodeProps);
+            persistenceManagerService.transition(node, ObjectStateService.TransitionEvent.REJECT);
         }
         _listener.postReject(site, dmDependencyTO);
     }

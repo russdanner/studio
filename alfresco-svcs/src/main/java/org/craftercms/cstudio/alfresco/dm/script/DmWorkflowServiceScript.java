@@ -927,22 +927,18 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                     DmDependencyTO submittedItem = getSubmittedItem(site, item, format, scheduledDate);
                     submittedItems.add(submittedItem);
                 }
-                List<String> submittedPaths = new FastList<String>();
+                List<String> nodeRefs = new FastList<String>();
                 for (DmDependencyTO goLiveItem : submittedItems) {
                     String fullPath = servicesConfig.getRepositoryRootPath(site) + goLiveItem.getUri();
-                    submittedPaths.add(fullPath);
-                    persistenceManagerService.setSystemProcessing(fullPath, true);
+                    NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+                    if (nodeRef != null) {
+                        nodeRefs.add(nodeRef.getId());
+                    }
                 }
+                persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
                 DmWorkflowService dmWorkflowService = getServicesManager().getService(DmWorkflowService.class);
                 dmWorkflowService.reject(site, sub, submittedItems, reason, approver);
-                for (String fullPath : submittedPaths) {
-                    if (scheduledDate != null) {
-                        objectStateService.transition(fullPath, ObjectStateService.TransitionEvent.REJECT);
-                    } else {
-                        objectStateService.transition(fullPath, ObjectStateService.TransitionEvent.REJECT);
-                    }
-                    persistenceManagerService.setSystemProcessing(fullPath, false);
-                }
+                persistenceManagerService.setSystemProcessingBulk(nodeRefs, false);
                 result.setSuccess(true);
                 NotificationService notificationService = getServicesManager().getService(NotificationService.class);
                 result.setMessage(notificationService.getCompleteMessage(site, NotificationService.COMPLETE_REJECT));
