@@ -33,7 +33,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
             "ContextualNav.WcmActiveContent": {
                 options: [
                     { name: "Edit", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "Edit" },
-                    { name: "Submit to Go Live", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "SimpleSubmit"  },
+                    { name: "Submit to Go Live", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "SimpleSubmit"  },
                     { name: "Delete", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Delete"  },
                     { name: "Submit for Delete", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "ScheduleForDelete"  },
                     { name: "Reject", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Reject"  },
