@@ -104,6 +104,7 @@ public class AssetDmContentProcessor extends FormDmContentProcessor {
                 oldAssetInfo.setFileName(assetInfo.getFileName());
                 oldAssetInfo.setNodeRef(assetInfo.getNodeRef());
                 oldAssetInfo.setSize(assetInfo.getSize());
+                oldAssetInfo.setSizeUnit(assetInfo.getSizeUnit());
                 result.setItem(oldAssetInfo);
             } else {
                 result.setItem(assetInfo);
