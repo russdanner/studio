@@ -196,7 +196,7 @@
                 <input type="radio" name="go-live-scheduling-global" value="datetime" id="globalSetToDateTime" />
                 Set all items to go live on a specific date &amp; time:
             </label>
-            <div class="scheduling-selection">
+            <div class="scheduling-selection" id="schedulingSelection">
 
                 <div id="timeZone" class="pull-right">EST</div>
 

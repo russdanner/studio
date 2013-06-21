@@ -177,10 +177,6 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 document.getElementById('datepicker').focus();
             }, this, true);
 
-            /*YEvent.addListener('mixedSchedulesOK', 'click', function () {
-             setDisabled();
-             }, this, true);*/
-
             function fn () {
 
                 var dateValue = datepicker.value,
@@ -194,10 +190,21 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
             }
 
+            function selectSpecificDateTimeRadio (e) {
+                YDom.get('globalSetToDateTime').checked = true;
+                datepicker.disabled = false;
+                timepicker.disabled = false;
+                try {
+                    e.target.focus();
+                } catch (ex) {}
+            }
+
             YEvent.addListener('timeIncrementButton', 'click', fn);
             YEvent.addListener('timeDecrementButton', 'click', fn);
             YEvent.addListener('datepicker', 'change', fn);
             YEvent.addListener('timepicker', 'change', fn);
+            YEvent.addListener('schedulingSelection', 'click', selectSpecificDateTimeRadio);
+
         };
 
         DialogPrototype.invokeGoLiveService = function() {
@@ -206,11 +213,6 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             if (this.removeUncheckedItemsFromJson() == -1) { // no items selected
                 return;
             }
-
-//            if (this.selectedJsonObj.items.length != 0 &&
-//                !this.checkParentChildSchedules(this.selectedJsonObj.items)) {
-//                return;
-//            }
 
             if (this.selectedJsonObj.items.length != 0) {
 
