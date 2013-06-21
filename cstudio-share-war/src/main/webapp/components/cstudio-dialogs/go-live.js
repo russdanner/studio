@@ -121,7 +121,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                         time = dt[1];
                     dp.disabled = false;
                     tp.disabled = false;
-                    dp.value = dt[0];
+                    dp.value = CStudioAuthoring.Utils.formatDateFromString(reference, 'simpleformat')
                     tp.value = (
                         time.substr(0, time.length - 1) + ':00 ' +
                             (time.indexOf('P') !== -1 ? 'p.m.' : 'a.m.')
