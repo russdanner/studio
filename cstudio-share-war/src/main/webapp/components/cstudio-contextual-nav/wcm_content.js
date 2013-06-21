@@ -37,8 +37,8 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                     { name: "Delete", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Delete"  },
                     { name: "Submit for Delete", allowAuthor: true, allowAdmin: false, allowBulk: true, renderId: "ScheduleForDelete"  },
                     { name: "Reject", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "Reject"  },
-                { name: "Schedule", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
-                { name: "Go Live Now", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
+                    { name: "Schedule", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
+                    { name: "Go Live Now", allowAuthor: true, allowAdmin: true, allowBulk: true, renderId: "ApproveCommon"  },
                     { name: "Duplicate", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "Duplicate" },
                     { name: "History", allowAuthor: true, allowAdmin: true, allowBulk: false, renderId: "VersionHistory" }
                 ],
@@ -405,26 +405,27 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  */
                 renderEdit: {
                     render: function(option, isBulk, isAdmin, state,  isRelevant, isWrite) {
+                        var content = CStudioAuthoring.SelectedContent.getSelectedContent();
+                        for (var i = 0, l = content.length; i < l; ++i) {
+                            if (content[i].asset) return;
+                        }
+
                         var editCallback = {
                             success: function() {
                                 this.callingWindow.location.reload(true);
                             },
-                            failure: function() {           
-                            },
+                            failure: function() { },
                             callingWindow : window
                         };
 
                         var viewCb = {
-                            success: function() {
-                            },
-                            failure: function() {           
-                            },
+                            success: function() { },
+                            failure: function() { },
                             callingWindow : window
                         };
                         
-                        var content = CStudioAuthoring.SelectedContent.getSelectedContent()[0];
+                        content = content[0];
                         option.onclick = function() {
-
                             if (isWrite == false) {
                                 CStudioAuthoring.Operations.viewContent(
                                     content.form,
@@ -434,8 +435,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                                     content.uri,
                                     false,
                                     viewCb);
-                            }
-                            else {
+                            } else {
                                 CStudioAuthoring.Operations.editContent(
                                     content.form,
                                     CStudioAuthoringContext.siteId,
@@ -460,8 +460,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                         /** for edit, if in read-only mode, it should display View, not Edit **/
                         if (isWrite == false) {
                             option.name = "View";
-                        }
-                        else {
+                        } else {
                             option.name = "Edit";
                         }           
 
