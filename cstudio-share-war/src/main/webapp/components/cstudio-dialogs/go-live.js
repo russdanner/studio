@@ -79,7 +79,7 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 timepicker.value = 'Time...';
             }
 
-            var display = (enabled === DISABLED) ? 'none' : '';
+            var display = (enabled === ENABLED) ? 'none' : '';
             dtovrly.style.display = display;
             tpovrly.style.display = display;
 
