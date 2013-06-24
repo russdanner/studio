@@ -149,6 +149,23 @@
         #acnVersionWrapper.acnBox table.acnLiveTable td.acnLiveTableRight {
             width: 115px;
         }
+        #schedulingSelection {
+            position: relative;
+        }
+        #schedulingSelection .overlay,
+        #schedulingSelection #schedulingSelectionDatepickerOverlay,
+        #schedulingSelection #schedulingSelectionTimepickerOverlay {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100px;
+        }
+        #schedulingSelection #schedulingSelectionDatepickerOverlay {
+            left: 0;
+        }
+        #schedulingSelection #schedulingSelectionTimepickerOverlay {
+            left: 105px;
+        }
     </style>
 
     <div id="warningDialog" class="warning-dialog" style="display: none">
@@ -156,14 +173,6 @@
             You have selected items with mixed schedules. Moving forward
             with this action will launch all checked items on the same schedule.
         </p>
-        <#--
-            <label class="pointer">
-                <input type="checkbox" id="mixedSchedulesOK" /> Check to confirm
-            </label> you want to proceed or
-            <a href="javascript:CStudioAuthoring.Dialogs.DialogGoLive.instance.closeDialog()">
-                cancel
-            </a> to dismiss this screen.
-        </p-->
     </div>
 
     <div id="goLivePopWrapper" style='position:absolute; left:257px; top:117px; width:288px; display:none;'>
@@ -206,8 +215,10 @@
                 </div>
 
                 <input class="datePickerInput" id="datepicker" value="Date..." readonly disabled />
-                <input id="timepicker" value="Time..." disabled/>
+                <input id="timepicker" value="Time..." disabled />
 
+                <div class="overlay" id="schedulingSelectionDatepickerOverlay" data-click-target="datepicker"></div>
+                <div class="overlay" id="schedulingSelectionTimepickerOverlay" data-click-target="timepicker"></div>
             </div>
         </fieldset>
 

@@ -64,6 +64,27 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             return isDisabled;
         }
 
+        function enableSchedulingOptions (enabled) {
+
+            var datepicker = YDom.get('datepicker'),
+                timepicker = YDom.get('timepicker'),
+                dtovrly = YDom.get('schedulingSelectionDatepickerOverlay'),
+                tpovrly = YDom.get('schedulingSelectionTimepickerOverlay');
+
+            datepicker.disabled = !!enabled;
+            timepicker.disabled = !!enabled;
+
+            if (enabled === DISABLED) {
+                datepicker.value = 'Date...';
+                timepicker.value = 'Time...';
+            }
+
+            var display = (enabled === DISABLED) ? 'none' : '';
+            dtovrly.style.display = display;
+            tpovrly.style.display = display;
+
+        };
+
         function traverse (items, referenceDate) {
             var allHaveSameDate = true,
                 item, children;
@@ -162,19 +183,15 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 timepicker = YDom.get('timepicker');
 
             YEvent.addListener('globalSetToNow', 'click', function () {
-                datepicker.value = 'Date...';
-                timepicker.value = 'Time...';
-                datepicker.disabled = true;
-                timepicker.disabled = true;
+                enableSchedulingOptions(DISABLED);
                 me.setAll('');
                 setDisabled();
             }, this, true);
 
             YEvent.addListener('globalSetToDateTime', 'click', function () {
-                datepicker.disabled = false;
-                timepicker.disabled = false;
+                enableSchedulingOptions(ENABLED);
                 setDisabled();
-                document.getElementById('datepicker').focus();
+                datepicker.focus();
             }, this, true);
 
             function fn () {
@@ -192,18 +209,21 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
             function selectSpecificDateTimeRadio (e) {
                 YDom.get('globalSetToDateTime').checked = true;
-                datepicker.disabled = false;
-                timepicker.disabled = false;
-                try {
-                    e.target.focus();
-                } catch (ex) {}
+                enableSchedulingOptions(ENABLED);
             }
 
             YEvent.addListener('timeIncrementButton', 'click', fn);
             YEvent.addListener('timeDecrementButton', 'click', fn);
             YEvent.addListener('datepicker', 'change', fn);
             YEvent.addListener('timepicker', 'change', fn);
-            YEvent.addListener('schedulingSelection', 'click', selectSpecificDateTimeRadio);
+            YEvent.addListener('schedulingSelectionDatepickerOverlay', 'click', function (e) {
+                selectSpecificDateTimeRadio(e);
+                datepicker.focus();
+            });
+            YEvent.addListener('schedulingSelectionTimepickerOverlay', 'click', function (e) {
+                selectSpecificDateTimeRadio(e);
+                timepicker.focus();
+            });
 
         };
 
