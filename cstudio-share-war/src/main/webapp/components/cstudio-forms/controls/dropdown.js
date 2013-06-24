@@ -142,7 +142,10 @@ YAHOO.extend(CStudioForms.Controls.Dropdown, CStudioForms.CStudioFormField, {
 					containerEl.appendChild(controlWidgetContainerEl);
 					containerEl.appendChild(descriptionEl);
 
-                    _self._onChange(null, _self);
+                    // TODO remove comment once CRAFTERCMS-41 is closed
+                    // This call only makes sense for user actioned changes and
+                    // it is actually wiping out the value of the model when initialising
+                    // _self._onChange(null, _self);
 				}
 			};
 
