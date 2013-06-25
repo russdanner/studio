@@ -22,12 +22,42 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
 
         var DISABLED = true,
             ENABLED = false,
-            SPACE = ' ';
+            SPACE = ' ',
+            COLON = ':';
+
+        function isTimeInThePast () {
+            var dateValue = YDom.get('datepicker').value,
+                timeValue = YDom.get('timepicker').value,
+                timeInPast = false;
+
+            var date = new Date(dateValue),
+                today = new Date();
+
+            date.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+
+            if (date.getTime() == today.getTime()) {
+
+                var timeParts = timeValue.substr(0, 8).split(COLON),
+                    pm = (timeValue.substr(9) === 'p.m.');
+
+                if (pm) { timeParts[0] = timeParts[0] + 12; }
+                date.setHours(timeParts[0], timeParts[1], timeParts[2]);
+                today = new Date();
+
+                if (date.getTime() < today.getTime()) {
+                    timeInPast = true;
+                }
+            }
+
+            return timeInPast;
+        }
 
         function isSchedulingOptionsReady () {
             var checked = YDom.get('globalSetToDateTime').checked,
                 dateValue = YDom.get('datepicker').value,
                 timeValue = YDom.get('timepicker').value;
+
             return (checked &&
                 dateValue !== 'Date...' && dateValue !== ''
                 && timeValue !== 'Time...' && timeValue !== '');
@@ -38,24 +68,24 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
             if (isDisabled === ENABLED) {
 
                 var msg = 'Go Live',
-                    btn = YDom.get('golivesubmitButton');
+                    btn = YDom.get('golivesubmitButton'),
+                    now = YDom.get('globalSetToNow').checked;
 
                 if (!goLive.anyoneSelected) {
                     isDisabled = DISABLED;
                     msg = '(no items selected)';
                 }
 
-                if ( !(YDom.get('globalSetToNow').checked) &&
+                if ( !now &&
                     !isSchedulingOptionsReady() ) {
                     isDisabled = DISABLED;
                     msg = '(select item scheduling)';
                 }
 
-                /*if ( goLive.isMixedSchedules &&
-                 !YDom.get('mixedSchedulesOK').checked ) {
-                 isDisabled = DISABLED;
-                 msg = 'Confirm mixed schedules disclaimer';
-                 }*/
+                if (!now && isTimeInThePast()) {
+                    isDisabled = DISABLED;
+                    msg = '(time entered is in the past)';
+                }
 
                 btn.value = msg;
 
