@@ -73,6 +73,8 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
         tree.setDynamicLoad(this.onLoadNodeDataOnClick);
         tree.FOCUS_CLASS_NAME = null;
 
+        var label = treeEl.previousElementSibling;
+        YDom.addClass(label, "loading");
 
         CStudioAuthoring.Service.lookupSiteContent(site, rootPath, 1, "default", {
             openToPath: pathToOpen,
@@ -88,9 +90,11 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
 
                 //add hover effect to nodes
                 CStudioAuthoring.ContextualNav.WcmAssetsFolder.nodeHoverEffects(this);
-            },
 
+                YDom.removeClass(label, "loading");
+            },
             failure: function() {
+                YDom.removeClass(label, "loading");
             }
         });
     },
