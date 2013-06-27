@@ -20,6 +20,7 @@ package org.craftercms.cstudio.impl.service.deployment.job;
 import org.craftercms.cstudio.api.job.Job;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
+import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.authentication.AuthenticationService;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.DeploymentException;
@@ -29,6 +30,8 @@ import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -74,6 +77,8 @@ public class DeployContentToEnvironmentStore implements Job {
                     for (String site : siteNames) {
                         logger.debug("Processing content ready for deployment for site \"{0}\"", site);
                         List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
+                        List<String> pathsToDeploy = getPaths(itemsToDeploy);
+                        Set<String> missingDependenciesPaths = new HashSet<String>();
                         tx = _transactionService.getTransaction();
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
                             logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
@@ -85,6 +90,7 @@ public class DeployContentToEnvironmentStore implements Job {
                                 tx.begin();
                                 _publishingManager.setLockBehaviourEnabled(false);
                                 List<CopyToEnvironmentItem> itemList = chunks.get(i);
+                                List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
                                 try {
                                     logger.debug("Mark items as processing for site \"{0}\"", site);
                                     _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
@@ -92,10 +98,19 @@ public class DeployContentToEnvironmentStore implements Job {
                                     for (CopyToEnvironmentItem item : itemList) {
                                         logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
                                         _publishingManager.processItem(item);
+                                        if (_mandatoryDependenciesCheckEnabled) {
+                                            missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
+                                        }
                                     }
 
                                     logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
-                                    _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                    if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
+                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
+                                        mergedList.addAll(missingDependencies);
+                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, mergedList);
+                                    } else {
+                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                    }
                                     logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
                                     _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
                                     tx.commit();
@@ -120,6 +135,16 @@ public class DeployContentToEnvironmentStore implements Job {
         }
     }
 
+    private List<String> getPaths(List<CopyToEnvironmentItem> itemsToDeploy) {
+        List<String> paths = new ArrayList<String>(itemsToDeploy.size());
+        if (_mandatoryDependenciesCheckEnabled) {
+            for (CopyToEnvironmentItem item : itemsToDeploy) {
+                paths.add(_contentRepository.getFullPath(item.getSite(), item.getPath()));
+            }
+        }
+        return paths;
+    }
+
     /** getter auth service */
     public AuthenticationService getAuthenticationService() { return _authenticationService; }
     /** setter for auth service */
@@ -133,15 +158,23 @@ public class DeployContentToEnvironmentStore implements Job {
     public PublishingManager getPublishingManager() { return _publishingManager; }
     public void setPublishingManager(PublishingManager publishingManager) { this._publishingManager = publishingManager; }
 
+    public ContentRepository getContentRepository() { return _contentRepository; }
+    public void setContentRepository(ContentRepository contentRepository) { this._contentRepository = contentRepository; }
+
     public int getProcessingChunkSize() {  return _processingChunkSize; }
     public void setProcessingChunkSize(int processingChunkSize) { this._processingChunkSize = processingChunkSize; }
 
     public boolean isMasterPublishingNode() { return _masterPublishingNode; }
     public void setMasterPublishingNode(boolean masterPublishingNode) { this._masterPublishingNode = masterPublishingNode; }
 
+    public boolean isMandatoryDependenciesCheckEnabled() { return _mandatoryDependenciesCheckEnabled; }
+    public void setMandatoryDependenciesCheckEnabled(boolean mandatoryDependenciesCheckEnabled) { this._mandatoryDependenciesCheckEnabled = mandatoryDependenciesCheckEnabled; }
+
     protected TransactionService _transactionService;
     protected AuthenticationService _authenticationService;
     protected PublishingManager _publishingManager;
+    protected ContentRepository _contentRepository;
     protected int _processingChunkSize;
     protected boolean _masterPublishingNode;
+    protected boolean _mandatoryDependenciesCheckEnabled;
 }

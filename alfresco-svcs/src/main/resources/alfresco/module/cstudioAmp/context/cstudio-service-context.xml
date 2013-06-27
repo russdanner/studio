@@ -1078,8 +1078,10 @@
         <property name="authenticationService" ref="cstudioAuthenticationServiceSimple" />
         <property name="transactionService" ref="cstudioTransactionServiceSimple" />
         <property name="publishingManager" ref="cstudioPublishingManager" />
+        <property name="contentRepository" ref="cstudioContentRepository" />
         <property name="processingChunkSize" value="${deployContentToEnvironmentJob.processingChunkSize}" />
         <property name="masterPublishingNode" value="${deploymentWorkers.masterPublishingNode}" />
+        <property name="mandatoryDependenciesCheckEnabled" value="${deployContentToEnvironmentJob.mandatoryDependenciesCheckEnabled}" />
     </bean>
 
     <bean id="cstudioSyncTargetsJobs" class="org.craftercms.cstudio.impl.service.deployment.job.PublishContentToDeploymentTarget">

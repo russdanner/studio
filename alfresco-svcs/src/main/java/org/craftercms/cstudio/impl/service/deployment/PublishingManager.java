@@ -58,4 +58,6 @@ public interface PublishingManager {
     void markItemsReady(String site, String liveEnvironment, List<CopyToEnvironmentItem> copyToEnvironmentItems) throws DeploymentException;
 
     void setLockBehaviourEnabled(boolean enabled);
+
+    List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths);
 }

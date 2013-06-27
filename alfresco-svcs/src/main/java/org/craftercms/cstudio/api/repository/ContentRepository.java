@@ -145,4 +145,8 @@ public interface ContentRepository {
     String getContentTypeClass(String site,  String path);
 
     void setLockBehaviourEnabled(boolean enabled);
+
+    String getFullPath(String site, String path);
+
+    List<String> getDependentPaths(String site, String path);
 }

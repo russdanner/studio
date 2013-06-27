@@ -497,6 +497,64 @@ public class PublishingManagerImpl implements PublishingManager {
         _deploymentDAL.markItemsReady(site, environment, copyToEnvironmentItems);
     }
 
+    @Override
+    public List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths) {
+        List<CopyToEnvironmentItem> mandatoryDependencies = new ArrayList<CopyToEnvironmentItem>();
+        String site = item.getSite();
+        String path = item.getPath();
+        if (item.getAction() == CopyToEnvironmentItem.Action.NEW || item.getAction() == CopyToEnvironmentItem.Action.MOVE) {
+            String helpPath = path.replace("/" + _indexFile, "");
+            int idx = helpPath.lastIndexOf("/");
+            String parentPath = helpPath.substring(0, idx) + "/" + _indexFile;
+            if (_contentRepository.isNew(site, parentPath) || _contentRepository.isRenamed(site, parentPath)) {
+                String parentFullPath = _contentRepository.getFullPath(site, parentPath);
+                if (!missingDependenciesPaths.contains(parentFullPath) && !pathsToDeploy.contains(parentFullPath)) {
+                    missingDependenciesPaths.add(parentFullPath);
+                    CopyToEnvironmentItem parentItem = createMissingItem(site, parentPath, item);
+                    processItem(parentItem);
+                    mandatoryDependencies.add(parentItem);
+                    mandatoryDependencies.addAll(processMandatoryDependencies(parentItem, pathsToDeploy, missingDependenciesPaths));
+                }
+            }
+        }
+        List<String> dependentPaths = _contentRepository.getDependentPaths(site, path);
+        for (String dependentPath : dependentPaths) {
+            if (_contentRepository.isNew(site, dependentPath) || _contentRepository.isRenamed(site, dependentPath)) {
+                String dependentFullPath = _contentRepository.getFullPath(site, dependentPath);
+                if (!missingDependenciesPaths.contains(dependentFullPath) && !pathsToDeploy.contains(dependentFullPath)) {
+                    missingDependenciesPaths.add(dependentFullPath);
+                    CopyToEnvironmentItem dependentItem = createMissingItem(site, dependentPath, item);
+                    processItem(dependentItem);
+                    mandatoryDependencies.add(dependentItem);
+                    mandatoryDependencies.addAll(processMandatoryDependencies(dependentItem, pathsToDeploy, missingDependenciesPaths));
+                }
+            }
+        }
+        return mandatoryDependencies;
+    }
+
+    private CopyToEnvironmentItem createMissingItem(String site, String itemPath, CopyToEnvironmentItem item) {
+        CopyToEnvironmentItem missingItem = new CopyToEnvironmentItem();
+        missingItem.setSite(site);
+        missingItem.setEnvironment(item.getEnvironment());
+        missingItem.setPath(itemPath);
+        missingItem.setScheduledDate(item.getScheduledDate());
+        missingItem.setState(item.getState());
+        if (_contentRepository.isNew(site, itemPath)) {
+            missingItem.setAction(CopyToEnvironmentItem.Action.NEW);
+        }
+        if (_contentRepository.isRenamed(site, itemPath)) {
+            String oldPath = _contentRepository.getOldPath(site, itemPath);
+            missingItem.setOldPath(oldPath);
+            missingItem.setAction(CopyToEnvironmentItem.Action.MOVE);
+        }
+        String contentTypeClass = _contentRepository.getContentTypeClass(site, itemPath);
+        missingItem.setContentTypeClass(contentTypeClass);
+        missingItem.setUser(item.getUser());
+        missingItem.setSubmissionComment(item.getSubmissionComment());
+        return missingItem;
+    }
+
     public ContentRepository getContentRepository() { return _contentRepository; }
     public void setContentRepository(ContentRepository contentRepository) { this._contentRepository = contentRepository; }
 

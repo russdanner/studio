@@ -35,6 +35,7 @@ import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
 import org.craftercms.cstudio.alfresco.event.EventService;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.*;
@@ -520,6 +521,19 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         } else {
             return "";
         }
+    }
+
+    @Override
+    public String getFullPath(String site, String path) {
+        String fullPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        fullPath = fullPath + path;
+        return fullPath;
+    }
+
+    @Override
+    public List<String> getDependentPaths(String site, String path) {
+        DmDependencyService dmDependencyService = _servicesManager.getService(DmDependencyService.class);
+        return dmDependencyService.getDependencyPaths(site, path);
     }
 
     /** dmContentService getter */
