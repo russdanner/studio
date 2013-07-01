@@ -315,7 +315,10 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
         NodeService nodeService = getService(NodeService.class);
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         NodeRef nodeRef = getNodeRef(fullPath);
-        if (nodeRef == null) throw new ContentNotFoundException();
+        if (nodeRef == null) {
+            LOGGER.error("Content not found at: " + fullPath);
+            throw new ContentNotFoundException();
+        }
         FileInfo fileInfo = getFileInfo(nodeRef);
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
         String site = "";
