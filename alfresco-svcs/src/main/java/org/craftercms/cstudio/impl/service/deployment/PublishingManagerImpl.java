@@ -513,7 +513,7 @@ public class PublishingManagerImpl implements PublishingManager {
                     try {
                         _deploymentDAL.cancelWorkflow(site, parentPath);
                     } catch (DeploymentDALException e) {
-                        LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, path);
+                        LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, parentPath);
                     }
                     missingDependenciesPaths.add(parentFullPath);
                     CopyToEnvironmentItem parentItem = createMissingItem(site, parentPath, item);
