@@ -1055,7 +1055,7 @@ var CStudioForms = CStudioForms || function() {
             var unloadFn = function(e){
                 if(_notifyServer){
                     var entityId = buildEntityIdFn();
-                    CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, form.path);
+                    CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, entityId);
                 }
             }
 
