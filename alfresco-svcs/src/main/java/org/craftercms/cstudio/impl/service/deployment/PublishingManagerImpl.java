@@ -30,6 +30,7 @@ import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.deployment.*;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDAL;
+import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDALException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -509,6 +510,11 @@ public class PublishingManagerImpl implements PublishingManager {
             if (_contentRepository.isNew(site, parentPath) || _contentRepository.isRenamed(site, parentPath)) {
                 String parentFullPath = _contentRepository.getFullPath(site, parentPath);
                 if (!missingDependenciesPaths.contains(parentFullPath) && !pathsToDeploy.contains(parentFullPath)) {
+                    try {
+                        _deploymentDAL.cancelWorkflow(site, parentPath);
+                    } catch (DeploymentDALException e) {
+                        LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, path);
+                    }
                     missingDependenciesPaths.add(parentFullPath);
                     CopyToEnvironmentItem parentItem = createMissingItem(site, parentPath, item);
                     processItem(parentItem);
@@ -522,6 +528,11 @@ public class PublishingManagerImpl implements PublishingManager {
             if (_contentRepository.isNew(site, dependentPath) || _contentRepository.isRenamed(site, dependentPath)) {
                 String dependentFullPath = _contentRepository.getFullPath(site, dependentPath);
                 if (!missingDependenciesPaths.contains(dependentFullPath) && !pathsToDeploy.contains(dependentFullPath)) {
+                    try {
+                        _deploymentDAL.cancelWorkflow(site, dependentPath);
+                    } catch (DeploymentDALException e) {
+                        LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, dependentPath);
+                    }
                     missingDependenciesPaths.add(dependentFullPath);
                     CopyToEnvironmentItem dependentItem = createMissingItem(site, dependentPath, item);
                     processItem(dependentItem);
