@@ -85,7 +85,7 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 
 			if(prop.name == "datasource") {
 				if(prop.value && prop.value != "") {
-					this.datasourceName = (Array.isArray(prop.value))?prop.value[0]:prop.value;	
+					this.datasourceName = (Array.isArray(prop.value)) ? prop.value[0] : prop.value;
 				}
 			}
 
@@ -168,7 +168,11 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 					rowEl.setAttribute("for", _self.id + "-" + item.key);
 
 					textEl = document.createElement("span");
-					textEl.innerHTML = item.value;
+                    // TODO:
+                    // we might need to create something on the datasource
+                    // to get the value based on the list of possible value holding properties
+                    // using datasource.getSupportedProperties
+					textEl.innerHTML = item.value || item.value_f;
 		
 					inputEl = document.createElement("input");
 					inputEl.type = "checkbox";
