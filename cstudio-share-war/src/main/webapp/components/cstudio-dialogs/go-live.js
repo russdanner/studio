@@ -30,24 +30,30 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                 timeValue = YDom.get('timepicker').value,
                 timeInPast = false;
 
-            var date = new Date(dateValue),
-                today = new Date();
+            if (timeValue !== '') {
+                try {
 
-            date.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
+                    var date = new Date(dateValue),
+                        today = new Date();
 
-            if (date.getTime() == today.getTime()) {
+                    date.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
 
-                var timeParts = timeValue.substr(0, 8).split(COLON),
-                    pm = (timeValue.substr(9) === 'p.m.');
+                    if (date.getTime() == today.getTime()) {
 
-                if (pm) { timeParts[0] = timeParts[0] + 12; }
-                date.setHours(timeParts[0], timeParts[1], timeParts[2]);
-                today = new Date();
+                        var timeParts = timeValue.substr(0, 8).split(COLON),
+                            pm = (timeValue.substr(9) === 'p.m.');
 
-                if (date.getTime() < today.getTime()) {
-                    timeInPast = true;
-                }
+                        if (pm) { timeParts[0] = timeParts[0] + 12; }
+                        date.setHours(timeParts[0], timeParts[1], timeParts[2]);
+                        today = new Date();
+
+                        if (date.getTime() < today.getTime()) {
+                            timeInPast = true;
+                        }
+                    }
+
+                } catch (ex) {  }
             }
 
             return timeInPast;
