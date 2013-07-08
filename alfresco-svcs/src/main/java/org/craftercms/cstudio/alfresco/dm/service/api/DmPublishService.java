@@ -24,10 +24,6 @@ import java.util.List;
 
 public interface DmPublishService {
 
-    public void publish(String site, String path, Date launchDate);
-
-    public void publish(String site, List<String> paths, Date launchDate);
-
     public void publish(String site, List<String> paths, Date launchDate, MultiChannelPublishingContext mcpContext);
 
     public void unpublish(String site, List<String> paths, String approver);

@@ -42,12 +42,9 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.PublishingService;
 import org.alfresco.service.cmr.publishing.Status;
-import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.publishing.channels.ChannelService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.rule.Rule;
@@ -73,7 +70,6 @@ import org.craftercms.cstudio.alfresco.activityfeed.CStudioActivityFeedDaoServic
 import org.craftercms.cstudio.alfresco.cache.api.Cache;
 import org.craftercms.cstudio.alfresco.cache.api.CacheItem;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
-import org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDaoService;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.constant.DmXmlConstants;
 import org.craftercms.cstudio.alfresco.dm.dependency.DependencyDaoService;
@@ -172,16 +168,6 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
 
     public void setDependencyDaoService(DependencyDaoService dependencyDaoService) {
         this._dependencyDaoService = dependencyDaoService;
-    }
-
-    protected DeploymentHistoryDaoService _deploymentHistoryDaoService;
-
-    public DeploymentHistoryDaoService getDeploymentHistoryDaoService() {
-        return _deploymentHistoryDaoService;
-    }
-
-    public void setDeploymentHistoryDaoService(DeploymentHistoryDaoService deploymentHistoryDaoService) {
-        this._deploymentHistoryDaoService = deploymentHistoryDaoService;
     }
 
     protected ObjectStateDAOService _objectStateDAOService;
@@ -1395,28 +1381,6 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
-    public List<PublishingEvent> getPublishEventsForNode(NodeRef nodeRef) {
-    	if(nodeRef==null)
-    		return new FastList<PublishingEvent>();
-        return getService(PublishingService.class).getPublishEventsForNode(nodeRef);
-    }
-
-    @Override
-    public void cancelPublishingEvent(String id) {
-        getService(PublishingService.class).cancelPublishingEvent(id);
-    }
-
-    @Override
-    public PublishingDetails createPublishingDetails() {
-        return getService(PublishingService.class).createPublishingDetails();
-    }
-
-    @Override
-    public String scheduleNewEvent(PublishingDetails publishingDetails) {
-        return getService(PublishingService.class).scheduleNewEvent(publishingDetails);
-    }
-
-    @Override
     public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName) {
         return getService(NodeService.class).createNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
     }
@@ -1670,21 +1634,6 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
-    public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters) {
-        return getService(WorkflowService.class).startWorkflow(workflowDefinitionId, parameters);
-    }
-
-    @Override
-    public WorkflowTask getStartTask(String workflowInstanceId) {
-        return getService(WorkflowService.class).getStartTask(workflowInstanceId);
-    }
-
-    @Override
-    public WorkflowDefinition getDefinitionByName(String workflowName) {
-        return getService(WorkflowService.class).getDefinitionByName(workflowName);
-    }
-
-    @Override
     public Object executeScriptString(String script, Map<String, Object> model) {
         return getService(ScriptService.class).executeScriptString(script, model);
     }
@@ -1692,18 +1641,6 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     @Override
     public UserTransaction getNonPropagatingUserTransaction() {
         return getService(TransactionService.class).getNonPropagatingUserTransaction();
-    }
-
-    @Override
-    public Channel getChannelByName(String channelName) {
-        ChannelService channelService = getService(ChannelService.class);
-        return channelService.getChannelByName(channelName);
-    }
-
-    @Override
-    public Channel getChannelById(String id) {
-        ChannelService channelService = getService(ChannelService.class);
-        return channelService.getChannelById(id);
     }
 
     @Override
@@ -1722,7 +1659,6 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     public void deleteSite(String site) {
         _cStudioActivityFeedDaoService.deleteActivitiesForSite(site);
         _dependencyDaoService.deleteDependenciesForSite(site);
-        _deploymentHistoryDaoService.deleteDeploymentHistoryForSite(site);
         _objectStateDAOService.deleteObjectStatesForSite(site);
         _pageNavigationOrderSequenceDaoService.deleteSequencesForSite(site);
         _cache.removeScope(generateCacheScope(site));

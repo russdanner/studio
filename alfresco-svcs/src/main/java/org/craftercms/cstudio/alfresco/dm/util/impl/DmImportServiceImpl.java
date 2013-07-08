@@ -20,17 +20,13 @@ package org.craftercms.cstudio.alfresco.dm.util.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
@@ -42,49 +38,26 @@ import javolution.util.FastSet;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.publishing.channels.Channel;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.PartSource;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 import org.dom4j.Node;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
-import org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDAO;
-import org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDaoService;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmPublishService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmWorkflowService;
-import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.util.api.DmImportService;
 import org.craftercms.cstudio.alfresco.dm.workflow.MultiChannelPublishingContext;
 import org.craftercms.cstudio.alfresco.dm.workflow.WorkflowProcessor;
-import org.craftercms.cstudio.alfresco.publishing.CrafterCMSPublishingModel;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
-import org.craftercms.cstudio.alfresco.service.api.DeploymentService;
 import org.craftercms.cstudio.alfresco.service.api.ObjectStateService;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
-import org.craftercms.cstudio.alfresco.service.api.ServicesConfig;
 import org.craftercms.cstudio.alfresco.service.api.SiteService;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelConfigTO;
@@ -97,15 +70,6 @@ import org.slf4j.LoggerFactory;
 public class DmImportServiceImpl extends AbstractRegistrableService implements DmImportService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DmImportServiceImpl.class);
-
-    public static String DEPLOYER_SERVLET_URL = "/publish";
-    public static String DEPLOYER_PASSWORD_PARAM = "password";
-    public static String DEPLOYER_TARGET_PARAM = "target";
-    public static String DEPLOYER_DELETED_FILES_PARAM = "deletedFiles";
-    public static String DEPLOYER_CONTENT_LOCATION_PARAM = "contentLocation";
-    public static String DEPLOYER_CONTENT_FILE_PARAM = "contentFile";
-    public static String DEPLOYER_METADATA_FILE_PARAM = "metadataFile";
-    public static String FILES_SEPARATOR = ",";
     
 	protected PersistenceManagerService _persistenceManagerService = null;
 
@@ -135,20 +99,10 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 	protected DmTransactionService _dmTransactionService = null;
 
 	/**
-	 * deployment history service DAO
-	 */
-	protected DeploymentHistoryDaoService _deploymentHistoryDaoService;
-
-	/**
 	 * site service
 	 */
 	protected SiteService _siteService; 
-	
-	/**
-	 * deployment service
-	 */
-	DeploymentService _deploymentService;
-	
+
 	/**
 	 * workflow name to use for submission
 	 */
@@ -224,7 +178,7 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 		        SiteService siteService = getService(SiteService.class);
 	            PublishingChannelGroupConfigTO configTO = siteService.getPublishingChannelGroupConfigs(site).get(publishChannelGroup);
 				String user = _authenticationService.getCurrentUserName();
-				List<PublishingChannel> channels = getChannels(configTO);
+				List<PublishingChannel> channels = getChannels(site, configTO);
 				if (LOGGER.isDebugEnabled()) {
 					LOGGER.debug("[IMPORT] publishing user: " + user + ", publishing channel config: " + configTO.getName());
 				}
@@ -814,395 +768,29 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 		return nodeRef;
 	}
 
-	/**
-	 * publish imported content
-	 * 
-	 * @param site
-	 * @param fileRoot
-	 * @param parentRef
-	 * @param targetRoot
-	 * @param parentPath
-	 * @param name
-	 * @param channels
-	 * @param user
-	 */
-	protected void publish(String site, String fileRoot, NodeRef parentRef, String targetRoot, String parentPath,
-			String name, List<PublishingChannel> channels, String user) {
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-		NodeRef nodeRef = persistenceManagerService.getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, name);
-		String fullPath = persistenceManagerService.getNodePath(nodeRef);
-		// set status to workflow submitted 
-		long startTimeWorkflowStatus = System.currentTimeMillis();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] setting item status to " 
-					+ ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_UNSCHEDULED + " for " + fullPath);
-		}
-		persistenceManagerService.transition(nodeRef,
-				ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_UNSCHEDULED);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] set item status to " 
-					+ ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_UNSCHEDULED + " for " 
-					+ fullPath + ", time: " + (System.currentTimeMillis() - startTimeWorkflowStatus));
-		}
-		processLiveRepo(nodeRef);
-		if (channels != null) {
-			for (PublishingChannel channel : channels) {
-                DeploymentEndpointConfigTO endpoint = this.getSiteService().getDeploymentEndpoint(site, channel.getName());
-                if (endpoint != null) {
-                	this.publishToEndPoint(site, user, nodeRef, endpoint);
-                }
-			}
-		}
-		long startTimeDeploymentStatus = System.currentTimeMillis();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] setting item status to " 
-					+ ObjectStateService.TransitionEvent.DEPLOYMENT + " for " + fullPath);
-		}
-		// set status to live 
-		persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.DEPLOYMENT);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] set item status to " 
-					+ ObjectStateService.TransitionEvent.DEPLOYMENT + " for " 
-					+ fullPath + ", time: " + (System.currentTimeMillis() - startTimeDeploymentStatus));
-		}
-		// generate deployment history
-		this.addToDeploymentHistory(nodeRef, channels, user);
-	}
-
-	/**
-	 * publish content to the end point
-	 * 
-	 * @param site
-	 * @param user
-	 * @param nodeRef
-	 * @param endpoint
-	 */
-	private void publishToEndPoint(String site, String user, NodeRef nodeRef, DeploymentEndpointConfigTO endpoint) {
-        if (LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("[WORKFLOW] publishing to " + endpoint.getName());
-        }
-        List<String> includePaths = endpoint.getIncludePattern();
-        List<String> excludePaths = endpoint.getExcludePattern();
-        boolean exclude = false;
-        String fullPath = this.getPersistenceManager().getNodePath(nodeRef);
-        DmPathTO dmPathTO = new DmPathTO(fullPath);
-        Pattern regexPattern;
-        if (includePaths != null) {
-            for (String includePath : includePaths) {
-                regexPattern = Pattern.compile(includePath);
-                Matcher m = regexPattern.matcher(dmPathTO.getRelativePath());
-                if (m.matches()) {
-                    exclude = false;
-                }
-            }
-        }
-        if (excludePaths != null) {
-            for (String excludePath : excludePaths) {
-                regexPattern = Pattern.compile(excludePath);
-                Matcher m = regexPattern.matcher(dmPathTO.getRelativePath());
-                if (m.matches()) {
-                    exclude = true;
-                }
-            }
-        }
-        List<String> pathsToPublish = new FastList<String>(1);
-        if (!exclude) {
-            pathsToPublish.add(dmPathTO.getRelativePath());
-        }
-        String batchId = this.getDeploymentService().createDeploymentBatch(site, null, user);
-        //deploymentService.addBatchDeploymentItems(batchId, site, endpoint.getName(), currentUser, pathsToPublish, new FastList<String>());
-        this.getDeploymentService().markBatchReady(batchId);
-	}
-
-	/**
-	 * create the live repo content
-	 * 
-	 * @param nodeRef
-	 * @param publish
-	 */
-	protected void processLiveRepo(NodeRef nodeRef) {
-		String fullPath;
-		String site;
-		fullPath = this.getPersistenceManager().getNodePath(nodeRef);
-		long startTime = System.currentTimeMillis();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] processing live repo for " + fullPath);
-		}
-		Matcher m = CrafterCMSPublishingModel.DM_REPO_TYPE_PATH_PATTERN.matcher(fullPath);
-		if (m.matches()) {
-			site = m.group(2).length() != 0 ? m.group(2) : "";
-		} else {
-			site = "";
-		}
-		copyToLiveRepo(site, nodeRef);
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] processed live repo for " + fullPath + ", time: " 
-					+ (System.currentTimeMillis() - startTime));
-		}
-	}
-
-	/**
-	 * copy the given content to the live repo area
-	 * 
-	 * @param site
-	 * @param nodeRef
-	 */
-	protected void copyToLiveRepo(String site, NodeRef nodeRef) {
-		ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-		String liveRepoPath = servicesConfig.getLiveRepositoryPath(site);
-		NodeRef liveRepoRoot = persistenceManagerService.getNodeRef(liveRepoPath);
-		if (liveRepoRoot == null)
-			liveRepoRoot = createLiveRepository(site, DmConstants.DM_LIVE_REPO_FOLDER);
-		String fullPath = persistenceManagerService.getNodePath(nodeRef);
-		Matcher m = DmConstants.DM_REPO_TYPE_PATH_PATTERN.matcher(fullPath);
-		if (m.matches()) {
-			String relativePath = m.group(4);
-			NodeRef liveNode = persistenceManagerService.getNodeRef(liveRepoRoot, relativePath);
-			if (liveNode == null) {
-				liveNode = createLiveRepositoryCopy(liveRepoRoot, relativePath, nodeRef);
-			} else {
-				persistenceManagerService.copy(nodeRef, liveNode);
-			}
-		}
-	}
-
-	/**
-	 * create live repository
-	 * 
-	 * @param site
-	 * @param liveRepoName
-	 * @return
-	 */
-	protected NodeRef createLiveRepository(String site, String liveRepoName) {
-		ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-		String siteRepoPath = servicesConfig.getRepositoryRootPath(site);
-		NodeRef siteRepoRoot = persistenceManagerService.getNodeRef(siteRepoPath);
-		NodeRef result = persistenceManagerService.createNewFolder(siteRepoRoot, liveRepoName);
-		return result;
-	}
-
-	/**
-	 * create a copy in live repository
-	 * 
-	 * @param liveRepoRoot
-	 * @param relativePath
-	 * @param nodeRef
-	 * @return
-	 */
-	protected NodeRef createLiveRepositoryCopy(NodeRef liveRepoRoot, String relativePath, NodeRef nodeRef) {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] creating live repository copy of " + relativePath);
-		}
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-		NodeRef result = null;
-
-		String[] pathSegments = relativePath.split("/");
-		NodeRef helperNode = liveRepoRoot;
-		NodeRef parent = null;
-		for (int i = 0; i < pathSegments.length - 1; i++) {
-			if (!"".equals(pathSegments[i])) {
-				parent = helperNode;
-				helperNode = persistenceManagerService.getChildByName(helperNode, ContentModel.ASSOC_CONTAINS,
-						pathSegments[i]);
-				if (helperNode == null) {
-					if (LOGGER.isDebugEnabled()) {
-						LOGGER.debug("[IMPORT] creating a node with name: " + pathSegments[i]);
-					}
-					Map<QName, Serializable> properties = new FastMap<QName, Serializable>();
-					properties.put(ContentModel.PROP_NAME, pathSegments[i]);
-					helperNode = persistenceManagerService.createNewFolder(parent, pathSegments[i], properties);
-				}
-			}
-		}
-		String nodeName = (String) persistenceManagerService.getProperty(nodeRef, ContentModel.PROP_NAME);
-		QName assocQName = QName.createQName(ContentModel.TYPE_CONTENT.getNamespaceURI(),
-				QName.createValidLocalName(nodeName));
-		result = persistenceManagerService.copy(nodeRef, helperNode, ContentModel.ASSOC_CONTAINS, assocQName);
-		persistenceManagerService.setProperty(result, ContentModel.PROP_NAME, nodeName);
-		return result;
-	}
-
-	/**
-	 * send the content to deployer 
-	 * 
-	 * @param nodeRef
-	 * @param channel
-	 */
-	protected void publishToDeployer(NodeRef nodeRef, PublishingChannel channel) {
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-        String fullPath = persistenceManagerService.getNodePath(nodeRef);
-		long startTime = System.currentTimeMillis();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] publishing to a channel : " + channel.getName() + " for " + fullPath);
-		}
-        String fileName = DefaultTypeConverter.INSTANCE.convert(String.class, persistenceManagerService.getProperty(nodeRef, ContentModel.PROP_NAME));
-        String relativePath = fullPath;
-        Matcher m = CrafterCMSPublishingModel.DM_REPO_TYPE_PATH_PATTERN.matcher(fullPath);
-        if (m.matches()) {
-            relativePath = m.group(4).length() != 0 ? m.group(4) : "/";
-            if (!StringUtils.startsWith(relativePath, "/")) {
-                relativePath = "/" + relativePath;
-            }
-        }
-        ContentReader reader = persistenceManagerService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-
-        InputStream input = null;
-        ByteArrayPartSource baps = null;
-        byte[] byteArray = null;
-
-        try {
-        	input = reader.getContentInputStream();
-            byteArray = IOUtils.toByteArray(input);
-        } catch (IOException e) {
-            LOGGER.error("Error while converting input stream to byte array", e);
-            throw new RuntimeException("Can not get content for: " + fullPath, e);
-        } finally {
-        	ContentUtils.release(input);
-        }
-        baps = new ByteArrayPartSource(fileName, byteArray);
-
-        /** Using file nam stored in cm:name property instead of node name
-         *
-         *  reference: https://issues.alfresco.com/jira/browse/ALF-13967
-         */
-        int idx = relativePath.lastIndexOf("/");
-        relativePath = relativePath.substring(0, idx+1) + fileName;
-        List<Part> formParts = new FastList<Part>();
-        formParts.add(new StringPart(DEPLOYER_PASSWORD_PARAM, channel.getPassword()));
-        formParts.add(new StringPart(DEPLOYER_TARGET_PARAM, channel.getTarget()));
-
-        formParts.add(new StringPart(DEPLOYER_CONTENT_LOCATION_PARAM, relativePath));
-        formParts.add(new FilePart(DEPLOYER_CONTENT_FILE_PARAM, baps));
-        if (channel.isPublishMetadata()) {
-            try {
-                InputStream metadataStream = getMetadataStream(nodeRef);
-                PartSource metadataPart = new ByteArrayPartSource(fileName + ".meta", IOUtils.toByteArray(metadataStream));
-                formParts.add(new FilePart(DEPLOYER_METADATA_FILE_PARAM, metadataPart));
-            } catch (IOException e) {
-                LOGGER.error("Error while creating input stream with content metadata", e);
-                throw new RuntimeException("Can not get content metadata for: " + fullPath, e);
-            }
-        }
-        PostMethod postMethod = new PostMethod(channel.getUrl());
-        try {
-            postMethod.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-            Part[] parts = new Part[formParts.size()];
-            for (int i = 0; i < formParts.size(); i++) parts[i] = formParts.get(i);
-            postMethod.setRequestEntity(new MultipartRequestEntity(parts, postMethod.getParams()));
-            HttpClient client = new HttpClient();
-            int status = client.executeMethod(postMethod);
-            if (status == HttpStatus.SC_OK) {
-            	if (LOGGER.isDebugEnabled()) {
-            		LOGGER.debug("Publish success: " + fullPath);
-            	}
-            } else {
-                LOGGER.error("Publish failed: " + fullPath);
-                throw new RuntimeException("Receiver Status Response: " + status + " " + HttpStatus.getStatusText(status));
-            }
-        } catch (HttpException e) {
-            LOGGER.error("Publish failed: ", e);
-            throw new RuntimeException("Publish failed", e);
-        } catch (IOException e) {
-        	LOGGER.error("Publish failed: ", e);
-            throw new RuntimeException("Publish failed", e);
-        } finally {
-            postMethod.releaseConnection();
-        }
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] published to a channel : " + channel.getName() + " for " + fullPath
-					+ ", time: " + (System.currentTimeMillis() - startTime));
-		}
-	}
-
-	/**
-	 * 
-	 * @param nodeToPublish
-	 * @return
-	 */
-    protected InputStream getMetadataStream(NodeRef nodeToPublish) {
-        NodeService nodeService = getNodeService();
-        Map<QName, Serializable> contentProperties = nodeService.getProperties(nodeToPublish);
-        Document metadataDoc = DocumentHelper.createDocument();
-        Element root = metadataDoc.addElement("metadata");
-        for (Map.Entry<QName, Serializable> property : contentProperties.entrySet()) {
-            Element elem = root.addElement(property.getKey().getLocalName());
-            elem.addText(String.valueOf(property.getValue()));
-        }
-
-        return IOUtils.toInputStream(metadataDoc.asXML());
-    }
-    
-	/**
-	 * add a record to the deployment history 
-	 * 
-	 * @param nodeRef
-	 * @param channelGroup
-	 * @param user
-	 */
-	protected void addToDeploymentHistory(NodeRef nodeRef, List<PublishingChannel> channels, String user) {
-		PersistenceManagerService persistenceManagerService = this.getPersistenceManager();
-		String fullPath, site, relativePath;
-		fullPath = persistenceManagerService.getNodePath(nodeRef);
-		Matcher m = DmConstants.DM_REPO_PATH_PATTERN.matcher(fullPath);
-		if (m.matches()) {
-			site = m.group(3);
-			relativePath = m.group(5);
-		} else {
-			site = "";
-			relativePath = fullPath;
-		}
-		long startTime = System.currentTimeMillis();
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] populating deployment history for " + fullPath);
-		}
-		if (channels != null && channels.size() > 0) {
-			for (PublishingChannel channel : channels) {
-				DeploymentHistoryDAO historyEntry = new DeploymentHistoryDAO();
-				historyEntry.setSite(site);
-				historyEntry.setPath(relativePath);
-				historyEntry.setUser(user);
-				historyEntry.setPublishingChannel(channel.getName()); 
-				historyEntry.setDeploymentDate(Calendar.getInstance().getTime());
-				_deploymentHistoryDaoService.insertEntry(historyEntry);
-			}
-		}
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("[IMPORT] done populating deployment history for " 
-					+ fullPath + ", time: " + (System.currentTimeMillis() - startTime));
-		}
-	}
-
 	
 	/**
 	 * populate channel information
 	 * 
 	 * @param configTO
 	 */
-	private List<PublishingChannel> getChannels(PublishingChannelGroupConfigTO configTO) {
+	private List<PublishingChannel> getChannels(String site, PublishingChannelGroupConfigTO configTO) {
 		if (configTO.getChannels() != null) {
 			List<PublishingChannel> channels = new FastList<PublishingChannel>();
 			for (PublishingChannelConfigTO channelConfig : configTO.getChannels()) {
-				Channel channelItem = this.getPersistenceManager().getChannelByName(channelConfig.getName());
-				if (channelItem != null) {
+                DeploymentEndpointConfigTO endpointConfigTO = _siteService.getDeploymentEndpoint(site, channelConfig.getName());
+				if (endpointConfigTO != null) {
 					PublishingChannel channel = new PublishingChannel();
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("[IMPORT] populating channel: " + channelConfig.getName() + ", id: " + channel.getId());
 					}
-					channel.setId(channelItem.getId());
 					channel.setName(channelConfig.getName());
-					Map<QName, Serializable> channelProperties = channelItem.getProperties();
-	                String server = DefaultTypeConverter.INSTANCE.convert(String.class, channelProperties.get(CrafterCMSPublishingModel.PROP_REMOTE_SERVER));
-	                int port = DefaultTypeConverter.INSTANCE.convert(Integer.class, channelProperties.get(CrafterCMSPublishingModel.PROP_REMOTE_PORT));
-	                String password = DefaultTypeConverter.INSTANCE.convert(String.class, channelProperties.get(CrafterCMSPublishingModel.PROP_REMOTE_PASSWORD));
-	                String target = DefaultTypeConverter.INSTANCE.convert(String.class, channelProperties.get(CrafterCMSPublishingModel.PROP_REMOTE_TARGET));
-	                boolean publishMetadata = DefaultTypeConverter.INSTANCE.convert(Boolean.class, channelProperties.get(CrafterCMSPublishingModel.PROP_PUBLISH_METADATA));
-	                channel.setPassword(password);
-	                channel.setTarget(target);
-	                channel.setPublishMetadata(publishMetadata);
+	                String server = endpointConfigTO.getServerUrl();
+	                channel.setPassword(endpointConfigTO.getPassword());
+	                channel.setTarget(endpointConfigTO.getTarget());
+	                channel.setPublishMetadata(endpointConfigTO.isSendMetadata());
 					try {
-						URL channelUrl = new URL("http", server, port, DEPLOYER_SERVLET_URL);
+						URL channelUrl = new URL(server);
 						channel.setUrl(channelUrl.toString());
 					} catch (MalformedURLException e) {
 						if (LOGGER.isErrorEnabled()) {
@@ -1508,14 +1096,6 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 		this._workflowProcessor = workflowProcessor;
 	}
 
-	public DeploymentHistoryDaoService getDeploymentHistoryDaoService() {
-		return _deploymentHistoryDaoService;
-	}
-
-	public void setDeploymentHistoryDaoService(DeploymentHistoryDaoService deploymentHistoryDaoService) {
-		this._deploymentHistoryDaoService = deploymentHistoryDaoService;
-	}
-
 	/**
 	 * @return the authenticationService
 	 */
@@ -1544,17 +1124,6 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 		this._nodeService = nodeService;
 	}
 
-	/**
-	 * get deployment service 
-	 * 
-	 * @return
-	 */
-	public DeploymentService getDeploymentService() {
-		if (this._deploymentService == null) {
-			this._deploymentService = getService(DeploymentService.class);
-		}
-		return this._deploymentService;
-	}
 
 	/**
 	 * get site service

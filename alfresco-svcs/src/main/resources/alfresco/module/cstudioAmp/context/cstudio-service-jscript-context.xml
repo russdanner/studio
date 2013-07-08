@@ -46,7 +46,6 @@
           class="org.craftercms.cstudio.alfresco.dm.script.DmWorkflowServiceScript">
         <property name="extensionName"><value>dmWorkflowService</value></property>
         <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="deploymentEngine" value="${deploymentEngine.enabled}"/>
     </bean>
 
     <bean id="dmControlScript" parent="baseJavaScriptExtension"
@@ -73,8 +72,6 @@
           class="org.craftercms.cstudio.alfresco.dm.script.DmPublishServiceScript">
         <property name="extensionName"><value>dmPublishService</value></property>
         <property name="servicesManager" ref="cstudioServicesManager"/>
-        <property name="action" ref="pub_publishEvent" />
-        <property name="publishingEventProcessor" ref="publishingEventProcessor" />
     </bean>
 
     <bean id="dmSearchServiceScript" parent="baseJavaScriptExtension"

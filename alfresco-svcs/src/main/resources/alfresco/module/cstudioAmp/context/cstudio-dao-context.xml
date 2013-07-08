@@ -72,40 +72,6 @@
         </property>
     </bean>
 
-    <!-- //////////////////////////////////////////////// -->
-    <!--       Deployment History Management Beans        -->
-    <!-- //////////////////////////////////////////////// -->
-
-    <bean id="cstudioDeploymentHistoryDaoService" class="org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDaoServiceImpl"
-            init-method="initIndexes">
-        <property name="sqlMapClient" ref="cstudioDeploymentHistorySqlMap" />
-        <property name="initializeScriptPath">
-            <value>alfresco/deploymenthistory/${hibernate.dialect}/initialize.sql</value>
-        </property>
-    </bean>
-
-    <bean id="cstudioDeploymentHistorySqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
-        <property name="configLocation">
-            <value>classpath:alfresco/deploymenthistory/SqlMapConfig.xml</value>
-        </property>
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id="cstudioDeploymentHistorySessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.hbm2ddl.auto">update</prop>
-            </props>
-        </property>
-        <property name="mappingResources">
-            <list>
-                <value>alfresco/deploymenthistory/deploymentHistory.hbm.xml</value>
-            </list>
-        </property>
-    </bean>
-
     <!-- ////////////////////////////////////// -->
     <!--       Activity Service                 -->
     <!-- ////////////////////////////////////// -->
@@ -233,35 +199,6 @@
     <!--       Deployment Management Beans        -->
     <!-- //////////////////////////////////////////////////////////// -->
 
-    <bean id="cstudioDeploymentDaoService" class="org.craftercms.cstudio.alfresco.deployment.DeploymentDaoServiceImpl"
-          init-method="initIndexes">
-        <property name="sqlMapClient" ref="cstudioDeploymentSqlMap" />
-        <property name="initializeScriptPath">
-            <value>alfresco/deployment/${hibernate.dialect}/initialize.sql</value>
-        </property>
-    </bean>
-
-    <bean id="cstudioDeploymentSqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
-        <property name="configLocation">
-            <value>classpath:alfresco/deployment/SqlMapConfig.xml</value>
-        </property>
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id="cstudioDeploymentSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.hbm2ddl.auto">update</prop>
-            </props>
-        </property>
-        <property name="mappingResources">
-            <list>
-                <value>alfresco/deployment/Deployment.hbm.xml</value>
-            </list>
-        </property>
-    </bean>
 
     <bean id="cstudioCopyToEnvironmentSqlMap" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
         <property name="configLocation">

@@ -1,1 +1,0 @@
-ALTER TABLE [dbo].[cstudio_deploymentworkqueue] ADD [submission_comment] nvarchar(4000);

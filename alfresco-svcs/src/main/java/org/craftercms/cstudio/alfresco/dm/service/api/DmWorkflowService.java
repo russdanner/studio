@@ -229,35 +229,12 @@ public interface DmWorkflowService {
      * @param packageRef
      * @param taskId
      * @param desc
-     */
-    public void prepareSubmission(NodeRef packageRef, String taskId, String desc);
-
-    /**
-     * prepare submission for the given workflow package
-     *
-     * @param packageRef
-     * @param taskId
-     * @param desc
      * @param sendNotice
      * 			send approval notice?
      */
     public void prepareSubmission(NodeRef packageRef, String taskId, String desc, boolean sendNotice);
 
-    /**
-     * prepare submission for the given workflow package
-     *
-     * @param eventNodeRef
-     */
-    public void prePublish(NodeRef eventNodeRef);
-
     public void postSubmission(NodeRef packageRef, String workflowId,String desc);
-
-    /**
-     * prepare submission for the given workflow package
-     *
-     * @param eventNodeRef
-     */
-    public void postPublish(NodeRef eventNodeRef);
 
     /**
      * update all items' status associated with the given task id to the status provided
@@ -269,8 +246,6 @@ public interface DmWorkflowService {
     public void updateItemStatus(NodeRef packageRef, String status, Date date);
 
     public void scheduleDeleteSubmission(NodeRef packageRef,String workflowId,String description);
-
-	public List<DmContentItemTO> getScheduledItemsDeploymentEngine(String site, String sub, DmContentItemComparator comparator, DmContentItemComparator subComparator, String filterType);
 
     public List<DmContentItemTO> getWorkflowAffectedPaths(String site, String path);
 }

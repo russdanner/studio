@@ -973,11 +973,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
         DmContentItemComparator subComparator = new DmContentItemComparator(subSort, subAscending, true, true);
         DmWorkflowService dmWorkflowService = getServicesManager().getService(DmWorkflowService.class);
         List<DmContentItemTO> items = null;
-        if (this.deploymentEngine) {
-            items = dmWorkflowService.getScheduledItemsDeploymentEngine(site, sub, comparator, subComparator, filterType);
-        } else {
-            items = dmWorkflowService.getScheduledItems(site, sub, comparator, subComparator, filterType);
-        }
+        items = dmWorkflowService.getScheduledItems(site, sub, comparator, subComparator, filterType);
         JSONObject jsonObject = new JSONObject();
         int total = 0;
         if (items != null) {
@@ -1019,42 +1015,6 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
             ThreadLocalContainer.remove();
             generalLockService.unlock(id);
         }
-    }
-
-    /**
-     * prepare submission for the given workflow package
-     *
-     * @param packageRef
-     * @param workflowId
-     * @param desc
-     */
-    public void prepareSubmission(NodeRef packageRef, String workflowId, String desc) {
-        DmWorkflowService dmWorkflowService = getServicesManager().getService(DmWorkflowService.class);
-        dmWorkflowService.prepareSubmission(packageRef, workflowId, desc);
-    }
-
-    /**
-     * prepare submission for the given workflow package
-     *
-     * @param packageRef
-     * @param workflowId
-     * @param desc
-     * @param sendNotice
-     */
-    public void prepareSubmission(NodeRef packageRef, String workflowId, String desc, boolean sendNotice) {
-        DmWorkflowService dmWorkflowService = getServicesManager().getService(DmWorkflowService.class);
-        dmWorkflowService.prepareSubmission(packageRef, workflowId, desc, sendNotice);
-    }
-
-    /**
-     * post submission for the given workflow package
-     *
-     * @param packageRef
-     * @param workflowId
-     */
-    public void postSubmission(NodeRef packageRef, String workflowId, String description) {
-        DmWorkflowService dmWorkflowService = getServicesManager().getService(DmWorkflowService.class);
-        dmWorkflowService.postSubmission(packageRef, workflowId, description);
     }
 
     /**

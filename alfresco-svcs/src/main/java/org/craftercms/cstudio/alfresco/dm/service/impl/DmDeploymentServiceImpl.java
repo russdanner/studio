@@ -20,8 +20,6 @@ import javolution.util.FastList;
 import net.sf.json.JSONObject;
 import org.craftercms.cstudio.alfresco.activityfeed.CStudioActivityFeedDAO;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
-import org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDAO;
-import org.craftercms.cstudio.alfresco.deploymenthistory.DeploymentHistoryDaoService;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmDeploymentService;
@@ -48,14 +46,6 @@ public class DmDeploymentServiceImpl extends AbstractRegistrableService implemen
 
     private static final Logger logger = LoggerFactory.getLogger(DmDeploymentServiceImpl.class);
 
-    public DeploymentHistoryDaoService _deploymentHistoryDaoService;
-    public DeploymentHistoryDaoService getDeploymentHistoryDaoService() {
-        return _deploymentHistoryDaoService;
-    }
-    public void setDeploymentHistoryDaoService(DeploymentHistoryDaoService deploymentHistoryDaoService) {
-        this._deploymentHistoryDaoService = deploymentHistoryDaoService;
-    }
-
     protected DmFilterWrapper _dmFilterWrapper;
     public DmFilterWrapper getDmFilterWrapper() {
         return _dmFilterWrapper;
@@ -75,63 +65,6 @@ public class DmDeploymentServiceImpl extends AbstractRegistrableService implemen
     @Override
     public void register() {
         getServicesManager().registerService(DmDeploymentService.class, this);
-    }
-
-    @Override
-    public List<DmDeploymentTaskTO> getDeploymentHistory(String site, int daysFromToday, int numberOfItems, String sort, boolean ascending, String filterType) throws ServiceException {
-        // get the filtered list of attempts in a specific date range
-        Date toDate = new Date();
-        Date fromDate = new Date(toDate.getTime() - (1000L * 60L * 60L * 24L * daysFromToday));
-        List<DeploymentHistoryDAO> deployReports = findDeploymentReports(site, fromDate, toDate);
-        List<DmDeploymentTaskTO> tasks = new FastList<DmDeploymentTaskTO>();
-        if (deployReports != null) {
-            int count = 0;
-            SimpleDateFormat deployedFormat = new SimpleDateFormat(CStudioConstants.DATE_FORMAT_DEPLOYED);
-            ServicesConfig servicesConfig = getService(ServicesConfig.class);
-            deployedFormat.setTimeZone(TimeZone.getTimeZone(servicesConfig.getDefaultTimezone(site)));
-            String timezone = servicesConfig.getDefaultTimezone(site);
-            for (int index = 0; index < deployReports.size() && count < numberOfItems; index++) {
-                if (count < numberOfItems) {
-                    DeploymentHistoryDAO entry = deployReports.get(index);
-                    DmContentItemTO deployedItem = getDeployedItem(entry.getSite(), entry.getPath());
-                    if (deployedItem != null) {
-                        deployedItem.setEventDate(entry.getDeploymentDate());
-                        deployedItem.setEndpoint(entry.getPublishingChannel());
-                        if(_dmFilterWrapper.accept(site, deployedItem, filterType)) {
-                            String deployedLabel = ContentFormatUtils.formatDate(deployedFormat, entry.getDeploymentDate(), timezone);
-                            if (tasks.size() > 0) {
-                                DmDeploymentTaskTO lastTask = tasks.get(tasks.size() - 1);
-                                String lastDeployedLabel = lastTask.getInternalName();
-                                if (lastDeployedLabel.equals(deployedLabel)) {
-                                    // add to the last task if it is deployed on the same day
-                                    lastTask.setNumOfChildren(lastTask.getNumOfChildren() + 1);
-                                    lastTask.getChildren().add(deployedItem);
-                                } else {
-                                    tasks.add(createDeploymentTask(deployedLabel, deployedItem));
-                                }
-                            } else {
-                                tasks.add(createDeploymentTask(deployedLabel, deployedItem));
-                            }
-                            count++;
-                        }
-                    }
-                }
-            }
-        }
-        return tasks;
-    }
-
-    /**
-     * find deployment reports that were successful
-     *
-     * @param site
-     * @param fromDate
-     * @param toDate
-     * @return
-     */
-    protected List<DeploymentHistoryDAO> findDeploymentReports(String site, Date fromDate, Date toDate) {
-        List<DeploymentHistoryDAO> history = _deploymentHistoryDaoService.getDeploymentHistoryForSite(site);
-        return history;
     }
 
     /**
@@ -223,7 +156,7 @@ public class DmDeploymentServiceImpl extends AbstractRegistrableService implemen
     }
     
 	@Override
-	public List<DmDeploymentTaskTO> getDeploymentHistoryDeploymentEngine(String site, int daysFromToday, int numberOfItems, String sort, boolean ascending, String filterType) {
+	public List<DmDeploymentTaskTO> getDeploymentHistory(String site, int daysFromToday, int numberOfItems, String sort, boolean ascending, String filterType) {
 		 // get the filtered list of attempts in a specific date range
         Date toDate = new Date();
         Date fromDate = new Date(toDate.getTime() - (1000L * 60L * 60L * 24L * daysFromToday));

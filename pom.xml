@@ -16,7 +16,6 @@
 		<module>cstudio-share-war</module>
 		<module>cstudio-publishing-receiver</module>
 		<module>cstudio-publishing-receiver-zip</module>
-        <module>crafter-remote-publishing-channel-amp</module>
     </modules>
 
 </project>

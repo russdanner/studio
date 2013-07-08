@@ -36,17 +36,13 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.Status;
-import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.workflow.WorkflowDefinition;
-import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.namespace.QName;
@@ -442,26 +438,6 @@ public interface PersistenceManagerService {
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query);
 
     /**
-     * <b>Publishing Service</b>
-     */
-    public List<PublishingEvent> getPublishEventsForNode(NodeRef nodeRef);
-
-    /**
-     * <b>Publishing Service</b>
-     */
-    public void cancelPublishingEvent(String id);
-
-    /**
-     * <b>Publishing Service</b>
-     */
-    public PublishingDetails createPublishingDetails();
-
-    /**
-     * <b>Publishing Service</b>
-     */
-    public String scheduleNewEvent(PublishingDetails publishingDetails);
-
-    /**
      * <b>Node Service</b>
      */
     public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName);
@@ -607,21 +583,6 @@ public interface PersistenceManagerService {
     public Serializable createPackage(NodeRef container);
 
     /**
-     * <b>Workflow Service</b>
-     */
-    public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters);
-
-    /**
-     * <b>Workflow Service</b>
-     */
-    public WorkflowTask getStartTask(String workflowInstanceId);
-
-    /**
-     * <b>Workflow Service</b>
-     */
-    public WorkflowDefinition getDefinitionByName(String workflowName);
-
-    /**
      * <b>Script Service</b>
      */
     public Object executeScriptString(String script, Map<String, Object> model);
@@ -676,10 +637,6 @@ public interface PersistenceManagerService {
     public NodeRef createNewFile(NodeRef parentNodeRef, String fileName, InputStream content);
 
     public NodeRef createNewFile(NodeRef parentNodeRef, String fileName, InputStream content, Map<QName, Serializable> nodeProperties);
-
-    public Channel getChannelByName(String channelName);
-
-    public Channel getChannelById(String id);
 
     public void insertNewObjectEntry(String fullPath);
 

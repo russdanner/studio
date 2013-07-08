@@ -36,10 +36,8 @@ public interface DmDeploymentService {
      *
      * @return list of deployment items
      */
-    public List<DmDeploymentTaskTO> getDeploymentHistory(String site, int daysFromToday, int numberOfItems,
-                                                          String sort, boolean ascending,String filterType) throws ServiceException;
 
-	public List<DmDeploymentTaskTO> getDeploymentHistoryDeploymentEngine(
+	public List<DmDeploymentTaskTO> getDeploymentHistory(
 			String site, int days, int number, String sort, boolean ascending,
 			String filterType);
 }

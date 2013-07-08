@@ -21,13 +21,11 @@ import javolution.util.FastList;
 import javolution.util.FastMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMWorkflowModel;
-import org.alfresco.repo.publishing.PublishingModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -37,7 +35,6 @@ import org.apache.commons.collections.FastArrayList;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
-import org.craftercms.cstudio.alfresco.deployment.DeploymentItemDAO;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.service.api.*;
 import org.craftercms.cstudio.alfresco.dm.to.*;
@@ -582,11 +579,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         RetryingTransactionHelper.RetryingTransactionCallback<List<String>> cancelWorkflowCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<List<String>>() {
             public List<String> execute() throws Throwable {
                 dmPublishService.unpublish(site, itemsToDelete, approver);
-                if (!enableNewDeploymentEngine) {
-                    return dmContentService.deleteContents(site, itemsToDelete, generateActivity, approver);
-                } else {
-                    return null;
-                }
+                return dmContentService.deleteContents(site, itemsToDelete, generateActivity, approver);
             }
         };
         return txnHelper.doInTransaction(cancelWorkflowCallBack, false, false);
@@ -852,100 +845,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
 
     }
 
-    /*
-    * (non-Javadoc)
-    * @see org.craftercms.cstudio.alfresco.dm.service.impl.DmWorkflowServiceImpl#prepareSubmission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
-    */
-    public void prepareSubmission(NodeRef packageRef, String workflowId, String desc) {
-        boolean sendNotice = false;
-        this.prepareStagingSubmission(packageRef, workflowId, desc, sendNotice);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.craftercms.cstudio.alfresco.wcm.service.api.WcmWorkflowService#prepareStagingSubmission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, boolean)
-     */
-    public void prepareStagingSubmission(NodeRef packageRef, String workflowId, String desc, boolean sendNotice) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Staring prepareStagingSubmission");
-        }
-        if (DmUtils.isBootStrapWorkflow(desc)) {
-            return;
-        }
-        long start = System.currentTimeMillis();
-        try {
-            String site = null;
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("preparing staging submission for  site: "
-                        + site);
-            }
-
-            // TODO: send email to individual owner
-            SearchService searchService = getService(SearchService.class);
-            if (DmUtils.isScheduleSubmission(desc)) {
-                List<NodeRef> changeSet = searchService.findNodes(CStudioConstants.STORE_REF, getListChangedQuery(site));
-                if (changeSet != null && changeSet.size() > 0) {
-                    for (NodeRef workFlowNode : changeSet) {
-                        if (workFlowNode != null) {
-                            updateWorkflowPathsWithDependenices(site, packageRef, workFlowNode);
-                        }
-                    }
-                }
-            }
-
-            //update workflow for rename after updating dependencies for submitted items
-            DmRenameService dmRenameService = getService(DmRenameService.class);
-            if (DmUtils.isRenameWorkflow(desc)) {
-                dmRenameService.updateWorkflow(site, desc);
-            }
-
-            //note- delete case returns changeSet empty
-            ServicesConfig servicesConfig = getService(ServicesConfig.class);
-            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-            List<NodeRef> changeSet = persistenceManagerService.getChangeSet(site);
-            ArrayList<DmContentItemTO> contentList = new ArrayList();
-            if (sendNotice) {
-                buildContentList(site, changeSet, contentList);
-            }
-            DmStateManager action = getService(DmStateManager.class);
-            if (changeSet != null && changeSet.size() > 0) {
-                for (NodeRef workFlowNode : changeSet) {
-                    updateWorkflowWithRemovedDependenices(site, workFlowNode, packageRef);
-                    updateStatusToLive(action, workFlowNode, site, contentList, sendNotice);
-                }
-            }
-
-
-        } catch (RuntimeException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Could not submit to staging", e);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            long end = System.currentTimeMillis();
-            logger.debug("prepareStagingSubmission = " + (end - start));
-        }
-    }
-
-    protected void updateWorkflowPathsWithDependenices(String site, NodeRef packageRef, NodeRef node) {
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        DmPathTO path = new DmPathTO(persistenceManagerService.getNodePath(node));
-        FileInfo fileInfo = persistenceManagerService.getFileInfo(node);
-        if (fileInfo.isFolder()) {
-            List<FileInfo> children = persistenceManagerService.list(node);
-            for (FileInfo child : children) {
-                updateWorkflowPathsWithDependenices(site, packageRef, child.getNodeRef());
-            }
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Updating dependencies for " + path.getRelativePath());
-            }
-            addDependenciesToWorkFlow(site, path.getRelativePath(), packageRef);
-            updateMandatoryParentDependency(site, packageRef, path);
-        }
-    }
-
     protected void addDependenciesToWorkFlow(String site, String relativePath, NodeRef packageRef) {
         DmDependencyService dmDependencyService = getService(DmDependencyService.class);
         DmDependencyTO dmDependencyTo = dmDependencyService.getDependencies(site, null, relativePath, false, true);
@@ -987,40 +886,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
                         addDependenciesToWorkFlow(site, dependencyTo.getUri(), packageRef);
                     }
                 }
-            }
-        }
-    }
-
-    protected void updateWorkFlow(String site, String fullPath, NodeRef eventNodeRef) {
-        PublishingEvent event = _publishingEventHelper.getPublishingEvent(eventNodeRef);
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        NodeRef node = persistenceManagerService.getNodeRef(fullPath);
-        if (node != null) {
-            event.getPackage().getNodesToPublish().add(node);
-        }
-    }
-
-    /**
-     * @param site
-     * @param packageRef
-     * @param path
-     */
-    protected void updateMandatoryParentDependency(String site, NodeRef packageRef, DmPathTO path) {
-        DmContentService dmContentService = getService(DmContentService.class);
-        if (dmContentService.isNew(site, path.getRelativePath())) {
-            DmDependencyService dmDependencyService = getService(DmDependencyService.class);
-            List<String> submittedItems = new ArrayList<String>();
-            submittedItems.add(path.getRelativePath());
-            try {
-                DmContentItemComparator comparator = new DmContentItemComparator(DmContentItemComparator.SORT_PATH, true, true, true);
-                List<DmContentItemTO> contentItemTOs = dmDependencyService.getDependencies(site, submittedItems, comparator, false);
-                List<DmDependencyTO> dummyDependencyTO = new FastList<DmDependencyTO>();
-                addMandatoryParentToList(site, path.getRelativePath(), dummyDependencyTO, contentItemTOs);
-                if (!dummyDependencyTO.isEmpty()) {
-                    updateWorkFlowWithDependencies(dummyDependencyTO, site, packageRef, true);
-                }
-            } catch (ServiceException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -1074,94 +939,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         }
     }
 
-    /**
-     * @param site
-     * @param node
-     * @param packageRef
-     */
-    protected void updateWorkflowWithRemovedDependenices(String site, NodeRef node, NodeRef packageRef) {
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        String nodePath = persistenceManagerService.getNodePath(node);
-        String workPath = nodePath;
-        Matcher m = DmConstants.DM_REPO_TYPE_PATH_PATTERN.matcher(nodePath);
-        if (m.matches() && m.group(3).equalsIgnoreCase(DmConstants.DM_LIVE_REPO_FOLDER)) {
-            StringBuilder sb = new StringBuilder(m.group(1));
-            sb.append(m.group(2));
-            sb.append(DmConstants.DM_WORK_AREA_REPO_FOLDER);
-            sb.append(m.group(4));
-            workPath = sb.toString();
-        }
-        DmPathTO path = new DmPathTO(workPath);
-        String relativePath = path.getRelativePath();
-        FileInfo nodeInfo = persistenceManagerService.getFileInfo(node);
-
-        DmContentService dmContentService = getService(DmContentService.class);
-        DmRenameService dmRenameService = getService(DmRenameService.class);
-        if (nodeInfo.isFolder()) {
-            List<FileInfo> children = persistenceManagerService.list(node);
-            for (FileInfo child : children) {
-                updateWorkflowWithRemovedDependenices(site, child.getNodeRef(), packageRef);
-            }
-        } else if (relativePath.endsWith(DmConstants.XML_PATTERN) && (!dmContentService.isNew(site, relativePath) || dmRenameService.isItemRenamed(site, relativePath))) {
-            String stagingPath = relativePath;
-            boolean isRenamed = dmRenameService.isItemRenamed(site, relativePath);
-            if (isRenamed) {
-                stagingPath = (String) persistenceManagerService.getProperty(node, CStudioContentModel.PROP_RENAMED_OLD_URL);
-            }
-            DmDependencyDiffService.DiffRequest diffRequest = new DmDependencyDiffService.DiffRequest(site, relativePath, stagingPath, null, site, true);
-            List<String> deleted;
-            DmDependencyService dmDependencyService = getService(DmDependencyService.class);
-            try {
-                deleted = dmDependencyService.getRemovedDependenices(diffRequest, true);
-                for (String dependency : deleted) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Removed dependenices submitted to staging " + dependency);
-                    }
-                    String depFullPath = dmContentService.getContentFullPath(site, dependency);
-                    updateWorkFlow(site, depFullPath, packageRef);
-                }
-            } catch (ServiceException e) {
-                if (logger.isErrorEnabled()) {
-                    logger.error("Unable to retrieve removed dependencies to be added to workflow");
-                }
-            }
-        }
-    }
-
-    /**
-     * update status to live and send approval notice
-     *
-     * @param action
-     * @param node
-     * @param site
-     * @param contentList
-     * @param sendNotice
-     */
-    protected void updateStatusToLive(DmStateManager action, NodeRef node, String site, List<DmContentItemTO> contentList, boolean sendNotice) {
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        DmPathTO path = new DmPathTO(persistenceManagerService.getNodePath(node));
-        DmContentService dmContentService = getService(DmContentService.class);
-        String fullPath = dmContentService.getContentFullPath(site, path.getRelativePath());
-        FileInfo nodeInfo = persistenceManagerService.getFileInfo(node);
-        if (nodeInfo.isFolder()) {
-            List<FileInfo> children = persistenceManagerService.list(node);
-            for (FileInfo child : children) {
-                updateStatusToLive(action, child.getNodeRef(), site, contentList, sendNotice);
-            }
-        } else {
-            //action.markLive(node, site, fullPath);
-            if (sendNotice) {
-                try {
-                    DmContentItemTO to = persistenceManagerService.getContentItem(fullPath);
-                    sendApprovalNotification(site, node, contentList, to);
-                } catch (ServiceException e) {
-                    if (logger.isErrorEnabled()) {
-                        logger.error("Error while sending approval notification on " + fullPath, e);
-                    }
-                }
-            }
-        }
-    }
 
     protected void sendApprovalNotification(String site, NodeRef node, List<DmContentItemTO> contentList, DmContentItemTO to) {
         try {
@@ -1278,143 +1055,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
             } finally {
                 //_workflowProcessor.unlockWorkflowBatch(site);
             }
-
-        } catch (RuntimeException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Runtime exception caught during postStagingSubmission  ", e);
-            }
-        }
-    }
-
-    /*
-    * (non-Javadoc)
-    * @see org.craftercms.cstudio.alfresco.dm.service.api.DmWorkflowService#prePublish(org.alfresco.service.cmr.repository.NodeRef)
-    */
-    public void prePublish(NodeRef eventNodeRef) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Staring pre-publish");
-        }
-        long start = System.currentTimeMillis();
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        Collection<String> nodesToPublish = (Collection<String>) persistenceManagerService.getProperty(eventNodeRef, PublishingModel.PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH);
-        List<NodeRef> nodeRefs = new FastList<NodeRef>();
-        Serializable scheduledTimeVal = persistenceManagerService.getProperty(eventNodeRef, PublishingModel.PROP_PUBLISHING_EVENT_TIME);
-        Date scheduledTime = (scheduledTimeVal == null) ? null : (Date) scheduledTimeVal;
-        try {
-
-            String site = null;
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("preparing publishing");
-            }
-
-            // TODO: send email to individual owner
-            if (scheduledTime != null) {
-                if (nodesToPublish != null && nodesToPublish.size() > 0) {
-                    for (String nodeRef : nodesToPublish) {
-                        NodeRef workFlowNode = new NodeRef(nodeRef);
-                        nodeRefs.add(workFlowNode);
-                        String fullPath = persistenceManagerService.getNodePath(workFlowNode);
-                        Matcher m = DmConstants.DM_REPO_TYPE_PATH_PATTERN.matcher(fullPath);
-                        if (m.matches()) {
-                            site = m.group(2);
-                            if (site.endsWith("/")) site = site.substring(0, site.length() - 1);
-                            fullPath = m.group(1) + m.group(2) + DmConstants.DM_WORK_AREA_REPO_FOLDER + m.group(4);
-                            workFlowNode = persistenceManagerService.getNodeRef(fullPath);
-                        } else {
-                            site = DmUtils.getSiteFromFullPath(fullPath);
-                        }
-                        if (workFlowNode != null) {
-                            updateWorkflowPathsWithDependenices(site, eventNodeRef, workFlowNode);
-                        }
-                    }
-                }
-            }
-
-            //note- delete case returns changeSet empty
-            ArrayList<DmContentItemTO> contentList = new ArrayList();
-            /*
-            if (sendNotice) {
-                buildContentList(site, changeSet, contentList);
-            }
-            */
-            //List<NodeRef> nodes = (List<NodeRef>) persistenceManagerService.getProperty(eventNodeRef, PublishingModel.PROP_PUBLISHING_EVENT_NODES_TO_PUBLISH);
-            buildContentList(site, nodeRefs, contentList);
-            if (nodesToPublish != null && nodesToPublish.size() > 0) {
-                for (NodeRef nodeRef : nodeRefs) {
-                    //NodeRef workFlowNode = new NodeRef(nodeRef);
-                    String fullPath = persistenceManagerService.getNodePath(nodeRef);
-                    Matcher m = DmConstants.DM_REPO_TYPE_PATH_PATTERN.matcher(fullPath);
-                    if (m.matches()) {
-                        site = m.group(2);
-                        if (site.endsWith("/")) site = site.substring(0, site.length() - 1);
-                        fullPath = m.group(1) + m.group(2) + DmConstants.DM_WORK_AREA_REPO_FOLDER + m.group(4);
-                        //node = persistenceManagerService.getNodeRef(fullPath);
-                    } else {
-                        site = DmUtils.getSiteFromFullPath(fullPath);
-                    }
-                    DmPathTO dmPathTO = new DmPathTO(fullPath);
-                    //site = DmUtils.getSiteFromFullPath(fullPath);
-                    updateWorkflowWithRemovedDependenices(site, nodeRef, eventNodeRef);
-                    try {
-                        DmContentItemTO item = persistenceManagerService.getContentItem(fullPath);
-                        sendApprovalNotification(site, nodeRef, contentList, item);
-                    } catch (ServiceException e) {
-                        if (logger.isErrorEnabled()) {
-                            logger.error("Error while sending notification", e);
-                        }
-                    }
-                    Map<QName, Serializable> nodeProps = persistenceManagerService.getProperties(nodeRef);
-                    for (QName propName : DmConstants.SUBMITTED_PROPERTIES) {
-                        nodeProps.remove(propName);
-                    }
-                    persistenceManagerService.setProperties(nodeRef, nodeProps);
-                    //updateStatusToLive(action, workFlowNode, site, contentList, sendNotice);
-                    //updateStatusToLive(action, workFlowNode, site, contentList, false);
-                    //_dmVersionService.createNextMajorVersion(site, dmPathTO.getRelativePath());
-                }
-            }
-        } catch (RuntimeException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Could not submit to staging", e);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            long end = System.currentTimeMillis();
-            logger.debug("prepareStagingSubmission = " + (end - start));
-        }
-    }
-
-    @Override
-    public void postPublish(NodeRef eventNodeRef) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Starting post publish");
-        }
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        try {
-            //StoreRef storeRef = packageRef.getStoreRef();
-            //String store = storeRef.getIdentifier();
-            //String[] tokens = store.split("--");
-            //String site = tokens[0];
-            PublishingEvent event = _publishingEventHelper.getPublishingEvent(eventNodeRef);
-            Set<NodeRef> changeSet = event.getPackage().getNodesToPublish();
-            String site = "";
-            if (changeSet != null && changeSet.size() > 0) {
-                NodeRef workFlowNode = changeSet.iterator().next();
-                String fullPath = persistenceManagerService.getNodePath(workFlowNode);
-                DmPathTO dmPathTO = new DmPathTO(fullPath);
-                site = DmUtils.getSiteFromFullPath(fullPath);
-            }
-            //String sandbox = _servicesConfig.getSandbox(site);
-            //if the workflow is Rename Workflow do special processing
-            //try {
-            //    if (DmUtils.isRenameWorkflow(desc)) {
-            //        _dmRenameService.postSubmission(site, desc);
-            //    }
-            //WorkflowProgress.endWorkFlow(desc);
-            //} finally {
-            //_workflowProcessor.unlockWorkflowBatch(site);
-            //}
 
         } catch (RuntimeException e) {
             if (logger.isErrorEnabled()) {
@@ -1583,7 +1223,7 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
     }
 
     @Override
-    public List<DmContentItemTO> getScheduledItemsDeploymentEngine(String site, String sub, DmContentItemComparator comparator, DmContentItemComparator subComparator, String filterType) {
+    public List<DmContentItemTO> getScheduledItems(String site, String sub, DmContentItemComparator comparator, DmContentItemComparator subComparator, String filterType) {
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         List<DmContentItemTO> results = new FastArrayList();
@@ -1597,22 +1237,6 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
             addScheduledItem(site, deploymentItem.getScheduledDate(), format, noderef, results, comparator, subComparator, null, displayPatterns, filterType, null);
         }
         return results;
-    }
-
-    protected DmContentItemTO getDmContentItemTO(DeploymentItemDAO deploymentItemDAO) {
-        try {
-            ServicesConfig servicesConfig = getService(ServicesConfig.class);
-            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-            String fullPath = servicesConfig.getRepositoryRootPath(deploymentItemDAO.getSite()) + deploymentItemDAO.getPath();
-            return persistenceManagerService.getContentItem(fullPath);
-        } catch (ContentNotFoundException e) {
-            return null;
-        } catch (ServiceException e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Error in retrieving : " + deploymentItemDAO.getPath() + " in " + deploymentItemDAO.getSite() + ".", e);
-            }
-            return null;
-        }
     }
 
     private List<CopyToEnvironmentItem> findScheduledItems(String site) {

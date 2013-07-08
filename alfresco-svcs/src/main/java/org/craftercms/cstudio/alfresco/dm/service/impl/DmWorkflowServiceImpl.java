@@ -22,9 +22,6 @@ import javolution.util.FastMap;
 import javolution.util.FastTable;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMWorkflowModel;
-import org.alfresco.repo.publishing.PublishingEventHelper;
-import org.alfresco.repo.publishing.PublishingModel;
-import org.alfresco.repo.publishing.PublishingRootObject;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -32,10 +29,6 @@ import org.alfresco.service.cmr.avm.AVMBadArgumentException;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.publishing.PublishingDetails;
-import org.alfresco.service.cmr.publishing.PublishingEvent;
-import org.alfresco.service.cmr.publishing.Status;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -48,7 +41,6 @@ import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.cache.cstudioCacheManager;
 import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
-import org.craftercms.cstudio.alfresco.deployment.DeploymentDaoService;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.dependency.DependencyEntity;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
@@ -149,27 +141,6 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
     public void setDmFilterWrapper(DmFilterWrapper dmFilterWrapper) {
         this._dmFilterWrapper = dmFilterWrapper;
     }
-    
-    protected PublishingEventHelper _publishingEventHelper;
-    public PublishingEventHelper getPublishingEventHelper() {
-        return _publishingEventHelper;
-    }
-    public void setPublishingEventHelper(PublishingEventHelper publishingEventHelper) {
-        this._publishingEventHelper = publishingEventHelper;
-    }
-
-    protected PublishingRootObject _publishingRootObject;
-    public PublishingRootObject getPublishingRootObject() {
-        return _publishingRootObject;
-    }
-    public void setPublishingRootObject(PublishingRootObject publishingRootObject) {
-        this._publishingRootObject = publishingRootObject;
-    }
-
-    protected DeploymentDaoService _deploymentDaoService;
-    public void setDeploymentDaoService(DeploymentDaoService deploymentDaoService) {
-		this._deploymentDaoService = deploymentDaoService;
-	}
 
     protected cstudioCacheManager _cacheManager;
     public cstudioCacheManager getCacheManager() {
@@ -177,11 +148,6 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
     }
     public void setCacheManager(cstudioCacheManager cacheManager) {
         this._cacheManager = cacheManager;
-    }
-
-    protected boolean enableNewDeploymentEngine = false;
-    public void setEnableNewDeploymentEngine(boolean enableNewDeploymentEngine) {
-        this.enableNewDeploymentEngine = enableNewDeploymentEngine;
     }
 
     protected org.craftercms.cstudio.api.service.deployment.DeploymentService _deploymentService;
@@ -1281,42 +1247,9 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 
     @Override
     public List<DmContentItemTO> getScheduledItems(String site, String sub, DmContentItemComparator comparator, DmContentItemComparator subComparator, String filterType) {
-        String storeName = DmUtils.createStoreName(site);
-        NodeRef queue = _publishingRootObject.getPublishingQueue().getNodeRef();
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        List<ChildAssociationRef> childAssociationRefs = persistenceManagerService.getChildAssocsByPropertyValue(queue, PublishingModel.PROP_PUBLISHING_EVENT_STATUS, Status.SCHEDULED);
-        if (childAssociationRefs != null) {
-            ServicesConfig servicesConfig = getService(ServicesConfig.class);
-            List<String> displayPatterns = servicesConfig.getDisplayInWidgetPathPatterns(site);
-            List<DmContentItemTO> scheduledItems = new ArrayList<DmContentItemTO>(childAssociationRefs.size());
-            // add all content items from each task if task is the review task
-            SimpleDateFormat format = new SimpleDateFormat(CStudioConstants.DATE_FORMAT_SCHEDULED);
-            for (ChildAssociationRef queueItem : childAssociationRefs) {
-                NodeRef eventNode = queueItem.getChildRef();
-                PublishingEvent event = _publishingEventHelper.getPublishingEvent(eventNode);
-                Date launchDate = _publishingEventHelper.getScheduledTime(eventNode).getTime();
-                Date now = new Date();
-                //dont show items that are currently being moved to staging (already launched)
-                if (launchDate != null && (launchDate.compareTo(now)>=0)) {
-                    Set<NodeRef> scheduledNodes = event.getPackage().getNodesToPublish();
-                    for (NodeRef nodeRef : scheduledNodes) {
-                        String nodePath = persistenceManagerService.getNodePath(nodeRef);
-                        Matcher matcher = DmConstants.DM_REPO_PATH_PATTERN.matcher(nodePath);
-                        if (matcher.matches() && site.equalsIgnoreCase(matcher.group(3))) {
-                            //nodePath = matcher.group(1) + matcher.group(2) + "/" + DmConstants.DM_WORK_AREA_REPO_FOLDER + matcher.group(3);
-                            //nodeRef = DmUtils.getNodeRef(_nodeService, nodePath);
-                            addScheduledItem(site, launchDate, format, nodeRef, scheduledItems, comparator,
-                                    subComparator, event.getId(), displayPatterns, filterType,null);
-                        }
-                    }
-                }
-
-            }
-            return scheduledItems;
-        }
         return null;
     }
-    
+
     protected List<WorkflowTask> getWorkflowTasks() {
         WorkflowTaskQuery query = new WorkflowTaskQuery();
 
@@ -1338,46 +1271,20 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         String currentUser = persistenceManagerService.getCurrentUserName();
         if (node != null) {
             String fullPath = persistenceManagerService.getNodePath(node);
-            if (enableNewDeploymentEngine) {
-                DmPathTO dmPathTO = new DmPathTO(fullPath);
-                List<DmContentItemTO> allItemsToCancel = getWorkflowAffectedPaths(site, dmPathTO.getRelativePath());
-                List<String> nodeRefs = new ArrayList<String>();
-                for (DmContentItemTO item : allItemsToCancel) {
-                    try {
-                        _deploymentService.cancelWorkflow(site, item.getUri());
-                        NodeRef nodeRef = new NodeRef(item.getNodeRef());
-                        nodeRefs.add(nodeRef.getId());
-                    } catch (DeploymentException e) {
-                        logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
-                    }
-                }
-                persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.REJECT, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
-            } else {
-                List<PublishingEvent> events = persistenceManagerService.getPublishEventsForNode(node);
-                if (events != null && events.size() > 0) {
-                    for (PublishingEvent event : events) {
-                        if (event.getStatus().equals(Status.SCHEDULED)) {
-                            Set<NodeRef> eventNodes = event.getPackage().getNodesToPublish();
-                            List<NodeRef> nodesToPublish = new FastList<NodeRef>();
-                            for (NodeRef eventNode : eventNodes) {
-                                if (!eventNode.equals(node)) nodesToPublish.add(eventNode);
-                            }
-                            Calendar scheduledDate = event.getScheduledTime();
-                            String channelId = event.getChannelId();
-                            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                            persistenceManagerService.cancelPublishingEvent(event.getId());
-                            if (nodesToPublish.size() > 0) {
-                                PublishingDetails publishingDetails = persistenceManagerService.createPublishingDetails();
-                                publishingDetails.addNodesToPublish(nodesToPublish);
-                                publishingDetails.setSchedule(scheduledDate);
-                                publishingDetails.setPublishChannelId(channelId);
-                                persistenceManagerService.scheduleNewEvent(publishingDetails);
-                            }
-                            AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
-                        }
-                    }
+            DmPathTO dmPathTO = new DmPathTO(fullPath);
+            List<DmContentItemTO> allItemsToCancel = getWorkflowAffectedPaths(site, dmPathTO.getRelativePath());
+            List<String> nodeRefs = new ArrayList<String>();
+            for (DmContentItemTO item : allItemsToCancel) {
+                try {
+                    _deploymentService.cancelWorkflow(site, item.getUri());
+                    NodeRef nodeRef = new NodeRef(item.getNodeRef());
+                    nodeRefs.add(nodeRef.getId());
+                } catch (DeploymentException e) {
+                    logger.error("Error occurred while trying to cancel workflow for path [" + dmPathTO.getRelativePath() + "], site " + dmPathTO.getSiteName(), e);
                 }
             }
+            persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.REJECT, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
+
             if (persistenceManagerService.isNew(fullPath) && fullPath.endsWith(DmConstants.INDEX_FILE)) {
                 NodeRef parentNodeRef = persistenceManagerService.getPrimaryParent(node).getParentRef();
                 FileInfo parentInfo = persistenceManagerService.getFileInfo(parentNodeRef);
@@ -1620,17 +1527,6 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 		return false;
 	}
 
-    /*
-    * (non-Javadoc)
-    *
-    * @seeorg.craftercms.cstudio.alfresco.dm.service.api.DmWorkflowService#
-    * prepareSubmission(org.alfresco.service.cmr.repository.NodeRef,
-    * java.lang.String)
-    */
-    public void prepareSubmission(NodeRef packageRef, String workflowId, String desc) {
-        this.prepareSubmission(packageRef, workflowId, desc, true);
-    }
-
 
     /*
     * (non-Javadoc)
@@ -1638,16 +1534,6 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
     */
     public void prepareSubmission(NodeRef packageRef, String workflowId, String desc, boolean sendNotice) {
 
-    }
-
-    @Override
-    public void prePublish(NodeRef eventNodeRef) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void postPublish(NodeRef eventNodeRef) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -1725,20 +1611,10 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 
     public void scheduleDeleteSubmission(NodeRef packageRef, String workflowId, String descpription) {
     }
-	@Override
-	public List<DmContentItemTO> getScheduledItemsDeploymentEngine(String site,
-			String sub, DmContentItemComparator comparator,
-			DmContentItemComparator subComparator, String filterType) {
-		
-		return null;
-	}
 
     @Override
     public List<DmContentItemTO> getWorkflowAffectedPaths(String site, String path) {
-        DeploymentService deploymentService = getService(DeploymentService.class);
-        List<String> affectedPaths = deploymentService.getWorkflowAffectedPaths(site, path);
-        List<DmContentItemTO> affectedItems = getWorkflowAffectedItems(site, affectedPaths);
-        return affectedItems;
+        return null;
     }
 
     protected List<DmContentItemTO> getWorkflowAffectedItems(String site, List<String> paths) {

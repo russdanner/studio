@@ -73,7 +73,6 @@
     </bean>
 
 	<import resource="classpath:alfresco/module/cstudioAmp/context/cstudio-dao-context.xml" />
-	<import resource="classpath:alfresco/module/cstudioAmp/context/cstudio-dictionary-context.xml" />
 	<import resource="classpath:alfresco/module/cstudioAmp/context/cstudio-service-context.xml" />
 	<import resource="classpath:alfresco/module/cstudioAmp/context/cstudio-service-jscript-context.xml" />
 	<import resource="classpath:alfresco/module/cstudioAmp/context/cstudio-service-rest-context.xml" />

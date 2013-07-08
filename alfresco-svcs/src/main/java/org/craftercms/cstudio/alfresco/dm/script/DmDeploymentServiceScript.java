@@ -91,11 +91,8 @@ public class DmDeploymentServiceScript extends BaseProcessorExtension {
             number = ContentFormatUtils.getIntValue(numberOfItems);
         
         List<DmDeploymentTaskTO> deployedTasks = null;
-        if(deploymentEngine){
-        	deployedTasks=_servicesManager.getService(DmDeploymentService.class).getDeploymentHistoryDeploymentEngine(site, days, number, sort, ascending,filterType);
-        }else{
-        	deployedTasks=_servicesManager.getService(DmDeploymentService.class).getDeploymentHistory(site, days, number, sort, ascending,filterType);
-        }
+        deployedTasks = _servicesManager.getService(DmDeploymentService.class).getDeploymentHistory(site, days, number, sort, ascending,filterType);
+
         JSONObject jsonObject = new JSONObject();
         if (deployedTasks != null) {
             int count = 0;

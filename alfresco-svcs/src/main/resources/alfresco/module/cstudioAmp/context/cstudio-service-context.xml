@@ -115,12 +115,8 @@
         <property name="dmFilterWrapper" ref="cstudioDmFilterWrapper"/>
         <property name="workflowProcessor" ref="cstudioWorkflowProcessor" />
         <property name="scheduleDeleteHandler" ref="cstudioScheduleDeleteHandler"/>
-        <property name="publishingEventHelper" ref="publishingEventHelper" />
-        <property name="publishingRootObject" ref="publishingRootObject" />
-        <property name="deploymentDaoService" ref="cstudioDeploymentDaoService"/>
         <property name="customContentTypeNotification" value="${notificationService.customContentPathNotification}" />
         <property name="customContentTypeNotificationPattern" value="${notificationService.customContentPathNotificationPattern}" />
-        <property name="enableNewDeploymentEngine"><value>${deploymentEngine.enabled}</value></property>
         <property name="deploymentService" ref="cstudioDeploymentServiceSimple" />
     </bean>
 
@@ -206,7 +202,6 @@
 
     <bean id="cstudioDmPublishService" class="org.craftercms.cstudio.alfresco.dm.service.impl.DmPublishServiceImpl"
             parent="cstudioRegistrableService">
-        <property name="enableNewDeploymentEngine"><value>${deploymentEngine.enabled}</value></property>
         <property name="dmFilterWrapper" ref="cstudioDmFilterWrapper"/>
         <property name="deploymentService" ref="cstudioDeploymentServiceSimple" />
     </bean>
@@ -239,7 +234,6 @@
             <property name="propertyLoaders" ref="cstudioPropertyLoaders"/>
             <property name="cStudioActivityFeedDaoService" ref="cstudioCustomFeedDaoService" />
             <property name="dependencyDaoService" ref="cstudioDependencyDaoService" />
-            <property name="deploymentHistoryDaoService" ref="cstudioDeploymentHistoryDaoService" />
             <property name="objectStateDAOService" ref="cstudioObjectStateDaoService" />
             <property name="pageNavigationOrderSequenceDaoService" ref="cstudioPageNavogationOrderSequenceDaoService" />
             <property name="companyHomeStore"><value>${spaces.store}</value></property>
@@ -257,7 +251,6 @@
 
     <bean id="cstudioDmDeploymentService" class="org.craftercms.cstudio.alfresco.dm.service.impl.DmDeploymentServiceImpl"
             parent="cstudioRegistrableService">
-        <property name="deploymentHistoryDaoService" ref="cstudioDeploymentHistoryDaoService"/>
         <property name="dmFilterWrapper" ref="cstudioDmFilterWrapper"/>
         <property name="deploymentService" ref="cstudioDeploymentServiceSimple" />
     </bean>
@@ -275,7 +268,6 @@
         <property name="companyHomePath"><value>${companyHomePath}</value></property>
         <property name="scriptObjects">
           <map value-type="java.lang.Class">
-              <entry key="craftercms-deployer" value="org.craftercms.cstudio.alfresco.deployment.CrafterCMSDeploymentCommand" />
           </map>
         </property>
     </bean>
@@ -310,10 +302,6 @@
         <property name="objectStateDAOService" ref="cstudioObjectStateDaoService" />
     </bean>
 
-    <bean id="cstudioDeploymentService" class="org.craftercms.cstudio.alfresco.service.impl.DeploymentServiceImpl"
-          parent="cstudioRegistrableService">
-        <property name="deploymentDaoService" ref="cstudioDeploymentDaoService" />
-    </bean>
 
     
 
@@ -478,104 +466,7 @@
         <property name="defaultNumPerPage"><value>10</value></property>
         <property name="servicesManager" ref="cstudioServicesManager" />
     </bean>
-    
-    <!-- ////////////////////////////////////// -->
-    <!-- Publishing -->
-    <!-- ////////////////////////////////////// -->
-    <bean id="cstudioDeploymentDispatcher" class="org.craftercms.cstudio.alfresco.deployment.DeploymentDispatcher">
-        <property name="clusterNodeId"><value>${deploymentDispatcher.clusterNodeId}</value></property>
-        <property name="deploymentDaoService" ref="cstudioDeploymentDaoService" />
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="sleepPeriodMs"><value>${deploymentDispatcher.sleepPeriodMs}</value></property>
-        <property name="threadPoolSize"><value>${deploymentDispatcher.threadPoolSize}</value></property>
-        <property name="commandFactory" ref="cstudioDeploymentCommandFactory"/>
-        <property name="enabled"><value>${deploymentEngine.enabled}</value></property>
-        <property name="autoStartup"><value>${deploymentEngine.autoStartup}</value></property>
-    </bean>
 
-    <bean id="cstudioDeploymentCommandFactory" class="org.craftercms.cstudio.alfresco.deployment.DeploymentCommandFactory">
-        <property name="commandTypes">
-            <map value-type="java.lang.Class">
-                <entry key="craftercms-deployer" value="org.craftercms.cstudio.alfresco.deployment.CrafterCMSDeploymentCommand"/>
-                <entry key="alfresco-channel" value="org.craftercms.cstudio.alfresco.deployment.AlfrescoChannelDeploymentCommand"/>
-            </map>
-        </property>
-    </bean>
-
-    <!--
-    <bean id="cstudioReceiverDeliveryChannelType" class="org.craftercms.cstudio.alfresco.publishing.CrafterCMSRemoteDeploymentChannelType" parent="baseChannelType" >
-        <property name="contentService" ref="contentService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="copyService" ref="copyService" />
-        <property name="publishingService" ref="publishingService" />
-        <property name="fileFolderService" ref="fileFolderService" />
-        <property name="servicesConfig" ref="cstudioServicesConfig" />
-        <property name="dmWorkflowService" ref="cstudioDmWorkflowService" />
-        <property name="publishingEventHelper" ref="publishingEventHelper" />
-    </bean>
-    -->
-
-    <bean id="crafterStudioRemoteDeploymentChannelTypeChannelType" class="org.craftercms.cstudio.alfresco.publishing.CrafterCMSRemoteDeploymentChannelType" parent="baseChannelType" >
-        <property name="nodeService" ref="nodeService" />
-        <property name="publishingEventHelper" ref="publishingEventHelper" />
-        <property name="companyHomeNodeLocator" ref="companyHomeNodeLocator" />
-        <property name="cacheManager" ref="cstudioCacheManager" />
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="deploymentHistoryDaoService" ref="cstudioDeploymentHistoryDaoService" />
-        <property name="logPublishedFiles" value="false" />
-        <property name="bucketSize"><value>${publishingChannel.remote.bucketSize}</value></property>
-    </bean>
-
-    <bean id="publishingEventHelper" class="org.craftercms.cstudio.alfresco.publishing.CStudioPublishingEventHelper">
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="workflowEngineId"><value>${cstudioPublishingWorkflow.engineId}</value></property>
-        <property name="workflowDefinitionName"><value>${cstudioPublishingWorkflow.definitionName}</value></property>
-        <!-- Alfresco Publishing Event Helper properties -->
-        <property name="nodeService" ref="NodeService" />
-        <property name="contentService" ref="ContentService" />
-        <property name="serializer" ref="publishingPackageSerializer" />
-        <property name="workflowService" ref="WorkflowService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="transferManifestNodeFactory" ref="transferManifestNodeFactory" />
-        <property name="versionService" ref="VersionService" />
-        <property name="excludedAspects" ref="excludedPublishingAspects" />
-    </bean>
-
-    <!--  Publish Event Actions -->
-    <bean id="cstudio_prePublishEvent" class="org.craftercms.cstudio.alfresco.publishing.CStudioPrePublishEventAction" >
-        <property name="dmWorkflowService" ref="cstudioDmWorkflowService" />
-    </bean>
-
-    <bean id="cstudio_postPublishEvent" class="org.craftercms.cstudio.alfresco.publishing.CStudioPostPublishEventAction" >
-        <property name="dmWorkflowService" ref="cstudioDmWorkflowService" />
-    </bean>
-
-    <bean id="cstudio_publishEvent" class="org.craftercms.cstudio.alfresco.publishing.CStudioPublishEventWrapperAction" >
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="publishingEventProcessor" ref="publishingEventProcessor" />
-    </bean>
-
-    <!-- Publishing Post Processors -->
-    <bean id="cstudioStatusUpdatePublishingPostProcessor" class="org.craftercms.cstudio.alfresco.publishing.CStudioStatusUpdatePublishingPostProcessor"
-          init-method="register">
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="channelType" ref="crafterStudioRemoteDeploymentChannelTypeChannelType" />
-        <property name="workflowProcessor" ref="cstudioWorkflowProcessor" />
-    </bean>
-    <!--
-    <bean id="cstudioCopyToLiveAreaPublishingPostProcessor" class="org.craftercms.cstudio.alfresco.publishing.CStudioCopyToLiveAreaPublishingPostProcessor"
-          init-method="register">
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="channelType" ref="crafterStudioRemoteDeploymentChannelTypeChannelType" />
-    </bean>
-     -->
-    <bean id="cstudioUnpublishPostProcessor" class="org.craftercms.cstudio.alfresco.publishing.CStudioUnpublishingPostProcessor"
-          init-method="register" >
-        <property name="channelType" ref="crafterStudioRemoteDeploymentChannelTypeChannelType" />
-        <property name="servicesManager" ref="cstudioServicesManager" />
-        <property name="previewDeployer" ref="previewDeployer" />
-        <property name="behaviourFilter" ref="policyBehaviourFilter" />
-    </bean>
     
     <!-- ////////////////////////////////////// -->
     <!--           Action Executors             -->
@@ -860,7 +751,6 @@
             parent="cstudioRegistrableService">
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="nodeService" ref="nodeService" />
-        <property name="deploymentHistoryDaoService" ref="cstudioDeploymentHistoryDaoService" />
         <property name="workflowProcessor" ref="cstudioWorkflowProcessor" />
         <property name="workflowName"><value>${dmImportService.workflowName}</value></property>
         <property name="assignee"><value>${dmImportService.assignee}</value></property>
