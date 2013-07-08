@@ -775,10 +775,11 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 	 * @param configTO
 	 */
 	private List<PublishingChannel> getChannels(String site, PublishingChannelGroupConfigTO configTO) {
+        SiteService siteService = getSiteService();
 		if (configTO.getChannels() != null) {
 			List<PublishingChannel> channels = new FastList<PublishingChannel>();
 			for (PublishingChannelConfigTO channelConfig : configTO.getChannels()) {
-                DeploymentEndpointConfigTO endpointConfigTO = _siteService.getDeploymentEndpoint(site, channelConfig.getName());
+                DeploymentEndpointConfigTO endpointConfigTO = siteService.getDeploymentEndpoint(site, channelConfig.getName());
 				if (endpointConfigTO != null) {
 					PublishingChannel channel = new PublishingChannel();
 					if (LOGGER.isDebugEnabled()) {
