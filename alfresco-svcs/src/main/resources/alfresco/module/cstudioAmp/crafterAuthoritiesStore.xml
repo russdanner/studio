@@ -4,6 +4,45 @@
 
     <!-- The following contents should be imported into spaces store under path /${system.system_container.childname}  -->
 
+    <view:reference view:pathref="${system.people_container.childname}">
+        <view:associations>
+            <sys:children>
+                <cm:person view:childName="cm:system">
+                    <view:aspects>
+                        <cm:ownable></cm:ownable>
+                        <sys:referenceable></sys:referenceable>
+                        <sys:localized></sys:localized>
+                    </view:aspects>
+                    <view:acl>
+                        <view:ace view:access="ALLOWED">
+                            <view:authority>System</view:authority>
+                            <view:permission>All</view:permission>
+                        </view:ace>
+                        <view:ace view:access="ALLOWED">
+                            <view:authority>ROLE_OWNER</view:authority>
+                            <view:permission>All</view:permission>
+                        </view:ace>
+                    </view:acl>
+                    <view:properties>
+                        <cm:organizationId></cm:organizationId>
+                        <cm:email></cm:email>
+                        <sys:store-identifier>SpacesStore</sys:store-identifier>
+                        <sys:locale>en_US_</sys:locale>
+                        <cm:homeFolderProvider>userHomesHomeFolderProvider</cm:homeFolderProvider>
+                        <cm:sizeQuota>-1</cm:sizeQuota>
+                        <cm:sizeCurrent>0</cm:sizeCurrent>
+                        <cm:userName>System</cm:userName>
+                        <cm:owner>System</cm:owner>
+                        <cm:lastName></cm:lastName>
+                        <sys:store-protocol>workspace</sys:store-protocol>
+                        <cm:firstName>System</cm:firstName>
+                        <cm:homeFolder>/${spaces.company_home.childname}/${spaces.user_homes.childname}/cm:System</cm:homeFolder>
+                    </view:properties>
+                </cm:person>
+            </sys:children>
+        </view:associations>
+    </view:reference>
+
     <!-- Create groups -->
     <view:reference view:pathref="${system.authorities_container.childname}">
         <view:associations>
@@ -28,6 +67,7 @@
             <cm:inZone>
                 <view:reference view:pathref="${system.authorities_container.childname}/cm:GROUP_CREATE_CRAFTER_SITES"
                                 view:childName="cm:GROUP_CREATE_CRAFTER_SITES" />
+                <view:reference view:pathref="${system.people_container.childname}/cm:system" view:childName="cm:System"></view:reference>
             </cm:inZone>
         </view:associations>
     </view:reference>
@@ -38,6 +78,7 @@
             <cm:inZone>
                 <view:reference view:pathref="${system.authorities_container.childname}/cm:GROUP_CREATE_CRAFTER_SITES"
                                 view:childName="cm:GROUP_CREATE_CRAFTER_SITES" />
+                <view:reference view:pathref="${system.people_container.childname}/cm:system" view:childName="cm:System"></view:reference>
             </cm:inZone>
         </view:associations>
     </view:reference>
