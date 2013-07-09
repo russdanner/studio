@@ -658,6 +658,7 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 						} else {
 							this.getPersistenceManager().transition(fullPath, ObjectStateService.TransitionEvent.SAVE);
 						}
+                        this.getPersistenceManager().setSystemProcessing(fullPath, false);
 					} else {
                         ObjectStateService.State state = this.getPersistenceManager().getObjectState(fullPath);
                         if (state == null) {
@@ -666,7 +667,7 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
                             this.getPersistenceManager().transition(fullPath, ObjectStateService.TransitionEvent.SAVE);
                         }
 					}
-					this.getPersistenceManager().setSystemProcessing(fullPath, false);
+
 					importedPaths.add(filePath);
 					importedFullPaths.add(fullPath);
 				} else {
