@@ -166,6 +166,9 @@
         #schedulingSelection #schedulingSelectionTimepickerOverlay {
             left: 105px;
         }
+        .scheduling-options-section {
+            margin-bottom: 10px;
+        }
     </style>
 
     <div id="warningDialog" class="warning-dialog" style="display: none">
@@ -195,12 +198,13 @@
     <p>The following checked items will Go Live</p>
 
     <div class="dialog-main">
-        <fieldset class="pull-right">
-            <legend>Selected Item Scheduling</legend>
+        <div class="pull-right scheduling-options-section">
+            <h3>Selected Item Scheduling</h3>
             <label>
                 <input type="radio" name="go-live-scheduling-global" value="now" id="globalSetToNow" />
                 Set all items to go live &lsquo;Now&rsquo;
             </label>
+            <br/>
             <label>
                 <input type="radio" name="go-live-scheduling-global" value="datetime" id="globalSetToDateTime" />
                 Set all items to go live on a specific date &amp; time:
@@ -220,7 +224,7 @@
                 <div class="overlay" id="schedulingSelectionDatepickerOverlay" data-click-target="datepicker"></div>
                 <div class="overlay" id="schedulingSelectionTimepickerOverlay" data-click-target="timepicker"></div>
             </div>
-        </fieldset>
+        </div>
 
         <div class="acnScroll acnScrollPadTop">
             <h5 class="thead">

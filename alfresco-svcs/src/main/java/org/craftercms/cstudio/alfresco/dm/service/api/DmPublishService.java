@@ -35,4 +35,6 @@ public interface DmPublishService {
     public List<PublishingChannelTO> getAvailablePublishingChannelGroups(String site, String path);
 
     public boolean hasChannelsConfigure(String site, MultiChannelPublishingContext mcpContext);
+
+    public void bulkGoLive(String site, String path);
 }

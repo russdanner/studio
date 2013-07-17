@@ -22,8 +22,20 @@ import javolution.util.FastList;
 import net.sf.json.JSONObject;
 
 import org.alfresco.repo.processor.BaseProcessorExtension;
+import org.alfresco.repo.publishing.PublishEventAction;
+import org.alfresco.repo.publishing.PublishingEventProcessor;
+import org.alfresco.service.cmr.publishing.PublishingDetails;
+import org.alfresco.service.cmr.publishing.PublishingService;
+import org.alfresco.service.cmr.publishing.channels.Channel;
+import org.alfresco.service.cmr.publishing.channels.ChannelService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmPublishService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
+import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
+import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
+import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
+import org.craftercms.cstudio.alfresco.service.api.ServicesConfig;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelTO;
 
 public class DmPublishServiceScript extends BaseProcessorExtension {
@@ -56,4 +68,20 @@ public class DmPublishServiceScript extends BaseProcessorExtension {
         return jsonObject.toString();
     }
 
+    public void bulkGoLive(String site, String path) {
+        String id = site + ":" + path;
+        GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
+        if (!generalLockService.tryLock(id)) {
+            generalLockService.lock(id);
+            generalLockService.unlock(id);
+            return;
+        }
+        try {
+            DmPublishService dmPublishService = getServicesManager().getService(DmPublishService.class);
+            dmPublishService.bulkGoLive(site, path);
+        } finally {
+            generalLockService.unlock(id);
+        }
+
+    }
 }

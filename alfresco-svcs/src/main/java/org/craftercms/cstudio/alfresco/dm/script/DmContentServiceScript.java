@@ -464,13 +464,48 @@ public class DmContentServiceScript extends BaseProcessorExtension {
      * @param createFolder
      * @throws ServiceException
      */
-    public void rename(final String site, final String sub, final String path, final String targetPath,final boolean createFolder) throws ServiceException {
-
+    public void renameBulk(final String site, final String sub, final String path, final String targetPath,final boolean createFolder) throws ServiceException {
+        String id = site + ":" + path + ":" + targetPath;
+        GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
+        if (!generalLockService.tryLock(id)) {
+            generalLockService.lock(id);
+            generalLockService.unlock(id);
+            return;
+        }
         // have to execute this in transaction
+        try {
         RetryingTransactionHelper txnHelper = servicesManager.getService(DmTransactionService.class).getRetryingTransactionHelper();
         RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
             public String execute() throws Throwable {
             	servicesManager.getService(DmRenameService.class).rename(site,sub,path,targetPath,createFolder);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(renameCallBack);
+        } catch (Exception ex) {
+            logger.error("Error while executing bulk rename for path " + path + " site " + site + ": ", ex);
+        } finally {
+            generalLockService.unlock(id);
+        }
+    }
+
+    /**
+     * Change the location of the content
+     * To be used by Rename and Cut/Copy paste operations
+     *
+     * @param site
+     * @param sub
+     * @param path
+     * @param targetPath
+     * @param createFolder
+     * @throws ServiceException
+     */
+    public void rename(final String site, final String sub, final String path, final String targetPath,final boolean createFolder) throws ServiceException {
+
+        RetryingTransactionHelper txnHelper = servicesManager.getService(DmTransactionService.class).getRetryingTransactionHelper();
+        RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
+            public String execute() throws Throwable {
+                servicesManager.getService(DmRenameService.class).rename(site,sub,path,targetPath,createFolder);
                 return null;
             }
         };
