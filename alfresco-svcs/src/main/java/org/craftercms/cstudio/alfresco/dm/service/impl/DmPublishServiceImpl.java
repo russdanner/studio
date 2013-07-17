@@ -22,6 +22,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
 import org.alfresco.service.cmr.publishing.PublishingEvent;
 import org.alfresco.service.cmr.publishing.Status;
@@ -29,11 +30,15 @@ import org.alfresco.service.cmr.publishing.channels.Channel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
+import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
+import org.craftercms.cstudio.alfresco.constant.CStudioXmlConstants;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentItemPathDescriptor;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmPublishService;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.workflow.MultiChannelPublishingContext;
@@ -797,5 +802,83 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             }
         }
     	return false;
+    }
+
+    @Override
+    public void bulkGoLive(String site, String path) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Starting Bulk Go Live for path " + path + " site " + site);
+        }
+        List<String> childrenPaths = new ArrayList<String>();
+        childrenPaths.add(path);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), path);
+        if (nodeRef != null) {
+            if (path.endsWith("/" + DmConstants.INDEX_FILE) && persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
+                getAllMandatoryChildren(site, path, childrenPaths);
+            }
+        }
+        List<String> pathsToPublish = new ArrayList<String>();
+        for (String childPath : childrenPaths) {
+            pathsToPublish.add(childPath);
+            getAllDependenciesRecursive(site, path, pathsToPublish);
+        }
+        Date launchDate = new Date();
+        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        String comment = "Bulk Go Live invoked by " + approver;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Deploying " + pathsToPublish.size() + " items");
+        }
+        try {
+            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, comment);
+        } catch (DeploymentException e) {
+            logger.error("Error while running bulk Go Live operation", e);
+        } finally {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Finished Bulk Go Live for path " + path + " site " + site);
+            }
+        }
+    }
+
+    protected void getAllDependenciesRecursive(String site, String path, List<String> dependencyPaths) {
+        DmDependencyService dmDependencyService = _servicesManager.getService(DmDependencyService.class);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        String rootPath = servicesConfig.getRepositoryRootPath(site);
+        List<String> depPaths = dmDependencyService.getDependencyPaths(site, path);
+        for (String depPath : depPaths) {
+            if (!dependencyPaths.contains(depPath)) {
+                NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, depPath);
+                if (nodeRef != null) {
+                    if (persistenceManagerService.isUpdatedOrNew(nodeRef)) {
+                        dependencyPaths.add(depPath);
+                        getAllDependenciesRecursive(site, depPath, dependencyPaths);
+                    }
+                }
+            }
+        }
+    }
+
+    protected void getAllMandatoryChildren(String site, String path, List<String> pathsToPublish) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        String parentPath = path.replace("/" + DmConstants.INDEX_FILE, "");
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), parentPath);
+        if (nodeRef != null) {
+            List<FileInfo> children = persistenceManagerService.list(nodeRef);
+            for (FileInfo childInfo : children) {
+                NodeRef childNode = childInfo.getNodeRef();
+                String fullChildPath = persistenceManagerService.getNodePath(childNode);
+                DmPathTO dmPathTO = new DmPathTO(fullChildPath);
+                if (childInfo.isFolder()) {
+                    getAllMandatoryChildren(site, dmPathTO.getRelativePath(), pathsToPublish);
+                } else {
+                    if (!childInfo.getName().equalsIgnoreCase(DmConstants.INDEX_FILE) || !pathsToPublish.contains(dmPathTO.getRelativePath())) {
+                        pathsToPublish.add(dmPathTO.getRelativePath());
+                    }
+                }
+            }
+        }
     }
 }
