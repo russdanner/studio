@@ -21,7 +21,6 @@ import javolution.util.FastMap;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
@@ -700,14 +699,7 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
         return deploymentEndpointConfig.getDeploymentConfig(site, endpoint);
     }
 
-    @Override
-	public void addSiteGroupToPublishingRoot(NodeRef nodeRef, String siteName) {
-		PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-		String groupName = PermissionService.GROUP_PREFIX + String.format(SiteService.SITE_MANAGER_GROUP_NAME, siteName);
-		persistenceManagerService.setManagerPermissions(nodeRef, groupName);
-	}
-	
-	private void addDefaultAspects(NodeRef nodeRef) {
+    private void addDefaultAspects(NodeRef nodeRef) {
 		PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
 		persistenceManagerService.addAspect(nodeRef, CStudioContentModel.ASPECT_PREVIEWABLE, new HashMap<QName, Serializable>());
         HashMap<QName, Serializable> versionableProps = new HashMap<QName, Serializable>();

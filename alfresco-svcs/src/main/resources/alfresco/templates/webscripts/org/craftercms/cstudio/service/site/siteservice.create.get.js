@@ -50,7 +50,6 @@ var blueprintName = args.blueprint;
 var sitesConfigRoot = companyhome.childByNamePath("cstudio/config/sites");
 var blueprintsRoot = companyhome.childByNamePath("cstudio/site-blueprints");
 var blueprintRoot = blueprintsRoot.childByNamePath(blueprintName);
-var publishingRootFolder=companyhome.childByNamePath("Data Dictionary/Publishing Root");
 
 // handle site config
 		var blueprintConfigRoot = blueprintRoot.childByNamePath("site-config");
@@ -74,4 +73,3 @@ var publishingRootFolder=companyhome.childByNamePath("Data Dictionary/Publishing
         authoringSiteService.createObjectStatesforNewSite(siteRoot);
         authoringSiteService.extractMetadataForNewSite(siteRoot);
         authoringSiteService.extractDependenciesForNewSite(siteRoot);
-        authoringSiteService.addSiteGroupToPublishingRoot(publishingRootFolder,siteName);

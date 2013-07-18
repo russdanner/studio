@@ -132,10 +132,6 @@ public class SiteServiceScript extends BaseProcessorExtension {
     public void extractDependenciesForNewSite(ScriptNode siteRoot) {
         _servicesManager.getService(SiteService.class).extractDependenciesForNewSite(siteRoot.getNodeRef());
     }
-	
-	public void addSiteGroupToPublishingRoot(ScriptNode siteRoot,String siteName){
-		_servicesManager.getService(SiteService.class).addSiteGroupToPublishingRoot(siteRoot.getNodeRef(),siteName);
-	}
 
     public void extractMetadataForNewSite(ScriptNode siteRoot) {
         _servicesManager.getService(SiteService.class).extractMetadataForNewSite(siteRoot.getNodeRef()); {

@@ -136,8 +136,6 @@ public interface SiteService {
 
 	public void createObjectStatesforNewSite(NodeRef siteRoot);
 
-	public void addSiteGroupToPublishingRoot(NodeRef nodeRef, String siteName);
-
     public void extractDependenciesForNewSite(NodeRef siteRoot);
 
     public void extractMetadataForNewSite(NodeRef siteRoot);
