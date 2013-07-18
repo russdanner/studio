@@ -38,11 +38,11 @@ CREATE  TABLE cstudio_publishtotarget (
   CONSTRAINT cstudio_publishtotarget_pkey PRIMARY KEY (id)
 );
 
-CREATE INDEX cstudio_cte_site_idx
+CREATE INDEX cstudio_ptt_site_idx
 ON cstudio_publishtotarget USING BTREE (site);
 
-CREATE INDEX cstudio_cte_environment_idx
+CREATE INDEX cstudio_ptt_environment_idx
 ON cstudio_publishtotarget USING BTREE (environment);
 
-CREATE INDEX cstudio_cte_sitepath_idx
+CREATE INDEX cstudio_ptt_sitepath_idx
 ON cstudio_publishtotarget USING BTREE (site, path);
