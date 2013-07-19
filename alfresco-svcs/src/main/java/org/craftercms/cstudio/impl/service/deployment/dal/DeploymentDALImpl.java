@@ -429,9 +429,9 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 _sqlMapClient.startTransaction();
                 List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(processedItems, _sqlBatchMaxSize);
                 for (List<CopyToEnvironmentItem> batch : batches) {
-                    List<String> itemIds = new ArrayList<String>();
+                    List<Integer> itemIds = new ArrayList<Integer>();
                     for (CopyToEnvironmentItem item : batch) {
-                        itemIds.add(item.getId());
+                        itemIds.add(Integer.parseInt(item.getId()));
                     }
                     Map<String, Object> params = new HashMap<String, Object>();
                     params.put("state", CopyToEnvironmentItem.State.COMPLETED);
@@ -459,9 +459,9 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 _sqlMapClient.startTransaction();
                 List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(itemsToDeploy, _sqlBatchMaxSize);
                 for (List<CopyToEnvironmentItem> batch : batches) {
-                    List<String> itemIds = new ArrayList<String>();
+                    List<Integer> itemIds = new ArrayList<Integer>();
                     for (CopyToEnvironmentItem item : batch) {
-                        itemIds.add(item.getId());
+                        itemIds.add(Integer.parseInt(item.getId()));
                     }
                     Map<String, Object> params = new HashMap<String, Object>();
                     params.put("state", CopyToEnvironmentItem.State.PROCESSING);
@@ -489,9 +489,9 @@ public class DeploymentDALImpl implements DeploymentDAL {
                 _sqlMapClient.startTransaction();
                 List<List<CopyToEnvironmentItem>> batches = ListUtils.partition(itemsToDeploy, _sqlBatchMaxSize);
                 for (List<CopyToEnvironmentItem> batch : batches) {
-                    List<String> itemIds = new ArrayList<String>();
+                    List<Integer> itemIds = new ArrayList<Integer>();
                     for (CopyToEnvironmentItem item : batch) {
-                        itemIds.add(item.getId());
+                        itemIds.add(Integer.parseInt(item.getId()));
                     }
                     Map<String, Object> params = new HashMap<String, Object>();
                     params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);

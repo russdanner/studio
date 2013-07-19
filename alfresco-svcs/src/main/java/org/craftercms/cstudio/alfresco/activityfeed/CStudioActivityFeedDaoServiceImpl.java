@@ -22,6 +22,7 @@ import com.ibatis.common.resources.Resources;
 import com.ibatis.sqlmap.client.SqlMapClient;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.service.api.ActivityService;
+import org.craftercms.cstudio.alfresco.service.api.ObjectStateService;
 import org.craftercms.cstudio.alfresco.to.TableIndexCheckTO;
 import org.craftercms.cstudio.alfresco.util.ContentUtils;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,10 @@ public class CStudioActivityFeedDaoServiceImpl implements CStudioActivityFeedDao
 	private static final Logger LOGGER = LoggerFactory.getLogger(CStudioActivityFeedDaoServiceImpl.class);
 
     private static final String STATEMENT_DELETE_ACTIVITIES_FOR_SITE = "customactivityfeed.deleteActivitiesForSite";
+    private static final String STATEMENT_SELECT = "customactivityfeed.select";
+    private static final String STATEMENT_SELECT_HIDE_LIVE = "customactivityfeed.selectHideLive";
+    private static final String STATEMENT_SELECT_BY_CONTENT_TYPE = "customactivityfeed.selectByContentType";
+    private static final String STATEMENT_SELECT_BY_CONTENT_TYPE_HIDE_LIVE = "customactivityfeed.selectByContentTypeHideLive";
 
     /** table check and creation **/
     private static final String STATEMENT_CREATE_TABLE = "customactivityfeed.createTable";
@@ -208,25 +214,34 @@ public class CStudioActivityFeedDaoServiceImpl implements CStudioActivityFeedDao
         return sqlClient.delete("customactivityfeed.delete", keepDate);
     }
 
-
-
-    @SuppressWarnings("unchecked")
-    public List<CStudioActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId,int startPos, int feedSize,String contentType) throws SQLException
+    public List<CStudioActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId,int startPos, int feedSize,String contentType, boolean hideLiveItems) throws SQLException
     {
-    	HashMap<String,Object> params = new HashMap<String,Object>();
+        HashMap<String,Object> params = new HashMap<String,Object>();
         params.put("userId",feedUserId);
         params.put("summaryFormat",format);
         params.put("siteNetwork",siteId);
         params.put("startPos", startPos);
         params.put("feedSize", feedSize);
         SqlMapClient sqlClient=getSqlMapClient();
-        String queryName = "customactivityfeed.select";
-        
-        if(StringUtils.isNotEmpty(contentType) && !contentType.toLowerCase().equals("all")){
-        	params.put("contentType",contentType);
-        	queryName = "customactivityfeed.selectByContentType";
+        String queryName = STATEMENT_SELECT;
+        if (hideLiveItems) {
+            queryName = STATEMENT_SELECT_HIDE_LIVE;
+            List<String> statesValues = new ArrayList<String>();
+            for (ObjectStateService.State state : ObjectStateService.State.LIVE_STATES) {
+                statesValues.add(state.name());
+            }
+            params.put("states", statesValues);
         }
-        
+
+        if(StringUtils.isNotEmpty(contentType) && !contentType.toLowerCase().equals("all")){
+            params.put("contentType",contentType);
+            if (hideLiveItems) {
+                queryName = STATEMENT_SELECT_BY_CONTENT_TYPE_HIDE_LIVE;
+            } else {
+                queryName = STATEMENT_SELECT_BY_CONTENT_TYPE;
+            }
+        }
+
         // where feed user is me and post user is not me
         return (List<CStudioActivityFeedDAO>)sqlClient.queryForList(queryName, params);
     }

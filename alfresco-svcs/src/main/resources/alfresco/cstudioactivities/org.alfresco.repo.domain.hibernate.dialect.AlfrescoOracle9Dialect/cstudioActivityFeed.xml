@@ -86,6 +86,51 @@
 	  where rownum between #startPos# and (#startPos# + #feedSize#)
       ]]>
    </select>
+
+    <select id="selectHideLive" parameterClass="java.util.HashMap" resultMap="cstudioActivityFeedResult">
+      <![CDATA[
+      select * from (
+      select act.*
+      from cstudio_activity act
+      inner join cstudio_objectstate os on act.site_network=os.site and act.content_id=os.path
+      where act.post_user_id = #userId#
+      and act.site_network = #siteNetwork#
+      and act.summary_format = #summaryFormat#
+      ]]>
+        <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+        <![CDATA[
+	      order by act.modified_date desc
+	  )
+	  where rownum between #startPos# and (#startPos# + #feedSize#)
+      ]]>
+   </select>
+
+    <select id="selectByContentTypeHideLive" parameterClass="java.util.HashMap" resultMap="cstudioActivityFeedResult">
+      <![CDATA[
+      select * from (
+      select act.*
+      from cstudio_activity act
+      inner join cstudio_objectstate os on act.site_network=os.site and act.content_id=os.path
+      where act.post_user_id = #userId#
+      and act.site_network = #siteNetwork#
+      and act.summary_format = #summaryFormat#
+	  and act.content_type = #contentType#
+	  ]]>
+        <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+        <![CDATA[
+	      order by act.modified_date desc
+	  )
+	  where rownum between #startPos# and (#startPos# + #feedSize#)
+      ]]>
+   </select>
    
    <select id="getCountUserContentFeedEntries" parameterClass="java.util.HashMap" resultClass="int">
       <![CDATA[

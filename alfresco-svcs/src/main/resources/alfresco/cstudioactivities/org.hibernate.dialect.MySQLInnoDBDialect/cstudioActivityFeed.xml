@@ -88,6 +88,48 @@ CREATE TABLE `cstudio_activity` (
         ]]>
    </select>
 
+    <select id="selectHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
+      <![CDATA[
+
+      select act.*
+      from cstudio_activity act
+      inner join cstudio_objectstate os on act.site_network=os.site and act.content_id=os.path
+      where act.post_user_id = #userId#
+      and act.site_network = #siteNetwork#
+      and act.summary_format = #summaryFormat# ]]>
+      <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+      <![CDATA[
+      and state not in ('EXISTING_UNEDITED_LOCKED', 'EXISTING_UNEDITED_UNLOCKED', 'NEW_DELETED')
+      order by act.modified_date desc limit #startPos#,#feedSize#
+
+        ]]>
+   </select>
+
+    <select id="selectByContentTypeHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
+      <![CDATA[
+
+      select act.*
+      from cstudio_activity act
+      inner join cstudio_objectstate os on act.site_network=os.site and act.content_id=os.path
+      where post_user_id = #userId#
+      and site_network = #siteNetwork#
+      and summary_format = #summaryFormat#
+	  and content_type = #contentType# ]]>
+        <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+        <![CDATA[
+      order by act.modified_date desc limit #startPos#,#feedSize#
+
+        ]]>
+   </select>
+
     <select id="selectByContentType" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
       <![CDATA[
 

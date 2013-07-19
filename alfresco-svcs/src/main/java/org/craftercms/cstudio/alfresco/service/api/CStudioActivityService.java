@@ -48,7 +48,7 @@ public interface CStudioActivityService {
      * @param siteId - optional, if set then will filter by given siteId else return all sites
      * @return list of JSON feed entries
      */
-    public List<String> getUserFeedEntries(String userId, String format, String siteId,int startPos, int feedSize,String contentType);
+    public List<String> getUserFeedEntries(String userId, String format, String siteId,int startPos, int feedSize,String contentType, boolean hideLiveItems);
     
 	/**
 	 * get the last user worked on the given content 

@@ -86,7 +86,7 @@ public interface CStudioActivityFeedDaoService {
 	 * @throws SQLException
 	 */
 	public List<CStudioActivityFeedDAO> selectUserFeedEntries(String feedUserId, String format, String siteId,
-			int startPos, int feedSize, String contentType) throws SQLException;
+			int startPos, int feedSize, String contentType, boolean hideLiveItems) throws SQLException;
 	
 	/**
 	 * find the last user worked on the content by the given relativePath based

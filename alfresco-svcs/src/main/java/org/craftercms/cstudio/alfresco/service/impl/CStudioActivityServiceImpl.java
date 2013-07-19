@@ -155,7 +155,7 @@ public class CStudioActivityServiceImpl extends AbstractRegistrableService imple
 	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public List<String> getUserFeedEntries(String feedUserId, String format, String siteId, int startPos, int feedSize,
-			String contentType) {
+			String contentType, boolean hideLiveItems) {
 		// NOTE: siteId is optional
 		ParameterCheck.mandatoryString("feedUserId", feedUserId);
 		ParameterCheck.mandatoryString("format", format);
@@ -168,7 +168,7 @@ public class CStudioActivityServiceImpl extends AbstractRegistrableService imple
 		try {
 			List<CStudioActivityFeedDAO> activityFeeds = null;
 			activityFeeds = feedDaoService.selectUserFeedEntries(feedUserId, format, siteId, startPos, feedSize,
-					contentType);
+					contentType, hideLiveItems);
 			for (CStudioActivityFeedDAO activityFeed : activityFeeds) {
 				activityFeedEntries.add(activityFeed.getJSONString());
 			}

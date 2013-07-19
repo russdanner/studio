@@ -99,7 +99,7 @@ public class DmActivityServiceImpl extends ActivityServiceImpl implements DmActi
      */
     protected boolean getActivityFeeds(String user, String site,int startPos, int size, String filterType,boolean hideLiveItems,List<DmContentItemTO> contentItems,int remainingItem){
         CStudioActivityService activityService = getService(CStudioActivityService.class);
-        List<String> feeds = activityService.getUserFeedEntries(user, ACTIVITY_FEED_FORMAT, site,startPos,size,filterType);
+        List<String> feeds = activityService.getUserFeedEntries(user, ACTIVITY_FEED_FORMAT, site,startPos,size,filterType, hideLiveItems);
         boolean hasMoreItems=true;
 
         //if number of items returned is less than size it means that table has no more records
@@ -112,11 +112,8 @@ public class DmActivityServiceImpl extends ActivityServiceImpl implements DmActi
                 JSONObject feedObject = JSONObject.fromObject(feeds.get(index));
                 String id = (feedObject.containsKey(ACTIVITY_PROP_CONTENTID)) ? feedObject.getString(ACTIVITY_PROP_CONTENTID) : "";
                 DmContentItemTO item = createActivityItem(site, feedObject, id, _contentItemExtractor);
-                //if hidLiveItems is true then return only the non-live items
-                if (!(hideLiveItems && item.isLive())) {
-                    contentItems.add(item);
-                    remainingItem--;
-                }
+                contentItems.add(item);
+                remainingItem--;
             }
         }
         if(logger.isDebugEnabled()){

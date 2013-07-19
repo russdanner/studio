@@ -103,6 +103,51 @@ CREATE INDEX cstudio_activity_content_idx ON cstudio_activity
         ]]>
    </select>
 
+    <select id="selectHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
+      <![CDATA[
+
+      select act.*
+      from "cstudio_activity" act
+      inner join "cstudio_objectstate" os on act.site_network=os.site and act.content_id=os.path
+      where act.post_user_id = #userId#
+      and act.site_network = #siteNetwork#
+      and act.summary_format = #summaryFormat# ]]>
+        <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+        <![CDATA[
+      order by act.modified_date desc
+      limit #feedSize#
+      offset #startPos#
+
+        ]]>
+   </select>
+
+    <select id="selectByContentTypeHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
+      <![CDATA[
+
+      select act.*
+      from "cstudio_activity" act
+      inner join "cstudio_objectstate" os on act.site_network=os.site and act.content_id=os.path
+      where act.post_user_id = #userId#
+      and act.site_network = #siteNetwork#
+      and act.summary_format = #summaryFormat#
+	  and act.content_type = #contentType# ]]>
+        <dynamic prepend=" and os.state NOT IN ">
+            <iterate property="states"  open="(" close=")" conjunction=",">
+                #states[]#
+            </iterate>
+        </dynamic>
+        <![CDATA[
+      order by act.modified_date desc
+      limit #feedSize#
+      offset #startPos#
+
+        ]]>
+   </select>
+
     <select id="getCountUserContentFeedEntries" parameterClass="java.util.HashMap" resultClass="int">
       <![CDATA[
 
