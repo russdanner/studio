@@ -126,9 +126,7 @@ public class PreviewableDraftAspect implements NodeServicePolicies.OnAddAspectPo
                 }
 
                 try {
-                    if (fileInfo.isFolder()) {
-                        PreviewDeployUtils.createDir(deploymentPath, deployer);
-                    } else {
+                    if (!fileInfo.isFolder()) {
                         PreviewDeployUtils.deployFile(deploymentPath, fileInfo, persistenceManagerService, deployer);
                     }
                 } catch (Exception e) {

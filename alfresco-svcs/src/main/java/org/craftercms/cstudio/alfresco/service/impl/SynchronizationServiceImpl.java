@@ -75,8 +75,6 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
         if (nodeExists && !fileExists) {
             if (!dmFileInfo.isFolder()) {
                 PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
-            } else {
-                deployDir(path, dmFileInfo);
             }
         } else if (nodeExists && fileExists) {
             if (!dmFileInfo.isFolder() && deployedFile.isFile()) {
@@ -90,8 +88,6 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
                 PreviewDeployUtils.deleteFileOrDir(path, deployer);
                 if (!dmFileInfo.isFolder()) {
                     PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
-                } else {
-                    deployDir(path, dmFileInfo);
                 }
             }
         } else if (!nodeExists && fileExists) {

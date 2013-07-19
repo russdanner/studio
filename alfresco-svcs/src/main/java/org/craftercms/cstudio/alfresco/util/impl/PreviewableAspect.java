@@ -226,9 +226,7 @@ public class PreviewableAspect implements NodeServicePolicies.OnAddAspectPolicy,
                 Matcher m = DmConstants.DM_WORK_AREA_PATH_PATTERN.matcher(deploymentPath);
                 if (m.matches()) {
                     try {
-                        if (fileInfo.isFolder()) {
-                            PreviewDeployUtils.createDir(deploymentPath, deployer);
-                        } else {
+                        if (!fileInfo.isFolder()) {
                             PreviewDeployUtils.deployFile(deploymentPath, fileInfo, persistenceManagerService, deployer);
                         }
                     } catch (Exception e) {
