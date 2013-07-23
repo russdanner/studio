@@ -59,7 +59,10 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
     	if (this.datasourceName === data.name && !this.datasource) {
     		var datasource = this.form.datasourceMap[this.datasourceName];
     		this.datasource = datasource;
-			this.dataType = datasource.getDataType();
+            this.dataType = datasource.getDataType();
+            if (!this.dataType.match(/value/)) {
+                this.dataType += "mv";
+            }
 			datasource.getList(this.callback);
     	}
     },
@@ -229,7 +232,10 @@ YAHOO.extend(CStudioForms.Controls.CheckBoxGroup, CStudioForms.CStudioFormField,
 			// after the value has been set.
 			if(datasource){
 				this.datasource = datasource;
-				this.dataType = datasource.getDataType() || "value";	// Set default value for dataType (for backwards compatibility)
+                this.dataType = datasource.getDataType() || "value";	// Set default value for dataType (for backwards compatibility)
+                if (!this.dataType.match(/value/)) {
+                    this.dataType += "mv";
+                }
 				datasource.getList(cb);
 			}else{
 				this.callback = cb;
