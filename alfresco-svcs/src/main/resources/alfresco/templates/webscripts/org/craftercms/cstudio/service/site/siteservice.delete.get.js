@@ -12,10 +12,20 @@ var blueprintName = "default";
 
  // handle site forms
         var sitesFormsRoot = companyhome.childByNamePath("cstudio/config/forms");
-        sitesFormsRoot.childByNamePath(siteName).remove();
+        if (sitesFormsRoot != null) {
+            var formsRoot = sitesFormsRoot.childByNamePath(siteName);
+            if (formsRoot != null) {
+                formsRoot.remove();
+            }
+        }
 
 // handle site models
         var sitesModelsRoot = companyhome.childByNamePath("cstudio/model-prototypes");
-        sitesModelsRoot.childByNamePath(siteName).remove();
+        if (sitesModelsRoot != null) {
+            var modelsRoot = sitesModelsRoot.childByNamePath(siteName);
+            if (modelsRoot != null) {
+                modelsRoot.remove();
+            }
+        }
 
 authoringSiteService.deleteSite(siteName);
