@@ -39,6 +39,7 @@
           class="org.craftercms.cstudio.alfresco.dm.script.DmDeploymentServiceScript">
         <property name="extensionName"><value>dmDeploymentService</value></property>
         <property name="servicesManager" ref="cstudioServicesManager" />
+        <property name="deploymentEngine" value="${deploymentEngine.enabled}"/>
     </bean>
 
     <bean id="dmWorkflowServiceScript" parent="baseJavaScriptExtension"
