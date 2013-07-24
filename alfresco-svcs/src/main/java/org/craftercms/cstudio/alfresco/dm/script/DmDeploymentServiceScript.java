@@ -37,15 +37,6 @@ public class DmDeploymentServiceScript extends BaseProcessorExtension {
 
     protected ServicesManager _servicesManager;
 
-	private boolean deploymentEngine;
-	
-    
-    
-    public void setDeploymentEngine(boolean deploymentEngine) {
-		this.deploymentEngine = deploymentEngine;
-	}
-
-
 	public void setServicesManager(ServicesManager servicesManager) {
 		this._servicesManager = servicesManager;
 	}
