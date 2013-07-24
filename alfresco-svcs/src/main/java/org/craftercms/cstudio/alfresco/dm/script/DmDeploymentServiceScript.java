@@ -36,16 +36,7 @@ public class DmDeploymentServiceScript extends BaseProcessorExtension {
     private static final Logger logger = LoggerFactory.getLogger(DmDeploymentServiceScript.class);
 
     protected ServicesManager _servicesManager;
-
-	private boolean deploymentEngine;
-	
     
-    
-    public void setDeploymentEngine(boolean deploymentEngine) {
-		this.deploymentEngine = deploymentEngine;
-	}
-
-
 	public void setServicesManager(ServicesManager servicesManager) {
 		this._servicesManager = servicesManager;
 	}
