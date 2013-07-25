@@ -223,41 +223,58 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 	
 	focusOut: function() {
 
-		var widthVal;
+		var widthVal, heightVal, sizeCookie, cookieHeight;
 
-		amplify.publish('/rte/blurred'); 	// Notify other components
-        YDom.replaceClass(this.containerEl, "rte-active", "rte-inactive");
-        var elements = YDom.getElementsByClassName('cstudio-form-container', 'div');
-        YDom.setStyle(elements[0],'margin-top', '20px');
- 
-        if (YDom.hasClass(this.containerEl, "text-mode")) {
-        	// The RTE is in text mode
-        	tinymce.DOM.setStyle(this.editor.editorId + "_ifr", "height", this.editor.settings.height + "px");
-        	this.editor.getWin().scrollTo(0,0);	// Scroll to the top of the editor window
-        	
-        	// The editor selection is automatically cleared in IE9 when the text editor is blurred
+		amplify.publish('/rte/blurred'); // Notify other components
+		YDom.replaceClass(this.containerEl, "rte-active", "rte-inactive");
+		var elements = YDom.getElementsByClassName('cstudio-form-container', 'div');
+		YDom.setStyle(elements[0], 'margin-top', '20px');
+
+		if (YDom.hasClass(this.containerEl, "text-mode")) {
+			// The RTE is in text mode        	
+			sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + this.editor.id + "_size");
+			cookieHeight = (sizeCookie) ? sizeCookie.ch : 0;
+
+			// Give priority to the height value stored in the cookie (if there's one)
+			heightVal = (cookieHeight) ? cookieHeight : this.editor.settings.height;
+
+			tinymce.DOM.setStyle(this.editor.editorId + "_ifr", "height", heightVal + "px");
+			this.editor.getWin().scrollTo(0, 0); // Scroll to the top of the editor window
+
+			// The editor selection is automatically cleared in IE9 when the text editor is blurred
 			if (!YAHOO.env.ua.ie || YAHOO.env.ua.ie >= 10) {
-        		this.clearTextEditorSelection();
-        	}
-        	this.editor.onDeactivate.dispatch(this.editor, null);	// Fire tinyMCE handlers for onDeactivate (eg. used by contextmenu)
-        } else {
-        	// The RTE is in code mode
-        	widthVal = this.containerEl.clientWidth - this.codeModeXreduction;
-        	this.editor.codeMirror.setSelection({line: 0, ch: 0});	// Clear the current selection -in case there was any
-			this.editor.codeMirror.setCursor({line: 0, ch: 0});		// Set the cursor to the beginning of the code editor
-        	this.editor.codeMirror.setSize(widthVal, +this.editor.settings.height);
-        	this.editor.codeMirror.scrollTo(0,0);	// Scroll to the top of the editor window
-        	this.editor.setContent(this.editor.codeMirror.getValue());	// Transfer content in codeMirror to RTE
-        }
-		this.save();	// Save the content in RTE and update form model
+				this.clearTextEditorSelection();
+			}
+			this.editor.onDeactivate.dispatch(this.editor, null); // Fire tinyMCE handlers for onDeactivate (eg. used by contextmenu)
+		} else {
+			// The RTE is in code mode
+			widthVal = this.containerEl.clientWidth - this.codeModeXreduction;
+			this.editor.codeMirror.setSelection({
+				line: 0,
+				ch: 0
+			}); // Clear the current selection -in case there was any
+			this.editor.codeMirror.setCursor({
+				line: 0,
+				ch: 0
+			}); // Set the cursor to the beginning of the code editor
+			this.editor.codeMirror.setSize(widthVal, +this.editor.settings.height);
+			this.editor.codeMirror.scrollTo(0, 0); // Scroll to the top of the editor window
+			this.editor.setContent(this.editor.codeMirror.getValue()); // Transfer content in codeMirror to RTE
+		}
+		this.save(); // Save the content in RTE and update form model
 	},
 
-	resizeEditor: function (editor) {
+	resizeEditor: function (editor, onInit) {
+
+		var sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + editor.id + "_size");
+		var cookieHeight = (sizeCookie) ? sizeCookie.ch : 0;
 		
-		var heightVal = Math.max(+editor.settings.focusHeight, editor.settings.autoresize_min_height, editor.getDoc().body.scrollHeight),
+		var heightVal = Math.max(editor.settings.height, cookieHeight),
 			currentHeight = +tinymce.DOM.getStyle(this.editor.editorId + "_ifr", "height").split("px")[0];
 
-		if (currentHeight < heightVal) {
+		heightVal = (!onInit) ? Math.max(heightVal, editor.getDoc().body.scrollHeight) : heightVal;
+
+		if (currentHeight < heightVal || onInit) {
 			tinymce.DOM.setStyle(editor.editorId + "_ifr", "height", heightVal + "px");
 		}
 	},
@@ -385,7 +402,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
                     this.resizeTextView(containerEl, this.rteWidth, { "rte-container" : controlWidgetContainerEl});
                     break;
 				case "height" : 
-					var height = (prop.value === undefined) ? "200" : (Array.isArray(prop.value)) ? "200" : prop.value;
+					var height = (prop.value === undefined) ? 140 : (Array.isArray(prop.value)) ? 140 : Math.max(+(prop.value), 50);
 					break;
 				case "maxlength" :
 					inputEl.maxlength = prop.value;
@@ -402,7 +419,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 			}
 		}
 
-		var pluginList = "autoresize, paste, noneditable, cs_table, cs_contextmenu, cs_inlinepopups, ";
+		var pluginList = "paste, noneditable, cs_table, cs_contextmenu, cs_inlinepopups, ";
 		for(var l=0; l<rteConfig.rteModules.length; l++) {
 			// mce plugin names cannot have a - in them
 			pluginList += "-"+rteConfig.rteModules[l].replace(/-/g,"")+",";
@@ -417,22 +434,18 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 						
 		var editor = tinyMCE.init({
 	        // General options
-	        autoresize_min_height: 140,
-	        autoresize_max_height: 140,
 	        mode : "textareas",
 	        editor_selector : rteUniqueInitClass,
 	        theme : "advanced",
 	        skin : "cstudio-rte",
 	        width : width,
-	        focusHeight : height,
-	        height: "140",
+	        height: height,
 	        encoding : "xml",
             valid_children : "+body[style]",
 	        paste_auto_cleanup_on_paste : true,
 			relative_urls : false,
 
 			readonly: _thisControl.readonly,
-			// autoresize_on_init: true,
 			force_p_newlines: forcePTags,
 			force_br_newlines: forceBRTags,
 			forced_root_block: forceRootBlockPTag,
@@ -509,6 +522,8 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 					});
 					
 	   				ed.onPostRender.add(function(ed, cm) {
+
+	   					ed.contextControl.resizeEditor(ed, true);
 
 	   					// Add counter element
 	   					var refEl = YSelector.query("table.mceLayout tbody", _thisControl.containerEl, true),
