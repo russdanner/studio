@@ -75,6 +75,8 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
         if (nodeExists && !fileExists) {
             if (!dmFileInfo.isFolder()) {
                 PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
+            } else {
+                deployDir(path, dmFileInfo);
             }
         } else if (nodeExists && fileExists) {
             if (!dmFileInfo.isFolder() && deployedFile.isFile()) {
@@ -88,6 +90,8 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
                 PreviewDeployUtils.deleteFileOrDir(path, deployer);
                 if (!dmFileInfo.isFolder()) {
                     PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
+                } else {
+                    deployDir(path, dmFileInfo);
                 }
             }
         } else if (!nodeExists && fileExists) {
@@ -97,7 +101,6 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
 
     protected void deployDir(String path, FileInfo dmFileInfo) throws IOException {
     	PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        PreviewDeployUtils.createDir(path, deployer);
 
         List<FileInfo> childrenFileInfo = persistenceManagerService.list(dmFileInfo.getNodeRef());
         if (CollectionUtils.isNotEmpty(childrenFileInfo)) {
