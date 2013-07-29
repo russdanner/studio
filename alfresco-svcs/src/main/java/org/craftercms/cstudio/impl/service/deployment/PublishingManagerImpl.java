@@ -226,7 +226,7 @@ public class PublishingManagerImpl implements PublishingManager {
                         LOGGER.debug("Get content for \"{0}\" , site \"{1}\"", item.getPath(), item.getSite());
                         InputStream input = _contentRepository.getContent(site, null, LIVE_ENVIRONMENT, item.getPath());
                         try {
-                            if (input == null || input.available() > 0) {
+                            if (input == null || input.available() < 0) {
                                 if (_contentRepository.contentExists(site, item.getPath())) {
                                     baps = null;
                                     stringPart = null;
