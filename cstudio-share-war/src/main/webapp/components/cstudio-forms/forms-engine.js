@@ -704,6 +704,13 @@ var CStudioForms = CStudioForms || function() {
 
         _renderFormWithContent: function(content, formId, formDef, style, customControllerClass, readOnly) {
 
+            function getDateTimeObject(timeObj) {
+                return {
+                    "date" : (timeObj.getUTCMonth() + 1) + "/" + timeObj.getUTCDate() + "/" + timeObj.getUTCFullYear(),
+                    "time" : timeObj.getUTCHours() + ":" + timeObj.getUTCMinutes() + ":" + timeObj.getUTCSeconds()
+                }
+            }
+
             var closeAjaxOverlay = function () {
                 if (form.asyncFields == 0) {
                     // Form can now be safely manipulated
@@ -752,7 +759,9 @@ var CStudioForms = CStudioForms || function() {
             CStudioAuthoring.Service.lookupConfigurtion(
                 CStudioAuthoringContext.site, "/site-config.xml", timezoneCb);
 
-            var nowTimestamp = YAHOO.util.Date.format(new Date(), { format: "%m/%d/%Y %T" });
+            var nowTimestamp = getDateTimeObject(new Date());
+            // Timestamp in UTC
+            nowTimestamp = nowTimestamp.date + " " + nowTimestamp.time;
 
             /*
              * register before save callback for created date and modified date
@@ -1142,34 +1151,9 @@ var CStudioForms = CStudioForms || function() {
                     var saveAndPreviewEl = document.getElementById("cstudioSaveAndPreview");
 
                     if(saveAndCloseEl) saveAndCloseEl.disabled = true;
-                    if(saveAndPreviewEl) saveAndPreviewEl.disabled = true
+                    if(saveAndPreviewEl) saveAndPreviewEl.disabled = true;
 
-                    var timeConvertCb = {
-                        saveFn: saveFn,
-
-                        success: function(response) {
-                            var data = eval("(" + (response.responseText) + ")");
-                            nowTimestamp = data.convertedTimezone;
-
-                            this.saveFn(false);
-                        },
-
-                        failure: function(response) {
-                        }
-
-                    };
-
-                    var baseUrl = CStudioAuthoringContext.authoringAppBaseUri;
-                    var serviceUrl = "/service/cstudio/services/util/time/convert";
-                    var url = baseUrl;
-                    url += serviceUrl;
-                    url += "?time=" + nowTimestamp;
-                    url += "&srcTimezone=" + timezone;
-                    url += "&destTimezone="  + "GMT";
-                    url += "&dateFormat=" + "MM/dd/yyyy hh:mm:ss";
-
-                    YAHOO.util.Connect.initHeader("Content-Type", "application/json; charset=utf-8");
-                    YAHOO.util.Connect.asyncRequest('GET',url, timeConvertCb);
+                    saveFn(false);
                 };
 
                 var previewButtonEl = document.createElement("input");
