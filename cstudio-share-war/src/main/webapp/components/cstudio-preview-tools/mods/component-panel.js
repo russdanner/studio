@@ -91,7 +91,7 @@ CStudioAuthoring.Module.requireModule(
 				  			return;
 
 						case "save-components":
-							// console.log('saving model ... ');
+								// console.log('saving model ... ');
 				  			self.updateComponentsInModel(contentMap);
 				  			CStudioForms.Util.loadFormDefinition(contentMap["content-type"], {
 								success: function(formDefinition) {
@@ -120,7 +120,7 @@ CStudioAuthoring.Module.requireModule(
 				});
 
 				// Load page model
-				this.getPageModel(CStudioAuthoring.SelectedContent.getSelectedContent()[0].uri, "init-components", true, false);
+				this.getPageModel(this.getPreviewPagePath(CStudioAuthoringContext.previewCurrentPath), "init-components", true, false);
 			}
 		},
 		
@@ -130,6 +130,18 @@ CStudioAuthoring.Module.requireModule(
 			// if(this.componentsOn == true) {
 			// 	this.expand(containerEl, config);
 			// }
+		},
+
+		getPreviewPagePath: function (previewPath) {
+			var pagePath = previewPath.replace(".html", ".xml");
+
+			if (pagePath.indexOf(".xml") == -1) {
+				if (pagePath.substring(pagePath.length - 1) != "/") {
+					pagePath += "/";
+				}
+				pagePath += "index.xml";
+			}
+			return pagePath;
 		},
 
 		/*
@@ -174,6 +186,7 @@ CStudioAuthoring.Module.requireModule(
 		},
 
 		copyObj : function (srcObj, destObj) {
+
 			if (srcObj && typeof srcObj == "object" && !(srcObj instanceof Array) && 
 				destObj && typeof destObj == "object" && !(destObj instanceof Array)) {
 
@@ -310,7 +323,7 @@ CStudioAuthoring.Module.requireModule(
 									var delControl = self.createDeleteControl('delete-control');
 									delControl.onclick = function() {
 										Utility.removeComponent(this, function () {
-											CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.SelectedContent.getSelectedContent()[0].uri, "save-components", true, false);
+											CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.ComponentsPanel.getPreviewPagePath(CStudioAuthoringContext.previewCurrentPath), "save-components", true, false);
 										});
 									};
 									YDom.insertBefore(delControl, el.firstChild);
@@ -381,9 +394,10 @@ CStudioAuthoring.Module.requireModule(
 		/*
 		 * Create a new component to be inserted into the Preview Tools panel
 		 * @param component -object with at least 3 properties: path, type and label
+		 * @param tipText -text to display when the component is dragged from the Preview Tools panel
 		 * @return the new DOM element
 		 */
-		createMenuComponent : function (component) {
+		createMenuComponent : function (component, tipText) {
 
 			var menuComponent = document.createElement("div");
 
@@ -391,7 +405,7 @@ CStudioAuthoring.Module.requireModule(
 				YDom.addClass(menuComponent, "acn-panel-component");
 				menuComponent.innerHTML = '<div class="' + dcNewComponentClass + ' ' + dcComponentClass + 
 												'" data-path="' + component.path + '" data-type="' + component.type +
-												'"><span>' + component.label + '</span></div>';
+												'"><div><span class="tipText">' + tipText + '</span><b>' + component.label + '</b></div></div>';
 			}
 			return menuComponent;
 		},
@@ -413,7 +427,7 @@ CStudioAuthoring.Module.requireModule(
 				for(var j=0; j<category.component.length; j++) {
 					var component = category.component[j];
 					
-					var componentEl = this.createMenuComponent(component);
+					var componentEl = this.createMenuComponent(component, "Adding new component:");
 					containerEl.appendChild(componentEl);
 				}
 			}
@@ -532,15 +546,23 @@ CStudioAuthoring.Module.requireModule(
 		 */
 		getInheritedBackground : function (el) {
 
-			var stylesArr = (window.getComputedStyle) ? window.getComputedStyle(el) : 
+			var stylesArr;
+
+			/* FF bug fix: http://siderite.blogspot.com/2009/07/jquery-firexof-error-could-not-convert.html */
+			if (YAHOO.env.ua.gecko && el == document) {
+				return "#FFFFFF";
+			}
+
+			stylesArr = (window.getComputedStyle) ? window.getComputedStyle(el) : 
 							(el.currentStyle) ? el.currentStyle : null;
 							// el.currentStyle applies to IE v9 and below
 
 			if (stylesArr) {
-				if ((stylesArr.backgroundColor != "transparent" && stylesArr.backgroundColor != "rgba(0, 0, 0, 0)") ||
-					(stylesArr.backgroundRepeat.match(/^repeat/) && stylesArr.backgroundImage != "none")) {
+				if ((stylesArr.getPropertyValue('background-color') != "transparent" && stylesArr.getPropertyValue('background-color') != "rgba(0, 0, 0, 0)") ||
+					(stylesArr.getPropertyValue('background-repeat').match(/^repeat/) && stylesArr.getPropertyValue('background-image') != "none")) {
 					// stop condition: element has a background color or a background image that is set to repeat
-					return stylesArr.backgroundColor + " " + stylesArr.backgroundImage + " " + stylesArr.backgroundRepeat + " " + stylesArr.backgroundPosition;
+					return stylesArr.getPropertyValue('background-color') + " " + stylesArr.getPropertyValue('background-image') + " " + 
+								stylesArr.getPropertyValue('background-repeat') + " " + stylesArr.getPropertyValue('background-position');
 				} else {
 					if (el.parentNode) {
 						return this.getInheritedBackground(el.parentNode);
@@ -559,14 +581,21 @@ CStudioAuthoring.Module.requireModule(
 		 */
 		getMaxzIndex : function (el, zIndex) {
 
-			var stylesArr = (window.getComputedStyle) ? window.getComputedStyle(el) : 
+			var stylesArr;
+
+			/* FF bug fix: http://siderite.blogspot.com/2009/07/jquery-firexof-error-could-not-convert.html */
+			if (YAHOO.env.ua.gecko && el == document) {
+				return zIndex;
+			}
+
+			stylesArr = (window.getComputedStyle) ? window.getComputedStyle(el) : 
 							(el.currentStyle) ? el.currentStyle : null;
 							// el.currentStyle applies to IE v9 and below
 
 			if (stylesArr) {
-				if (stylesArr.zIndex != "auto" && +stylesArr.zIndex > zIndex) {
+				if (stylesArr.getPropertyValue('z-index') != "auto" && +stylesArr.getPropertyValue('z-index') > zIndex) {
 					// save the zIndex value if it's greater than what we already have
-					return this.getMaxzIndex(el.parentNode, +stylesArr.zIndex);
+					return this.getMaxzIndex(el.parentNode, +stylesArr.getPropertyValue('z-index'));
 				} else {
 					if (el.parentNode && el.parentNode.nodeName != "BODY") {
 						return this.getMaxzIndex(el.parentNode, zIndex);
@@ -835,6 +864,7 @@ CStudioAuthoring.Module.requireModule(
 	    var zIndexRef = (CStudioAuthoring.ComponentsPanel.dcOverlay) ? CStudioAuthoring.ComponentsPanel.dcOverlay.getzIndex() : 0;
 	    YDom.setStyle(el, "opacity", 0.92); // The proxy is slightly transparent
 	    YDom.setStyle(el, "z-index", zIndexRef + 2);
+	    YDom.addClass(el, "ddproxy");
 	
 	    this.goingUp = false;
 	    this.lastY = 0;
@@ -857,10 +887,12 @@ CStudioAuthoring.Module.requireModule(
 
 		        	YDom.setStyle(proxy, "z-index", zIndexRef + 2);
 		        	proxy.style.background = CStudioAuthoring.ComponentsPanel.getInheritedBackground(srcEl);
+		        	proxy.style.borderColor = "#86BBEA";
+		        	proxy.style.borderRadius = "5px";
 		        	proxy.innerHTML = srcEl.parentNode.innerHTML;
 
 		        	YDom.setStyle( proxy, "width",  "232px" );
-	            	YDom.setStyle( proxy, "height", "auto" );
+	            YDom.setStyle( proxy, "height", "auto" );
 
 		        } else {
 		        	zIndexRef = (CStudioAuthoring.ComponentsPanel.dcOverlay) ? CStudioAuthoring.ComponentsPanel.dcOverlay.getzIndex() : 0;
@@ -912,7 +944,7 @@ CStudioAuthoring.Module.requireModule(
 
 			if (componentsUpdated) {
 				componentsUpdated = false;	// reset flag
-				CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.SelectedContent.getSelectedContent()[0].uri, "save-components", true, false);
+				CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.ComponentsPanel.getPreviewPagePath(CStudioAuthoringContext.previewCurrentPath), "save-components", true, false);
 			}
 	    },
 
@@ -953,14 +985,14 @@ CStudioAuthoring.Module.requireModule(
 		 			 			// to know what properties a new component has.
 		 			 			srcEl.componentPlaceholder.modelData = { key: contentTO.item.uri, value: value, include: contentTO.item.uri, };	
 		 			 			cpl.modelData = { key: contentTO.item.uri, value: value, include: contentTO.item.uri };
-						 		CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.SelectedContent.getSelectedContent()[0].uri, "save-components-new", true, false);
+						 		CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.ComponentsPanel.getPreviewPagePath(CStudioAuthoringContext.previewCurrentPath), "save-components-new", true, false);
 							},
 		 			 		failure: function() {
 		 			 		}
 		 			 });		 			
 		 		}
 		 		else {
-					CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.SelectedContent.getSelectedContent()[0].uri, "save-components", true, false);
+					CStudioAuthoring.ComponentsPanel.getPageModel(CStudioAuthoring.ComponentsPanel.getPreviewPagePath(CStudioAuthoringContext.previewCurrentPath), "save-components", true, false);
 		 		}
 			}			 	
 	   	},
