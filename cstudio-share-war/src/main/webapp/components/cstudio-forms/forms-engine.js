@@ -1054,6 +1054,7 @@ var CStudioForms = CStudioForms || function() {
 
             var unloadFn = function(e){
                 if(_notifyServer){
+                    path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
                     var entityId = buildEntityIdFn();
                     CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, entityId);
                 }
@@ -1072,37 +1073,48 @@ var CStudioForms = CStudioForms || function() {
                                     var entityId = buildEntityIdFn();
                                     showWarnMsg = false;
 
-                                    CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, entityId, {
-                                        success: function (itemTO) {
-                                            //Unlock if the item is locked by the user
-                                            if (itemTO.item.lockOwner == CStudioAuthoringContext.user) {
-                                                CStudioAuthoring.Service.unlockContentItem(CStudioAuthoringContext.site, entityId, {
-                                                    success: function() {
-                                                        _notifyServer = false;
-                                                        if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                                            window.parent.location = window.parent.location;
+                                    var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
+                                    if( path && path.indexOf(".xml") != -1) {
+                                        CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, entityId, {
+                                            success: function (itemTO) {
+                                                //Unlock if the item is locked by the user
+                                                if (itemTO.item.lockOwner == CStudioAuthoringContext.user) {
+                                                    CStudioAuthoring.Service.unlockContentItem(CStudioAuthoringContext.site, entityId, {
+                                                        success: function() {
+                                                            _notifyServer = false;
+                                                            if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
+                                                                window.parent.location = window.parent.location;
+                                                            }
+                                                            else {
+                                                                window.close();
+                                                            }
+                                                        },
+                                                        failure: function() {
                                                         }
-                                                        else {
-                                                            window.close();
-                                                        }
-                                                    },
-                                                    failure: function() {
+                                                    });
+                                                } else {
+                                                    _notifyServer = false;
+                                                    if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
+                                                        window.parent.location = window.parent.location;
                                                     }
-                                                });
-                                            } else {
-                                                _notifyServer = false;
-                                                if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                                    window.parent.location = window.parent.location;
+                                                    else {
+                                                        window.close();
+                                                    }
                                                 }
-                                                else {
-                                                    window.close();
-                                                }
-                                            }
-                                        },
-                                        failure: function() {
+                                            },
+                                            failure: function() {
 
+                                            }
+                                        });
+                                    } else {
+                                        _notifyServer = false;
+                                        if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
+                                            window.parent.location = window.parent.location;
                                         }
-                                    });
+                                        else {
+                                            window.close();
+                                        }
+                                    }
                                 }, isDefault:true },
                                     { text:"No",  handler:function(){this.hide();} } ]
                             });
