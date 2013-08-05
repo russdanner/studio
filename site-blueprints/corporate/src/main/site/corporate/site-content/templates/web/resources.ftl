@@ -158,7 +158,7 @@
 
 </div>
 
-<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="/static-assets/js/jquery-1.10.2.min.js"></script>
 <script src="/static-assets/js/bootstrap.min.js"></script>
 <script src="/static-assets/js/main.js"></script>
 
