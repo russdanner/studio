@@ -42,7 +42,6 @@
 
 
     <#if model.enableTouts == "true">
-        <#if model.touts?exists == true>
             <div id="carousel" class="carousel slide">
                 <@ice id="touts" />
                 <div class="left-cap cap"></div>
@@ -83,7 +82,6 @@
                     &rsaquo;
                 </a>
             </div>
-        </#if>
     </#if>
     </div>
 
@@ -91,7 +89,7 @@
 
 </div>
 
-<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="/static-assets/js/jquery-1.10.2.min.js"></script>
 <script src="/static-assets/js/bootstrap.min.js"></script>
 <script src="/static-assets/js/main.js"></script>
 <@cstudioOverlaySupport/>

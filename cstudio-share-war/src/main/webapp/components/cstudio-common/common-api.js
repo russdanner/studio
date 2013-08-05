@@ -1350,8 +1350,12 @@ YConnect.failureEvent.subscribe(function() {
 
             openCopyDialog:function(site, uri, callback, args) {
 
+                var idx = uri.lastIndexOf("index.xml");
+                var folderPath = uri;
+                if (idx > 0) {
+                    folderPath = uri.substring(0, uri.lastIndexOf("index.xml"));
+                }
                 var cut = false,  // args.cut was the original value, but this parameter is always returning undefined
-                    folderPath = uri.substring(0, uri.lastIndexOf("index.xml")),
                     serviceUri = "/proxy/alfresco/cstudio/wcm/content/get-pages?site=" + site + "&path=" + folderPath + "&depth=-1&order=default",
                     getCopyTreeItemRequest = CStudioAuthoring.Service.createServiceUri(serviceUri);
 

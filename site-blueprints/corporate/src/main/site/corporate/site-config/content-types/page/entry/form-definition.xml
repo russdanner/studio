@@ -157,44 +157,6 @@
 						</constraint>
 					</constraints>
 				</field>
-				<field>
-					<type>node-selector</type>
-					<id>touts</id>
-					<iceId>touts</iceId>
-					<title>Touts</title>
-					<description></description>
-					<defaultValue></defaultValue>
-					<help></help>
-					<properties>
-						<property>
-							<name>minSize</name>
-							<value></value>
-							<type>int</type>
-						</property>
-						<property>
-							<name>maxSize</name>
-							<value></value>
-							<type>int</type>
-						</property>
-						<property>
-							<name>itemManager</name>
-							<value>touts</value>
-							<type>datasource:item</type>
-						</property>
-						<property>
-							<name>readonly</name>
-							<value></value>
-							<type>boolean</type>
-						</property>
-					</properties>
-					<constraints>
-						<constraint>
-							<name>allowDuplicates</name>
-							<value></value>
-							<type>boolean</type>
-						</constraint>
-					</constraints>
-				</field>
 			</fields>
 		</section>
 		<section>
@@ -313,19 +275,6 @@
 						<property>
 							<name>repoPath</name>
 							<value>/static-assets/images/home-page-heros</value>
-								<type>undefined</type>
-						</property>
-					</properties>
-				</datasource>
-				<datasource>
-					<type>child-content</type>
-					<id>touts</id>
-					<title>Touts</title>
-					<interface>item</interface>
-					<properties>
-						<property>
-							<name>repoPath</name>
-							<value>/site/components/touts</value>
 								<type>undefined</type>
 						</property>
 					</properties>
