@@ -21,7 +21,11 @@ CStudioAuthoring.Module.requireModule(
 		dcComponentClass = "cstudio-draggable-component",
 		dcWrapperClass = "cstudio-component-ice",
 		dcContainerClass = "cstudio-component-zone",
-		componentsUpdated = false;
+		componentsUpdated = false,
+		copyStyles = ['border-collapse', 'border-spacing', 'caption-side', 'color', 'direction', 'empty-cells', 
+												'font-family', 'font-size', 'font-style', 'font-weight', 'letter-spacing', 'line-height',
+												'list-style-image', 'list-style-position', 'list-style-type', 'quotes', 'text-align', 
+												'text-indent', 'text-transform', 'visibility', 'white-space', 'word-spacing'];
 
 	// Load the component's css	
 	modulePath = CStudioAuthoring.Utils.getScriptPath(moduleName + ".js");
@@ -334,8 +338,6 @@ CStudioAuthoring.Module.requireModule(
 							zoneEls.forEach(function(el) {
 								// Save any inline background attribute (in case we want to restore it later)
 								var pEl = document.getElementById("placeholder-" + el.id);
-								el.original = el.original || {};
-								el.original.background = el.style.background;
 								el.style.background = this.getInheritedBackground(pEl);
 							}, self);
 							self.dcOverlay.show();
@@ -647,6 +649,24 @@ CStudioAuthoring.Module.requireModule(
 		},
 
 		/*
+		 * Return an object will all the styles an element has inline (e.g. { 'color': '#333', 'font-weight': 'bold'})
+		 */
+		getInlineStyles : function (el) {
+			var cssArr, len, res = {};
+
+			// split the cssText value into an array of values 
+			// e.g: "display: none; cursor: pointer;" becomes ["display", "none", "cursor", "pointer", ""]
+			cssArr = el.style.cssText.split(/:\s*|;\s*/);
+
+			// If the length is an odd number, that's because the last value of the array is an empty string => discard it
+			len = (cssArr.length % 2) ? cssArr.length - 1 : cssArr.length;
+			for (var i = 0; i < len; i+=2) {
+				res[cssArr[i]] = cssArr[i + 1];
+			}
+			return res;
+		},
+
+		/*
 		 * Absolutely position an element. Set the element's position to absolute, copy its X and Y coordinates and set them as inline styles,
 		 * and set its z-index to one number higher than the reference z-index value provided. Save the original inlines values in the element.
 		 * @param zIndex -integer z-index reference value (optional). If "auto" or not set, the element's z-index will be set to 1
@@ -654,19 +674,42 @@ CStudioAuthoring.Module.requireModule(
 		absolutePosition : function (el, zIndex) {
 			zIndex = zIndex || "auto";
 
-			// Save original inline attributes (in case we want to restore them later)
-			el.original = el.original || {};
-			el.original.position = el.style.position;
-			el.original.left = el.style.left;
-			el.original.top = el.style.top;
-			el.original.width = el.style.width;
-			el.original.zIndex = el.style.zIndex;
-
 			el.style.width = (el.clientWidth - (+(el.style.paddingLeft.split("px")[0]) - (el.style.paddingRight.split("px")[0]))) + "px";
 			el.style.left = YDom.getX(el) + "px";
 			el.style.top = YDom.getY(el) + "px";
 			el.style.position = "absolute";
 			el.style.zIndex = (typeof zIndex == "number") ? zIndex + 1 : 1;
+		},
+
+		/*
+		 * Copy a list of styles inline from the computed styles collection of an element
+		 * @param el : element
+		 * @param computedStyles : computed styles collection 
+		 * @param stylesArr : array of styles that will be copied inline from the computed styles collection
+		 */
+		copyComputedStylesInline : function (el, computedStyles, stylesArr) {
+			stylesArr.forEach( function(style) {
+				var styleVal = computedStyles.getPropertyValue(style);
+				YDom.setStyle(el, style, styleVal);
+			});
+		},
+
+		/*
+		 * Set all styles in a style object inline on an element. Remove any other inline styles the element may have.
+		 */
+		restoreInlineStyles : function (el, stylesObj) {
+			var cssPropertiesArr = el.style.cssText.split(/:.+?;\s*/);
+			cssPropertiesArr.forEach( function(cssProperty) {
+				if (!cssProperty) {
+					// Discard any empty strings (if any)
+					return;
+				}
+				if (stylesObj.hasOwnProperty(cssProperty)) {
+					YDom.setStyle(el, cssProperty, stylesObj[cssProperty]);
+				} else {
+					el.style.removeProperty(cssProperty);
+				}
+			});
 		},
 
 		/*
@@ -684,6 +727,8 @@ CStudioAuthoring.Module.requireModule(
 				zIndexRef = +YDom.getStyle(refElement, "z-index");
 
 			zoneEls.forEach( function(el) {
+				// Save the element's inline styles
+				el.origInlineStyles = this.getInlineStyles(el);
 
 				// Save the original height value
 				var heightVal = el.parentNode.style.height;
@@ -692,11 +737,12 @@ CStudioAuthoring.Module.requireModule(
 							// el.currentStyle applies to IE v9 and below
 
 				// Force height value into parent element to avoid scroll bug
-				el.parentNode.style.height = stylesArr.height;
+				el.parentNode.style.height = stylesArr.getPropertyValue('height');
 				this.absolutePosition(el, zIndexRef);
 				this.createPlaceholder(el);
 				// Restore height value in parent element
 				el.parentNode.style.height = heightVal;
+				this.copyComputedStylesInline(el, stylesArr, copyStyles);
 				YDom.insertAfter(el, refElement);
 				YDom.addClass(el, frontClass);
 			}, this);
@@ -715,10 +761,8 @@ CStudioAuthoring.Module.requireModule(
 			
 			YDom.setStyle(pEl, "visibility", "hidden");  // Set placeholder visibility to hidden 
 
-			// Restore element's original attributes
-			for (var attr in el.original) {
-				el.style[attr] = el.original[attr];
-			}
+			// Restore element's original inline styles
+			this.restoreInlineStyles(el, el.origInlineStyles);
 
 			// Move element after the placeholder
 			YDom.insertAfter(el, pEl);
