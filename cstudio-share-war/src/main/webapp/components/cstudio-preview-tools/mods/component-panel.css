@@ -22,14 +22,19 @@
 .cstudio-draggable-component .delete-control {
 	display: block;
 	position: absolute;
-	top: 6px;
-	right: 6px;
+	top: 0;
+	right: 5px;
 }
 
-.cstudio-draggable-component-on,
-.acn-panel-component > .cstudio-draggable-component-on.new-component {
-	outline: 3px dotted #A9A9A9;
+.cstudio-draggable-component-on {
+	outline: 2px dotted #B1D3F1;
 	border: 0 none;
+	margin: 2px 0;
+}
+.acn-panel-component > .cstudio-draggable-component-on.new-component {
+	outline: 2px dotted #B1D3F1;
+	border: 0 none;
+	margin: 8px 4px;
 }
 .acn-accordion-panel .cstudio-draggable-component-on { 
 	outline: 2px dotted #A9A9A9; 
@@ -60,15 +65,44 @@
 .cstudio-draggable-component-on.new-component { outline: 0 none; }
 
 .cstudio-draggable-component.new-component {
-	/*border: 3px solid #A9A9A9;*/
 	background-color: #FEFEFE;
-	padding: 8px;
+	padding: 4px;
 }
-.cstudio-draggable-component.new-component span {
+.acn-accordion-panel .new-component:hover > div > b {
+	font-weight: bold;
+}
+.cstudio-draggable-component.new-component > div {
+	background-color: transparent;
+	font-size: 12px;
+	font-family: arial, helvetica, sans-serif;
+	color: #444;
+	cursor: move !important;
+	padding: 0;
+}
+.cstudio-draggable-component.new-component > div > .tipText {
+	display: none;
+}
+.cstudio-draggable-component.new-component > div > b {
 	display: block;
-	background-color: #BABABA;
-	padding: 15px 10px;
+	font-size: 12px;
+	font-weight: normal;
+}
+
+/* new component style overrides */
+.cstudio-component-zone .cstudio-draggable-component.new-component > div,
+.ddproxy .cstudio-draggable-component.new-component > div {
+	background-color: #B1D3F1;
+	border-radius: 5px;
+	padding: 5px 15px 10px 15px;
+}
+.cstudio-component-zone .cstudio-draggable-component.new-component > div > .tipText,
+.ddproxy .cstudio-draggable-component.new-component > div > .tipText {
+	display: block;
+}
+.cstudio-component-zone .cstudio-draggable-component.new-component > div > b,
+.ddproxy .cstudio-draggable-component.new-component > div > b {
 	font-size: 18px;
+	font-weight: bold;
 }
 
 /* Styles for new component inside preview tools menu -override previous styles */
@@ -77,13 +111,6 @@
 	background-color: transparent;
 	padding: 4px 10px;
 	cursor: move !important;
-}
-.acn-panel-component > .cstudio-draggable-component.new-component span { 
-	display: inline;
-	background-color: transparent;
-	padding: 0;
-	font-size: 12px;
-	cursor: move !important; 
 }
 
 /* Styles for new component inside a container -override previous styles */
