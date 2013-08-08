@@ -1046,6 +1046,7 @@ treeNode.getHtml = function() {
                     var isLocked = (oCurrentTextNode.data.lockOwner != "" && oCurrentTextNode.data.lockOwner != CStudioAuthoringContext.user);
                     var isInProgress = oCurrentTextNode.data.inProgress;
                     var isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor;
+                    var isEmptyFolder = (oCurrentTextNode.data.style.match(/ folder /) && oCurrentTextNode.isLeaf) ? true : false;
  
                     //Get user permissions to get read write operations
 					var checkPermissionsCb = {
@@ -1124,7 +1125,9 @@ treeNode.getHtml = function() {
 				                        	if (isDeleteAllowed) {
 				                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 				                        	}
-				                        	p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                            if (!isEmptyFolder) {
+                                                p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                            }
 				                        	
 				                        	p_aArgs.addItems([ menuItems.separator ]);
 				                        	p_aArgs.addItems([ menuItems.cutOption ]);
@@ -1146,7 +1149,9 @@ treeNode.getHtml = function() {
 				                        		if (isDeleteAllowed) {
 					                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 					                        	}
-					                        	p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                                if (!isEmptyFolder) {
+                                                    p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                                }
 	
 					                        	p_aArgs.addItems([ menuItems.separator ]);
 					                        	p_aArgs.addItems([ menuItems.cutOption ]);
@@ -1174,7 +1179,9 @@ treeNode.getHtml = function() {
 						                        	if (isDeleteAllowed) {
 						                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 						                        	}
-						                        	p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+						                        	if (!isEmptyFolder) {
+                                                        p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                                    }
 		
 						                        	p_aArgs.addItems([ menuItems.separator ]);
 						                        	p_aArgs.addItems([ menuItems.cutOption ]);
@@ -1191,7 +1198,9 @@ treeNode.getHtml = function() {
 					                        		p_aArgs.addItems([ menuItems.newContentOption ]);
 		
 						                        	p_aArgs.addItems([ menuItems.separator ]);
-						                        	p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+						                        	if (!isEmptyFolder) {
+                                                        p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                                    }
 						                        } else {
 						                        	p_aArgs.addItems([ menuItems.viewOption ]);
 					                        		p_aArgs.addItems([ menuItems.newContentOption ]);
@@ -1206,7 +1215,9 @@ treeNode.getHtml = function() {
 					                        	if (isDeleteAllowed) {
 					                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 					                        	}
-					                        	p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+					                        	if (!isEmptyFolder) {
+                                                    p_aArgs.addItems([ menuItems.changeTemplateOption ]);
+                                                }
 					                        	
 					                        	p_aArgs.addItems([ menuItems.separator ]);
 					                        	p_aArgs.addItems([ menuItems.cutOption ]);
@@ -1233,8 +1244,8 @@ treeNode.getHtml = function() {
 			                            	this.args.addItems([ menuItems.revertOption ]);
 		                   	            }                   	                   				
 		
-			                            this.args.render();
-										menuId.removeChild(d);
+                                        menuId.removeChild(d);  // Remove the "Loading ..." message
+			                            this.args.render();     // Render the site dropdown's context menu
 			                        },
 			                        failure: function() { },
 			                        args: p_aArgs,
