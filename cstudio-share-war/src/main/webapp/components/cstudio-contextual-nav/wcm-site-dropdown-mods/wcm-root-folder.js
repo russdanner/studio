@@ -1046,7 +1046,7 @@ treeNode.getHtml = function() {
                     var isLocked = (oCurrentTextNode.data.lockOwner != "" && oCurrentTextNode.data.lockOwner != CStudioAuthoringContext.user);
                     var isInProgress = oCurrentTextNode.data.inProgress;
                     var isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor;
-                    var isEmptyFolder = (oCurrentTextNode.data.style.match(/ folder /) && oCurrentTextNode.isLeaf) ? true : false;
+                    var isFolder = (isContainer && oCurrentTextNode.data.fileName != 'index.xml') ? true : false;
  
                     //Get user permissions to get read write operations
 					var checkPermissionsCb = {
@@ -1125,7 +1125,7 @@ treeNode.getHtml = function() {
 				                        	if (isDeleteAllowed) {
 				                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 				                        	}
-                                            if (!isEmptyFolder) {
+                                            if (!isFolder) {
                                                 p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                             }
 				                        	
@@ -1149,7 +1149,7 @@ treeNode.getHtml = function() {
 				                        		if (isDeleteAllowed) {
 					                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 					                        	}
-                                                if (!isEmptyFolder) {
+                                                if (!isFolder) {
                                                     p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                                 }
 	
@@ -1179,7 +1179,7 @@ treeNode.getHtml = function() {
 						                        	if (isDeleteAllowed) {
 						                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 						                        	}
-						                        	if (!isEmptyFolder) {
+						                        	if (!isFolder) {
                                                         p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                                     }
 		
@@ -1198,7 +1198,7 @@ treeNode.getHtml = function() {
 					                        		p_aArgs.addItems([ menuItems.newContentOption ]);
 		
 						                        	p_aArgs.addItems([ menuItems.separator ]);
-						                        	if (!isEmptyFolder) {
+						                        	if (!isFolder) {
                                                         p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                                     }
 						                        } else {
@@ -1215,7 +1215,7 @@ treeNode.getHtml = function() {
 					                        	if (isDeleteAllowed) {
 					                        	    p_aArgs.addItems([ menuItems.deleteOption ]);
 					                        	}
-					                        	if (!isEmptyFolder) {
+					                        	if (!isFolder) {
                                                     p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                                 }
 					                        	
