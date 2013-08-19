@@ -171,6 +171,11 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         if (nodeRef != null) {
             if (path.endsWith("/" + DmConstants.INDEX_FILE) && persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
                 getAllMandatoryChildren(site, path, childrenPaths);
+            } else {
+                FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+                if (fileInfo.isFolder()) {
+                    getAllMandatoryChildren(site, path, childrenPaths);
+                }
             }
         }
         List<String> pathsToPublish = new ArrayList<String>();

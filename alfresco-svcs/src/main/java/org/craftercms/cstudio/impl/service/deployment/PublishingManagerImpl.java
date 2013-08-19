@@ -227,7 +227,7 @@ public class PublishingManagerImpl implements PublishingManager {
                         InputStream input = _contentRepository.getContent(site, null, LIVE_ENVIRONMENT, item.getPath());
                         try {
                             if (input == null || input.available() < 0) {
-                                if (_contentRepository.contentExists(site, item.getPath())) {
+                                if (!_contentRepository.isFolder(site, item.getPath()) && _contentRepository.contentExists(site, item.getPath())) {
                                     baps = null;
                                     stringPart = null;
                                     filePart = null;

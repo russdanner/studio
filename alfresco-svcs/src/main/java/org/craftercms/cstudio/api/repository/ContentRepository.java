@@ -149,4 +149,6 @@ public interface ContentRepository {
     String getFullPath(String site, String path);
 
     List<String> getDependentPaths(String site, String path);
+
+    boolean isFolder(String site, String path);
 }

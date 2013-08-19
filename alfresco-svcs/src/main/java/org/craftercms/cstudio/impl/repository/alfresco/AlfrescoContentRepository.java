@@ -69,6 +69,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
 
     protected static final String MSG_ERROR_RUN_AS_FAILED = "err_alfresco_run_as_failure";
     protected static final String MSG_NODE_REF_IS_NULL_FOR_PATH = "alfresco_noderef_null_for_path";
+    protected static final String MSG_CONTENT_FOR_FOLDER_REQUESTED = "alfresco_content_for_folder_requested";
 
     private static final Logger logger = LoggerFactory.getLogger(AlfrescoContentRepository.class);
 
@@ -142,9 +143,15 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
 
+        FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+
         if (nodeRef != null) {
-            ContentReader reader = persistenceManagerService.getReader(nodeRef);
-            retStream = reader.getContentInputStream();
+            if (fileInfo.isFolder()) {
+                logger.info(MSG_CONTENT_FOR_FOLDER_REQUESTED, path);
+            } else {
+                ContentReader reader = persistenceManagerService.getReader(nodeRef);
+                retStream = reader.getContentInputStream();
+            }
         }
         else {
             logger.info(MSG_NODE_REF_IS_NULL_FOR_PATH, path);
@@ -534,6 +541,20 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     public List<String> getDependentPaths(String site, String path) {
         DmDependencyService dmDependencyService = _servicesManager.getService(DmDependencyService.class);
         return dmDependencyService.getDependencyPaths(site, path);
+    }
+
+    @Override
+    public boolean isFolder(String site, String path) {
+        boolean toRet = false;
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+
+        if (nodeRef != null) {
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+            toRet = fileInfo.isFolder();
+        }
+        return toRet;
     }
 
     /** dmContentService getter */
