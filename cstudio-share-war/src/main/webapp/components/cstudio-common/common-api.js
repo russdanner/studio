@@ -6050,7 +6050,7 @@ YConnect.failureEvent.subscribe(function() {
          * Child form Manager
          */
         ChildFormManager: {
-            forms: [],
+            forms: {},
             /**
              * create a new child form configuration
              */
@@ -6081,17 +6081,34 @@ YConnect.failureEvent.subscribe(function() {
 	                    value);
                 }
             },
+
+            /*
+             * @return formId : the form id if the form is open; if not, false
+             */
+            getChildFormByName: function(windowName) {
+                var form = null;
+
+                if (this.forms) {
+                    for (var formId in this.forms) {
+                        form = this.forms[formId];
+                        if (form.windowName == windowName) {
+                            return formId;
+                        }
+                    }
+                }
+                return false;
+            },
             
             /**
              * open child form
              * @parm form configuration
              */
             openChildForm: function(childFormConfig) {
-                this.forms = this.forms || [];
+                this.forms = this.forms || {};
 
                 var formId = childFormConfig.formId;
-                this.forms[formId] = childFormConfig;
-                var newWindow;
+                var childFormId;
+
                 if (childFormConfig.windowName == null || childFormConfig.windowName == "") {
                     // formId is encoded such that any '/' or '-' are removed, since IE doesn't
                     // accept these characters in a window name
@@ -6099,8 +6116,23 @@ YConnect.failureEvent.subscribe(function() {
                 } else {
                     childFormConfig.windowName = encodePathToNumbers(childFormConfig.windowName);
                 }
-                newWindow = window.open(childFormConfig.formUrl, childFormConfig.windowName);
+                
+                childFormId = this.getChildFormByName(childFormConfig.windowName);
+
+                if (!childFormId) {
+                    childFormConfig.windowRef = window.open(childFormConfig.formUrl, childFormConfig.windowName);
+                    this.forms[formId] = childFormConfig;
+                } else {
+                    if (this.forms[childFormId].windowRef.closed) {
+                        // A child name with the same window name was created previously, but it doesn't reference 
+                        // a window any more => delete the reference to this child form
+                        delete this.forms[childFormId];
+                        childFormConfig.windowRef = window.open(childFormConfig.formUrl, childFormConfig.windowName);
+                        this.forms[formId] = childFormConfig;
+                    }
+                }
             }
+
         },
         /**
          * Preview refresh mechanism
