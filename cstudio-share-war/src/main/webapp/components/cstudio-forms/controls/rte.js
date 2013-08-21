@@ -656,26 +656,18 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 	},
 	
 	/**
-	 * return the ctyle sheets that should be applied to the RTE given the current context it is in
+	 * return the style sheets that should be applied to the RTE given the current context it is in
 	 */
 	_getCurrentStyleSheets: function(channel) {
-		var stylesheets  = "/share/themes/cstudioTheme/css/forms-rte.css, ";
+		var stylesheets  = "/share/themes/cstudioTheme/css/forms-rte.css";
 		var rteConfig = this.rteConfig;
 		
-		var first = true;
 		for(var i=0; i<rteConfig.rteStylesheets.length; i++) {
 			var item = rteConfig.rteStylesheets[i];
 			if(!item.appliesToChannel 
-			|| (!channel && item.appliesToChannel == "default")
-			|| (channel && item.appliesToChannel.indexOf(channel) != -1 )) {
-				if(first) { 
-					first = false;
-				}
-				else {
-					stylesheets+=",";	
-				}
-				
-				stylesheets+=item.url
+					|| (!channel && item.appliesToChannel == "default")
+					|| (channel && item.appliesToChannel.indexOf(channel) != -1 )) {				
+				stylesheets += ", " + item.url;
 			}
 		}
 		
