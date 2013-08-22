@@ -143,4 +143,6 @@ public interface SiteService {
     public DeploymentEndpointConfigTO getDeploymentEndpoint(String site, String endpoint);
 
     public Set<String> getAllAvailableSites();
+
+    String getLiveEnvironmentName(String site);
 }

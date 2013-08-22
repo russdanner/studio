@@ -61,6 +61,9 @@ public class DeploymentServiceImpl implements DeploymentService {
         groupedPaths.put(CopyToEnvironmentItem.Action.UPDATE, updatedPaths);
 
         // use dal to setup deploy to environment log
+        if (!_contentRepository.environmentRepoExists(site, environment)) {
+            _contentRepository.createEnvironmentRepo(site, environment);
+        }
         _deploymentDAL.setupItemsToDeploy(site, environment, groupedPaths, scheduledDate, approver, submissionComment);
     }
 

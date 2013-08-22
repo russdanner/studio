@@ -17,6 +17,7 @@
  ******************************************************************************/
 package org.craftercms.cstudio.api.service.deployment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //implementation detail
@@ -65,6 +66,22 @@ public class PublishingTargetItem {
     public int getChunkSize() { return _chunkSize; }
     public void setChunkSize(int chunkSize) { this._chunkSize = chunkSize; }
 
+    public void addEnvironment(String environment) {
+        this._environments.add(environment);
+    }
+
+    public void removeEnvironment(String environment) {
+        this._environments.remove(environment);
+    }
+
+    public List<String> getEnvironments() {
+        return _environments;
+    }
+
+    public void setEnvironments(List<String> environments) {
+        this._environments = environments;
+    }
+
     protected String _id;
     protected String _name;
     protected String _type;
@@ -80,4 +97,6 @@ public class PublishingTargetItem {
 
     /** for future use */
     protected int _chunkSize;
+
+    protected List<String> _environments = new ArrayList<String>();
 }

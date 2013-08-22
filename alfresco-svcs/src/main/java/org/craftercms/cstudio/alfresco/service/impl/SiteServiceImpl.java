@@ -210,6 +210,16 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
         return _environmentConfig.getPublishingChannelGroupConfigs(site);
     }
 
+    @Override
+    public String getLiveEnvironmentName(String site) {
+        PublishingChannelGroupConfigTO pcgcTO = _environmentConfig.getLiveEnvironmentPublishingGroup(site);
+        if (pcgcTO != null) {
+            return pcgcTO.getName();
+        } else {
+            return null;
+        }
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 

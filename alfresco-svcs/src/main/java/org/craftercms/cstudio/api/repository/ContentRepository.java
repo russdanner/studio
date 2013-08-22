@@ -19,6 +19,7 @@ package org.craftercms.cstudio.api.repository;
 
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.dom4j.Document;
@@ -114,7 +115,7 @@ public interface ContentRepository {
 
     void createNewVersion(String site, String path, String submissionComment, boolean isMajorVersion);
 
-    void copyToEnvironment(String site, String environment, String path);
+    void copyToEnvironment(String site, String environment, String path) throws DeploymentException;
 
     Set<String> getAllAvailableSites();
 
@@ -151,4 +152,10 @@ public interface ContentRepository {
     List<String> getDependentPaths(String site, String path);
 
     boolean isFolder(String site, String path);
+
+    boolean environmentRepoExists(String site, String environment);
+
+    void createEnvironmentRepo(String site, String environment);
+
+    String getLiveEnvironmentName(String site);
 }

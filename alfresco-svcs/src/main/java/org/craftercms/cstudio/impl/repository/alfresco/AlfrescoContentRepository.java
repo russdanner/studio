@@ -45,6 +45,7 @@ import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
+import org.craftercms.cstudio.api.service.deployment.DeploymentException;
 import org.craftercms.cstudio.api.service.deployment.PublishingTargetItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.repository.AbstractContentRepository;
@@ -52,7 +53,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
-import javax.transaction.UserTransaction;
+import javax.transaction.*;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -143,9 +144,8 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
 
-        FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
-
         if (nodeRef != null) {
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
             if (fileInfo.isFolder()) {
                 logger.info(MSG_CONTENT_FOR_FOLDER_REQUESTED, path);
             } else {
@@ -263,7 +263,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     @Override
-    public void copyToEnvironment(String site, String environment, String path) {
+    public void copyToEnvironment(String site, String environment, String path) throws DeploymentException {
         ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         String siteRepoRootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
@@ -272,9 +272,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         envRepoPath = envRepoPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, environment);
 
         NodeRef envRepoRoot = persistenceManagerService.getNodeRef(envRepoPath);
-        if (envRepoRoot == null) {
-            envRepoRoot = createEnvRepository(site, environment);
-        }
+
         NodeRef envNode = persistenceManagerService.getNodeRef(envRepoRoot, path);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(siteRepoRootPath, path);
         if (nodeRef != null) {
@@ -292,11 +290,11 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     }
 
     protected NodeRef createEnvRepository(String site, String envRepoName) {
-        ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
-        String siteRepoPath = servicesConfig.getRepositoryRootPath(site);
-        NodeRef siteRepoRoot = persistenceManagerService.getNodeRef(siteRepoPath);
-        NodeRef result = persistenceManagerService.createNewFolder(siteRepoRoot, envRepoName);
+        String siteRoot = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        siteRoot = siteRoot.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, "");
+        NodeRef siteRootNode = persistenceManagerService.getNodeRef(siteRoot);
+        NodeRef result = persistenceManagerService.createNewFolder(siteRootNode, envRepoName);
         return result;
     }
 
@@ -339,6 +337,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         SiteService siteService = _servicesManager.getService(SiteService.class);
         Map<String, PublishingChannelGroupConfigTO> groupConfigTOs = siteService.getPublishingChannelGroupConfigs(site);
         Set<PublishingTargetItem> targets = new HashSet<PublishingTargetItem>();
+        Map<String, PublishingTargetItem> targetMap = new HashMap<String, PublishingTargetItem>();
         if (groupConfigTOs != null && groupConfigTOs.size() > 0) {
             for (PublishingChannelGroupConfigTO groupConfigTO : groupConfigTOs.values()) {
                 List<PublishingChannelConfigTO> channelConfigTOs = groupConfigTO.getChannels();
@@ -346,19 +345,25 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
                     for (PublishingChannelConfigTO channelConfigTO : channelConfigTOs) {
                         DeploymentEndpointConfigTO endpoint = siteService.getDeploymentEndpoint(site, channelConfigTO.getName());
                         if (endpoint != null) {
-                            PublishingTargetItem targetItem = new PublishingTargetItem();
-                            targetItem.setId(endpoint.getName());
-                            targetItem.setName(endpoint.getName());
-                            targetItem.setTarget(endpoint.getTarget());
-                            targetItem.setType(endpoint.getType());
-                            targetItem.setServerUrl(endpoint.getServerUrl());
-                            targetItem.setStatusUrl(endpoint.getStatusUrl());
-                            targetItem.setVersionUrl(endpoint.getVersionUrl());
-                            targetItem.setPassword(endpoint.getPassword());
-                            targetItem.setExcludePattern(endpoint.getExcludePattern());
-                            targetItem.setIncludePattern(endpoint.getIncludePattern());
-                            targetItem.setBucketSize(endpoint.getBucketSize());
-                            targets.add(targetItem);
+                            PublishingTargetItem targetItem = targetMap.get(endpoint.getName());
+                            if (targetItem == null) {
+                                targetItem = new PublishingTargetItem();
+                                targetItem.setId(endpoint.getName());
+                                targetItem.setName(endpoint.getName());
+                                targetItem.setTarget(endpoint.getTarget());
+                                targetItem.setType(endpoint.getType());
+                                targetItem.setServerUrl(endpoint.getServerUrl());
+                                targetItem.setStatusUrl(endpoint.getStatusUrl());
+                                targetItem.setVersionUrl(endpoint.getVersionUrl());
+                                targetItem.setPassword(endpoint.getPassword());
+                                targetItem.setExcludePattern(endpoint.getExcludePattern());
+                                targetItem.setIncludePattern(endpoint.getIncludePattern());
+                                targetItem.setBucketSize(endpoint.getBucketSize());
+                                targets.add(targetItem);
+                                targetMap.put(endpoint.getName(), targetItem);
+                            }
+                            targetItem.addEnvironment(groupConfigTO.getName());
+
                         }
                     }
                 }
@@ -555,6 +560,27 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
             toRet = fileInfo.isFolder();
         }
         return toRet;
+    }
+
+    @Override
+    public boolean environmentRepoExists(String site, String environment) {
+        PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
+
+        String envRepoPath = SITE_ENVIRONMENT_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        envRepoPath = envRepoPath.replaceAll(ENVIRONMENT_REPLACEMENT_PATTERN, environment);
+
+        return persistenceManagerService.exists(envRepoPath);
+    }
+
+    @Override
+    public void createEnvironmentRepo(String site, String environment) {
+        createEnvRepository(site, environment);
+    }
+
+    @Override
+    public String getLiveEnvironmentName(String site) {
+        SiteService siteService = getServicesManager().getService(SiteService.class);
+        return siteService.getLiveEnvironmentName(site);
     }
 
     /** dmContentService getter */

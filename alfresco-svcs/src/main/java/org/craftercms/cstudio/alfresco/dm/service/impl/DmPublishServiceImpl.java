@@ -73,7 +73,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         String approver = AuthenticationUtil.getFullyAuthenticatedUser();
 
         try {
-            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, mcpContext.getSubmissionComment());
+            deploymentService.deploy(site, mcpContext.getPublishingChannelGroup(), pathsToPublish, launchDate, approver, mcpContext.getSubmissionComment());
         } catch (DeploymentException ex) {
             logger.error("Unable to publish files due a error ", ex);
         }

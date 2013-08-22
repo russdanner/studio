@@ -31,6 +31,14 @@ public class PublishingChannelGroupConfigTO {
         this.name = name;
     }
 
+    private boolean liveEnvironment = false;
+    public boolean isLiveEnvironment() {
+        return liveEnvironment;
+    }
+    public void setLiveEnvironment(boolean liveEnvironment) {
+        this.liveEnvironment = liveEnvironment;
+    }
+
     private List<PublishingChannelConfigTO> channels = new FastList<PublishingChannelConfigTO>();
     public List<PublishingChannelConfigTO> getChannels() {
         return channels;

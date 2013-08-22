@@ -192,11 +192,12 @@ public class DeploymentDALImpl implements DeploymentDAL {
     }
 
     @Override
-    public List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version) {
+    public List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version, List<String> environments) {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
             params.put("version", version);
+            params.put("environments", environments);
             List<PublishingSyncItem> queue = (List<PublishingSyncItem>) _sqlMapClient.queryForList(STATEMENT_GET_ITEMS_READY_FOR_TARGET_SYNC, params);
             if (queue != null) {
                 return queue;
@@ -293,7 +294,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
             PublishingSyncItem item = new PublishingSyncItem();
             item.setId(Integer.toString(++PSD_AUTOINCREMENT));
             item.setSite(site);
-            item.setEnvironment(environment);
+            item.setEnvironment(itemToDeploy.getEnvironment());
             item.setPath(itemToDeploy.getPath());
             item.setUser(itemToDeploy.getUser());
             item.setTimestampVersion(currentTimestamp);

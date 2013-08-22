@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
@@ -53,6 +54,7 @@ public class PublishingManagerImpl implements PublishingManager {
 
     private final static String FILES_SEPARATOR = ",";
     private final static String LIVE_ENVIRONMENT = "live";
+    private final static String PRODUCTION_ENVIRONMENT = "Production";
     private final static String WORK_AREA_ENVIRONMENT = "work-area";
 
     @Override
@@ -156,8 +158,8 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public List<PublishingSyncItem> getItemsToSync(String site, long targetVersion) {
-        return _deploymentDAL.getItemsReadyForTargetSync(site, targetVersion);
+    public List<PublishingSyncItem> getItemsToSync(String site, long targetVersion, List<String> environments) {
+        return _deploymentDAL.getItemsReadyForTargetSync(site, targetVersion, environments);
     }
 
     @Override
@@ -224,7 +226,7 @@ public class PublishingManagerImpl implements PublishingManager {
                         }
 
                         LOGGER.debug("Get content for \"{0}\" , site \"{1}\"", item.getPath(), item.getSite());
-                        InputStream input = _contentRepository.getContent(site, null, LIVE_ENVIRONMENT, item.getPath());
+                        InputStream input = _contentRepository.getContent(site, null, item.getEnvironment(), item.getPath());
                         try {
                             if (input == null || input.available() < 0) {
                                 if (!_contentRepository.isFolder(site, item.getPath()) && _contentRepository.contentExists(site, item.getPath())) {
@@ -439,7 +441,7 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public void processItem(CopyToEnvironmentItem item) {
+    public void processItem(CopyToEnvironmentItem item) throws DeploymentException {
         if (item.getAction() == CopyToEnvironmentItem.Action.DELETE) {
             if (item.getOldPath() != null && item.getOldPath().length() > 0) {
                 _contentRepository.deleteContent(item.getSite(), item.getEnvironment(), item.getOldPath());
@@ -449,7 +451,17 @@ public class PublishingManagerImpl implements PublishingManager {
             _contentRepository.deleteContent(item);
         } else {
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), true);
-            if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
+            String liveEnvironment = _contentRepository.getLiveEnvironmentName(item.getSite());
+            if (StringUtils.isNotEmpty(liveEnvironment)) {
+                if (liveEnvironment.equalsIgnoreCase(item.getEnvironment())) {
+                    if (!_importModeEnabled) {
+                        _contentRepository.createNewVersion(item.getSite(), item.getPath(), item.getSubmissionComment(), true);
+                    } else {
+                        LOGGER.debug("Import mode is ON. Create new version is skipped for [{0}] site \"{1}\"", item.getPath(), item.getSite());
+                    }
+                    _contentRepository.stateTransition(item.getSite(), item.getPath(), TransitionEvent.DEPLOYMENT);
+                }
+            } else if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment()) || PRODUCTION_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
                 if (!_importModeEnabled) {
                     _contentRepository.createNewVersion(item.getSite(), item.getPath(), item.getSubmissionComment(), true);
                 } else {
@@ -499,7 +511,7 @@ public class PublishingManagerImpl implements PublishingManager {
     }
 
     @Override
-    public List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths) {
+    public List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths) throws DeploymentException {
         List<CopyToEnvironmentItem> mandatoryDependencies = new ArrayList<CopyToEnvironmentItem>();
         String site = item.getSite();
         String path = item.getPath();
