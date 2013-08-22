@@ -669,7 +669,6 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                             nodeRefs.add(nodeRef.getId());
                         }
                     }
-                    persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
                     dmWorkflowService.doDelete(site, sub, submittedItems, approver);
                     if (!deploymentEngine) {
                         persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.DELETE, ObjectStateService.State.EXISTING_DELETED);
