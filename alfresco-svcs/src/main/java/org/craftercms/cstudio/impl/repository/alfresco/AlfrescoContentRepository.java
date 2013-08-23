@@ -143,9 +143,8 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(path);
 
-        FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
-
         if (nodeRef != null) {
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
             if (fileInfo.isFolder()) {
                 logger.info(MSG_CONTENT_FOR_FOLDER_REQUESTED, path);
             } else {
