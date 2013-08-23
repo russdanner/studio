@@ -669,19 +669,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                             nodeRefs.add(nodeRef.getId());
                         }
                     }
-                    persistenceManagerService.setSystemProcessingBulk(nodeRefs, true);
                     dmWorkflowService.doDelete(site, sub, submittedItems, approver);
-                    if (!deploymentEngine) {
-                        persistenceManagerService.transitionBulk(nodeRefs, ObjectStateService.TransitionEvent.DELETE, ObjectStateService.State.EXISTING_DELETED);
-                        persistenceManagerService.setSystemProcessingBulk(nodeRefs, false);
-                        for (String fullPath : deletePaths) {
-                            NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
-                            if (nodeRef == null) {
-                                DmPathTO dmPathTO = new DmPathTO(fullPath);
-                                persistenceManagerService.deleteObjectStateForPath(dmPathTO.getSiteName(), dmPathTO.getRelativePath());
-                            }
-                        }
-                    }
             }
             result.setSuccess(true);
             NotificationService notificationService = getServicesManager().getService(NotificationService.class);

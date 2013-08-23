@@ -1969,7 +1969,10 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         DmPathTO path = new DmPathTO(persistenceManagerService.getNodePath(contentNode));
         String contentName = (String) persistenceManagerService.getProperty(contentNode, ContentModel.PROP_NAME);
-        removeContentFromSandbox(site, path, contentName, generateActivity, approver);
+        if (generateActivity) {
+            generateDeleteActivity(site, path, approver);
+        }
+        //removeContentFromSandbox(site, path, contentName, generateActivity, approver);
     }
 
     /**
