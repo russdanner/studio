@@ -52,7 +52,7 @@ public class DeployContentToEnvironmentStore implements Job {
                     String adminUser = _authenticationService.getAdministratorUser();
                     _authenticationService.runAs(adminUser, this, processJobMethod);
                 }
-                catch(Exception err) {
+                catch(Throwable err) {
                     logger.error("unable to execute job", err);
                 } finally {
                     singleWorkerLock.unlock();
