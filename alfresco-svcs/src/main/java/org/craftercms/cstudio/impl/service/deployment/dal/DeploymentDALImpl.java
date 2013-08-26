@@ -123,6 +123,7 @@ public class DeploymentDALImpl implements DeploymentDAL {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("site", site);
             params.put("state", CopyToEnvironmentItem.State.READY_FOR_LIVE);
+            params.put("environment", environment);
             params.put("now", new Date());
 
             retQueue = (List<CopyToEnvironmentItem>) _sqlMapClient.queryForList(STATEMENT_GET_ITEMS_READY_FOR_DEPLOYMENT, params);

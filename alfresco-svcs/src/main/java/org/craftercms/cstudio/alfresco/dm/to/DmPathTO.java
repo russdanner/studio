@@ -73,7 +73,7 @@ public class DmPathTO implements Serializable {
      * @param dmPath Full Path of the Content
      */
     public DmPathTO(String dmPath) {
-        final Matcher m = DmConstants.DM_REPO_PATH_PATTERN.matcher(dmPath);
+        final Matcher m = DmConstants.DM_MULTI_REPO_PATH_PATTERN.matcher(dmPath);
         if (m.matches()) {
             _wemProjectsRoot = m.group(1).length() != 0 ? m.group(1) : DmConstants.DM_WEM_PROJECTS_FOLDER;
             _wemProjectName = m.group(2).length() != 0 ? m.group(2) : "";

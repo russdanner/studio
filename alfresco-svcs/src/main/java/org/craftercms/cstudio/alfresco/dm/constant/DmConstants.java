@@ -164,7 +164,19 @@ public class DmConstants {
             .append("/")
             .append("(").append(DM_WORK_AREA_REPO_FOLDER).append("|").append(DM_LIVE_REPO_FOLDER).append("|").append(DM_DRAFT_REPO_FOLDER).append(")")
             .append("(/.*)").toString();
+    public static final String DM_MULTI_REPO_PATH_PATTERN_STRING =
+            (new StringBuilder()).append("/")
+                    .append("(").append(DM_WEM_PROJECTS_FOLDER).append(")")
+                    .append("/")
+                    .append("(").append("[-\\w]*").append(")")
+                    .append("/")
+                    .append("(").append("[-\\w]*").append(")")
+                    .append("/")
+                    .append("(").append("[-\\w]*").append(")")
+                    .append("(/.*)").toString();
     public static final Pattern DM_REPO_PATH_PATTERN = Pattern.compile(DM_REPO_PATH_PATTERN_STRING);
+
+    public static final Pattern DM_MULTI_REPO_PATH_PATTERN = Pattern.compile(DM_MULTI_REPO_PATH_PATTERN_STRING);
 
     public static final String JSON_KEY_ORDER_DEFAULT = "default";
 

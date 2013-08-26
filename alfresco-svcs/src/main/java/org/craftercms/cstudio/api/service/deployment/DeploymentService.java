@@ -29,7 +29,7 @@ public interface DeploymentService {
     void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentException;
 
     // document
-    void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException;
+    void delete(String site, List<String> paths, String approver, Date scheduledDate) throws DeploymentException;
 
     List<DeploymentSyncHistoryItem> getDeploymentHistory(String site, Date fromDate, Date toDate, String filterType, int numberOfItems);
 

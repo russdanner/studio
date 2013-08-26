@@ -215,7 +215,7 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
                     pcConfigTO.setName(channel.getText());
                     pcgConfigTo.getChannels().add(pcConfigTO);
                 }
-                node = element.selectSingleNode("liveEnvironment");
+                node = element.selectSingleNode("live-environment");
                 if (node != null) {
                     String isLiveEnvStr = node.getText();
                     boolean isLiveEnvVal = (StringUtils.isNotEmpty(isLiveEnvStr)) && Boolean.getBoolean(isLiveEnvStr);

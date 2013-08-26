@@ -77,8 +77,29 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
                 "<hr/>" +
                 "<div id='bulk-golive'><p><h2>Bulk Go Live</h2></p><p>" +
                 "Path to Publish: <input type'text' id='bulk-golive-path'/><br/>" +
+                "Publishing Environment: <select id='go-pub-channel'></select></br>" +
                 "<input type='button' value='Go Live' onclick='CStudioAdminConsole.Tool.BulkOperations.golive()' /></p>" +
                 "<p id='bulk-golive-message'></p></div>";
+
+
+        var channelsSelect = document.getElementById("go-pub-channel");
+        var publishingOptionsCB = {
+            success:function(o) {
+                var resultChannels = o.responseText;
+                var channels = eval('(' + resultChannels + ')');
+                var publishingOptions = "";
+                var channel_index = 0;
+                for (idx in channels.availablePublishChannels) {
+                    publishingOptions += "<option value='channel-'" + idx +">" + channels.availablePublishChannels[idx].name + "</option>"
+                }
+                channelsSelect.innerHTML = publishingOptions;
+            },
+            failure: function() {
+            }
+        }
+
+        var channelsServiceUrl = "/proxy/alfresco/cstudio/publish/get-available-publishing-channels?site=" + CStudioAuthoringContext.site;
+        YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(channelsServiceUrl), publishingOptionsCB);
 
     }
 });

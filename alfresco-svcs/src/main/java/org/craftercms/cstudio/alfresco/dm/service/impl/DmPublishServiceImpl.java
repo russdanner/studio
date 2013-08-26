@@ -90,7 +90,8 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             scheduleDate = new Date();
         }
         try {
-            deploymentService.delete(site, "live", paths, approver, scheduleDate);
+
+            deploymentService.delete(site, paths, approver, scheduleDate);
         } catch (DeploymentException ex) {
             logger.error("Unable to delete files due a error ",ex);
         }
@@ -159,7 +160,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
     }
 
     @Override
-    public void bulkGoLive(String site, String path) {
+    public void bulkGoLive(String site, String environment, String path) {
         if (logger.isDebugEnabled()) {
             logger.debug("Starting Bulk Go Live for path " + path + " site " + site);
         }
@@ -190,7 +191,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             logger.debug("Deploying " + pathsToPublish.size() + " items");
         }
         try {
-            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, comment);
+            deploymentService.deploy(site, environment, pathsToPublish, launchDate, approver, comment);
         } catch (DeploymentException e) {
             logger.error("Error while running bulk Go Live operation", e);
         } finally {

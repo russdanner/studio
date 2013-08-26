@@ -68,15 +68,17 @@ public class DeploymentServiceImpl implements DeploymentService {
     }
 
     @Override
-    public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
+    public void delete(String site, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
         if (scheduledDate != null && scheduledDate.after(new Date())) {
             _contentRepository.stateTransition(site, paths, TransitionEvent.DELETE);
             _contentRepository.setSystemProcessing(site, paths, false);
         } else {
             _contentRepository.setSystemProcessing(site, paths, true);
         }
-
-        _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+        Set<String> environments = _contentRepository.getAllPublishingEnvironments(site);
+        for (String environment : environments) {
+            _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+        }
     }
 
     @Override

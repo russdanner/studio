@@ -1,1 +1,1 @@
-Started bulk rename process
+Started bulk go live process

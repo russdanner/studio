@@ -158,4 +158,6 @@ public interface ContentRepository {
     void createEnvironmentRepo(String site, String environment);
 
     String getLiveEnvironmentName(String site);
+
+    Set<String> getAllPublishingEnvironments(String site);
 }

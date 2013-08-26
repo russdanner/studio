@@ -28,6 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEngineConstants;
@@ -581,6 +582,21 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
     public String getLiveEnvironmentName(String site) {
         SiteService siteService = getServicesManager().getService(SiteService.class);
         return siteService.getLiveEnvironmentName(site);
+    }
+
+    @Override
+    public Set<String> getAllPublishingEnvironments(String site) {
+        SiteService siteService = _servicesManager.getService(SiteService.class);
+        Map<String, PublishingChannelGroupConfigTO> groupConfigTOs = siteService.getPublishingChannelGroupConfigs(site);
+        Set<String> environments = new HashSet<String>();
+        if (groupConfigTOs != null && groupConfigTOs.size() > 0) {
+            for (PublishingChannelGroupConfigTO groupConfigTO : groupConfigTOs.values()) {
+                if (StringUtils.isNotEmpty(groupConfigTO.getName())) {
+                    environments.add(groupConfigTO.getName());
+                }
+            }
+        }
+        return environments;
     }
 
     /** dmContentService getter */
