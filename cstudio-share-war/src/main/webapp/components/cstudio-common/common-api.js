@@ -4481,7 +4481,7 @@ YConnect.failureEvent.subscribe(function() {
 			 * get query variable
 			 */
 			getQueryVariable: function(query, variable) {
-				name = variable.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+				variable = variable.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
 				var regexS = "[\\?&]" + variable + "=([^&#]*)";
 				var regex = new RegExp(regexS);
 				var results = regex.exec(decodeURIComponent(query));
@@ -6118,16 +6118,15 @@ YConnect.failureEvent.subscribe(function() {
                 }
                 
                 childFormId = this.getChildFormByName(childFormConfig.windowName);
+                childFormConfig.windowRef = window.open(childFormConfig.formUrl, childFormConfig.windowName);
 
                 if (!childFormId) {
-                    childFormConfig.windowRef = window.open(childFormConfig.formUrl, childFormConfig.windowName);
                     this.forms[formId] = childFormConfig;
                 } else {
                     if (this.forms[childFormId].windowRef.closed) {
                         // A child name with the same window name was created previously, but it doesn't reference 
                         // a window any more => delete the reference to this child form
                         delete this.forms[childFormId];
-                        childFormConfig.windowRef = window.open(childFormConfig.formUrl, childFormConfig.windowName);
                         this.forms[formId] = childFormConfig;
                     }
                 }
