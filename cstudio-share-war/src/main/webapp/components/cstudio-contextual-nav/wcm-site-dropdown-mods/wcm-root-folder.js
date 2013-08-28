@@ -235,10 +235,6 @@
                     Self.onTreeNodeClick(args.node);
                 });
 
-                tree.subscribe("clickEvent", function(node) {
-                    return false;
-                });
-
                 tree.subscribe("dblClickEvent", function(node) {
                     return false;
                 });
@@ -472,6 +468,15 @@ treeNode.getHtml = function() {
                     treeNode.treeNodeTO = treeNodeTO;
                     treeNode.renderHidden = true;
                     treeNode.nowrap = true;
+
+                    if (!treeNodeTO.style.match(/\bfolder\b/)) {
+                        // Change the default behavior of the text label (i.e. expand/collapse) by adding an href property
+                        treeNodeTO.href = "#";
+                        YEvent.on(treeNodeTO, "click", function(e) {
+                            // Prevent the default behavior of clicking href="#"
+                            YEvent.preventDefault(e);
+                        })
+                    }
 
                     if (!treeNodeTO.isContainer) {
                         treeNode.isLeaf = true;

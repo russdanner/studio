@@ -352,7 +352,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
      * method fired when tree item is clicked
      */
     onTreeNodeClick: function(node)	{
-        if (node.data.isLevelDescriptor == false) {
+        if (!node.data.isLevelDescriptor && !node.data.isContainer) {
             CStudioAuthoring.Operations.openPreview(node.data, "", false, false);
         }
 
