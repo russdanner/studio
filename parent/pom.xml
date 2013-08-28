@@ -18,7 +18,16 @@
 
     <repositories>
 
-
+        <repository>
+            <id>rivetlogic</id>
+            <name>Rivet Logic</name>
+            <url>http://maven.rivetlogic.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+        </repository>
 
         <repository>
             <id>alfresco</id>
