@@ -928,13 +928,25 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     @Override
     public void transition(NodeRef nodeRef, ObjectStateService.TransitionEvent event) {
         String fullPath = getNodePath(nodeRef);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Executing state transition for path: " + fullPath + " and event: " + event.toString());
+        }
         transition(fullPath, nodeRef, event);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished state transition for path: " + fullPath + " and event: " + event.toString());
+        }
     }
 
     @Override
     public void transition(String fullPath, ObjectStateService.TransitionEvent event) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Executing state transition for path: " + fullPath + " and event: " + event.toString());
+        }
         NodeRef nodeRef = getNodeRef(fullPath);
         transition(fullPath, nodeRef, event);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished state transition for path: " + fullPath + " and event: " + event.toString());
+        }
     }
 
     protected void transition(String fullPath, NodeRef nodeRef, ObjectStateService.TransitionEvent event) {
@@ -959,6 +971,9 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
 
     @Override
     public void setSystemProcessing(String fullPath, final boolean isSystemProcessing) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Set system processing for path: " + fullPath);
+        }
         ObjectStateService objectStateService = getService(ObjectStateService.class);
         NodeRef nodeRef = getNodeRef(fullPath);
         if (nodeRef != null) {
@@ -966,12 +981,21 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
         } else {
             LOGGER.error(String.format("Error setting system processing flag. Content at path %s does not exist", fullPath));
         }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished set system processing for path: " + fullPath);
+        }
     }
 
     @Override
     public void setSystemProcessing(NodeRef nodeRef, final boolean isSystemProcessing) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Set system processing for path: " + getNodePath(nodeRef));
+        }
         ObjectStateService objectStateService = getService(ObjectStateService.class);
         objectStateService.setSystemProcessing(nodeRef, isSystemProcessing);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Finished set system processing for path: " + getNodePath(nodeRef));
+        }
     }
 
     @Override

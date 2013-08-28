@@ -19,11 +19,15 @@ package org.craftercms.cstudio.alfresco.service.impl;
 import javolution.util.FastMap;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
 import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class GeneralLockServiceImpl extends AbstractRegistrableService implements GeneralLockService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GeneralLockServiceImpl.class);
 
     protected Map<String, ReentrantLock> nodeLocks = new FastMap<String, ReentrantLock>();
 
@@ -35,7 +39,9 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
     @Override
     public void lock(String objectId) {
         ReentrantLock nodeLock;
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Obtaining lock for id " + objectId);
+        }
         synchronized (this) {
             if (nodeLocks.containsKey(objectId)) {
                 nodeLock = nodeLocks.get(objectId);
@@ -45,12 +51,17 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
             }
         }
         nodeLock.lock();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Locked all threads for id " + objectId);
+        }
     }
 
     @Override
     public boolean tryLock(String objectId) {
         ReentrantLock nodeLock;
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("Trying to get lock for id " + objectId);
+        }
         synchronized (this) {
             if (nodeLocks.containsKey(objectId)) {
                 nodeLock = nodeLocks.get(objectId);
@@ -59,17 +70,27 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
                 nodeLocks.put(objectId, nodeLock);
             }
         }
-        return nodeLock.tryLock();
+        boolean toRet = nodeLock.tryLock();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Result for tryLock on id " + objectId + " : " + toRet);
+        }
+        return toRet;
     }
 
     @Override
     public void unlock(String objectId) {
         ReentrantLock nodeLock = null;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Unlocking id " + objectId);
+        }
         synchronized (this) {
             nodeLock = nodeLocks.get(objectId);
         }
         if (nodeLock != null) {
             nodeLock.unlock();
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Finished unlocking id " + objectId);
         }
     }
 }
