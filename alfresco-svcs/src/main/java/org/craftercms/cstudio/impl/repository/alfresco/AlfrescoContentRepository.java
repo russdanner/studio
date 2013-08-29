@@ -282,11 +282,40 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
             } else {
                 persistenceManagerService.copy(nodeRef, envNode);
             }
+            Serializable sendEmailValue = persistenceManagerService.getProperty(nodeRef, CStudioContentModel.PROP_WEB_WF_SEND_EMAIL);
+            boolean sendEmail = (sendEmailValue != null) && (Boolean) sendEmailValue;
+
+            if (sendEmail) {
+                Serializable submittedByValue = persistenceManagerService.getProperty(nodeRef, CStudioContentModel.PROP_WEB_WF_SUBMITTED_BY);
+                String submittedBy = "";
+                if (submittedByValue != null) {
+                    submittedBy = (String) submittedByValue;
+                } else {
+                    logger.error("did not send approval notification as submitted by property is null");
+                    return;
+                }
+                //DmPathTO path = new DmPathTO(nodePath);
+                String approver = (String) persistenceManagerService.getProperty(nodeRef, CStudioContentModel.PROP_WEB_APPROVED_BY);
+                NotificationService notificationService = getServicesManager().getService(NotificationService.class);
+                notificationService.sendApprovalNotification(site, submittedBy, path, approver);
+                    /*
+                    * Remove this sendmail property as we are done sending email
+                    */
+                persistenceManagerService.removeProperty(nodeRef, CStudioContentModel.PROP_WEB_WF_SEND_EMAIL);
+
+            }
+
             Map<QName, Serializable> nodeProps = persistenceManagerService.getProperties(envNode);
             for (QName propName : DmConstants.SUBMITTED_PROPERTIES) {
                 nodeProps.remove(propName);
             }
             persistenceManagerService.setProperties(envNode, nodeProps);
+
+            nodeProps = persistenceManagerService.getProperties(nodeRef);
+            for (QName propName : DmConstants.SUBMITTED_PROPERTIES) {
+                nodeProps.remove(propName);
+            }
+            persistenceManagerService.setProperties(nodeRef, nodeProps);
         }
     }
 
