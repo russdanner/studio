@@ -6,7 +6,7 @@ CREATE  TABLE cstudio_deploymentsynchistory (
   path VARCHAR(1000) NOT NULL ,
   target VARCHAR(50) NOT NULL ,
   username VARCHAR(25) NOT NULL ,
-  contenttypeclass VARCHAR(25) NOT NULL
+  contenttypeclass VARCHAR(25)
 );
 
 CREATE SEQUENCE CSTUDIO_DEPSYNCHISTORY_SEQ

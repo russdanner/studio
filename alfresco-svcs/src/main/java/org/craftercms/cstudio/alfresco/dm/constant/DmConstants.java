@@ -44,6 +44,7 @@ public class DmConstants {
 	public final static String CONTENT_TYPE_COMPONENT= "components";
 	public final static String CONTENT_TYPE_DOCUMENT= "documents";
     public final static String CONTENT_TYPE_RENDERING_TEMPLATE= "renderingTemplate";
+    public final static String CONTENT_TYPE_OTHER= "other";
     public final static String CONTENT_TYPE_ALL= "all";
 
     public final static String CONTENT_TYPE_CONFIG_FORM_PATH_SIMPLE = "simple";
