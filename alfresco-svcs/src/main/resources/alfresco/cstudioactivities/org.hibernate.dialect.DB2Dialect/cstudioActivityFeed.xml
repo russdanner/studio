@@ -32,7 +32,7 @@
     </resultMap>
 
     <select id="checkTableExists" resultClass="java.util.HashMap">
-        select * from "syscat"."tables" where "tabname" = 'cstudio_activity' AND "ownertype" = 'U'
+        select * from syscat.tables where tabname = 'cstudio_activity' AND ownertype = 'U'
     </select>
 
     <insert id="createTable">
@@ -48,7 +48,7 @@ CREATE TABLE "cstudio_activity"  (
 	"content_type"  	VARCHAR(255) NOT NULL,
 	"post_user_id"  	VARCHAR(255) NOT NULL,
 	CONSTRAINT "cstudio_activity_pk" PRIMARY KEY("id")
-);
+)
 </insert>
 
     <insert id="addUserIndex">
@@ -56,35 +56,36 @@ CREATE TABLE "cstudio_activity"  (
     </insert>
 
     <select id="checkUserIndex" resultMap="indexResult">
-        select * FROM "syscat"."indexes" WHERE "indname" = 'cstudio_activity_user_idx' AND "ownertype" = 'U' AND "tabname" = 'cstudio_activity'
+        select * FROM syscat.indexes WHERE indname = 'cstudio_activity_user_idx' AND ownertype = 'U' AND tabname = 'cstudio_activity'
     </select>
 
     <insert id="addSiteIndex">
-        CREATE INDEX "cstudio_activity_site_idx" ON "cstudio_activity" ("site_network");
+        CREATE INDEX "cstudio_activity_site_idx" ON "cstudio_activity" ("site_network")
     </insert>
 
     <select id="checkSiteIndex" resultMap="indexResult">
-        select * FROM "syscat"."indexes" WHERE "indname" = 'cstudio_activity_site_idx' AND "ownertype" = 'U' AND "tabname" = 'cstudio_activity'
+        select * FROM syscat.indexes WHERE indname = 'cstudio_activity_site_idx' AND ownertype = 'U' AND tabname = 'cstudio_activity'
     </select>
 
     <insert id="addContentIndex">
-        CREATE INDEX "cstudio_activity_content_idx" ON "cstudio_activity" ("content_id");
+        CREATE INDEX "cstudio_activity_content_idx" ON "cstudio_activity" ("content_id")
     </insert>
 
     <select id="checkContentIndex" resultMap="indexResult">
-        select 'tabname' as "tabname", 'indname' as "indname", 'colnames' as "colnames" from "sysibm"."sysdummy1"
+        select 'tabname' as tabname, 'indname' as indname, 'colnames' as colnames from sysibm.sysdummy1
     </select>
 
     <select id="select" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
       <![CDATA[
 
       select *
-      from "cstudio_activity"
+      ( select "ca".*, ROW_NUMBER() over(order by "modified_date" desc) as "RN"
+      from "cstudio_activity" as "ca"
       where "post_user_id" = #userId#
       and "site_network" = #siteNetwork#
       and "summary_format" = #summaryFormat#
-      order by "modified_date" desc limit #startPos#,#feedSize#
-
+      order by "modified_date" desc)
+      where "RN" between #startPos# and #startPos# + #feedSize#
         ]]>
    </select>
 
@@ -105,7 +106,8 @@ CREATE TABLE "cstudio_activity"  (
         </dynamic>
       <![CDATA[
       and "os"."state" not in ('EXISTING_UNEDITED_LOCKED', 'EXISTING_UNEDITED_UNLOCKED', 'NEW_DELETED')
-      order by "act"."modified_date" desc limit #startPos#,#feedSize#
+      and ROWNUM between #startPos# and #startPos# + #feedSize#
+      order by "act"."modified_date" desc
 
         ]]>
    </select>
@@ -127,7 +129,8 @@ CREATE TABLE "cstudio_activity"  (
             </iterate>
         </dynamic>
         <![CDATA[
-      order by "act"."modified_date" desc limit #startPos#,#feedSize#
+      and ROWNUM between #startPos# and #startPos# + #feedSize#
+      order by "act"."modified_date" desc
 
         ]]>
    </select>
@@ -141,7 +144,8 @@ CREATE TABLE "cstudio_activity"  (
       and "site_network" = #siteNetwork#
       and "summary_format" = #summaryFormat#
 	  and "content_type" = #contentType#
-      order by "modified_date" desc limit #startPos#,#feedSize#
+	  and ROWNUM between #startPos# and #startPos# + #feedSize#
+      order by "modified_date" desc
 
         ]]>
    </select>
@@ -216,7 +220,7 @@ CREATE TABLE "cstudio_activity"  (
 
     <delete id="deleteActivitiesForSite" parameterClass="String">
         DELETE FROM "cstudio_activity"
-        WHERE "site_network" = #site#;
+        WHERE "site_network" = #site#
     </delete>
 
     <select id="getDeletedActivity" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">

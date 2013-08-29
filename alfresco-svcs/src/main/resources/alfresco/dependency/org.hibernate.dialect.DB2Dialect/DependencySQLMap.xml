@@ -35,7 +35,7 @@
     </resultMap>
 
     <select id="checkTableExists" resultClass="java.util.HashMap">
-        select * from "syscat"."tables" where "tabname" = 'cstudio_DEPENDENCY' AND "ownertype" = 'U'
+        select * from syscat.tables where tabname = 'cstudio_DEPENDENCY' AND ownertype = 'U'
     </select>
 
     <insert id="createTable">
@@ -46,7 +46,7 @@
         "target_path" CLOB NOT NULL,
         "type" varchar(15) NOT NULL,
         CONSTRAINT "cstudio_dependency_pk" PRIMARY KEY("id")
-        );
+        )
     </insert>
 
     <insert id="addSiteIndex">
@@ -54,7 +54,7 @@
     </insert>
 
     <select id="checkSiteIndex" resultMap="indexResult" cacheModel="dependencyCache">
-        select * FROM "syscat"."indexes" WHERE "indname" = 'cstudio_dependency_site_idx' AND "ownertype" = 'U' AND "tabname" = 'cstudio_DEPENDENCY'
+        select * FROM syscat.indexes WHERE indname = 'cstudio_dependency_site_idx' AND ownertype = 'U' AND tabname = 'cstudio_DEPENDENCY'
     </select>
 
     <insert id="addSourcePathIndex">
@@ -62,7 +62,7 @@
     </insert>
 
     <select id="checkSourcePathIndex" resultMap="indexResult" cacheModel="dependencyCache">
-        select 'tabname' as "tabname", 'indname' as "indname", 'colnames' as "colnames" from "sysibm"."sysdummy1"
+        select 'tabname' as tabname, 'indname' as indname, 'colnames' as colnames from sysibm.sysdummy1
     </select>
 
     <select id="getDependencies" parameterClass="dependency" resultMap="dependencyResult"
@@ -126,7 +126,7 @@
 
     <delete id="deleteDependenciesForSite" parameterClass="String">
         DELETE FROM "cstudio_DEPENDENCY"
-        WHERE "site" = #site#;
+        WHERE "site" = #site#
     </delete>
 
 </sqlMap>

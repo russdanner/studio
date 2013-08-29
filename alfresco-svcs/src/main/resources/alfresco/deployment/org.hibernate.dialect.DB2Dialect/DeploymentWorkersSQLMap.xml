@@ -60,19 +60,19 @@
     </resultMap>
 
     <select id="checkTableExistsCTE" resultClass="java.util.HashMap">
-        select * from "syscat"."tables" where "tabname" = 'cstudio_copytoenvironment' AND "ownertype" = 'U'
+        select * from syscat.tables where tabname = 'cstudio_copytoenvironment' AND ownertype = 'U'
     </select>
 
     <select id="checkTableExistsPTT" resultClass="java.util.HashMap">
-        select * from "syscat"."tables" where "tabname" = 'cstudio_publishtotarget' AND "ownertype" = 'U'
+        select * from syscat.tables where tabname = 'cstudio_publishtotarget' AND ownertype = 'U'
     </select>
 
     <select id="checkTableExistsDSH" resultClass="java.util.HashMap">
-        select * from "syscat"."tables" where "tabname" = 'cstudio_deploymentsynchistory' AND "ownertype" = 'U'
+        select * from syscat.tables where tabname = 'cstudio_deploymentsynchistory' AND ownertype = 'U'
     </select>
 
     <select id="checkIfCTESCExists" resultClass="java.util.HashMap">
-        SELECT * FROM "SYSCAT"."COLUMNS" WHERE "TABNAME" ='cstudio_copytoenvironment' AND "COLNAME" = 'submissioncomment'
+        SELECT * FROM SYSCAT.COLUMNS WHERE "TABNAME" ='cstudio_copytoenvironment' AND COLNAME = 'submissioncomment'
     </select>
 
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
@@ -97,66 +97,66 @@
     </update>
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">
-        INSERT INTO "cstudio_copytoenvironment" (site, environment, path, oldpath, username, scheduleddate, state, action, contenttypeclass, submissioncomment)
+        INSERT INTO "cstudio_copytoenvironment" ("site", "environment", "path", "oldpath", "username", "scheduleddate", "state", "action", "contenttypeclass", "submissioncomment")
         values (#site#, #environment#, #path#, #oldPath#, #user#, #scheduledDate#, #state#, #action#, #contentTypeClass#, #submissionComment#)
     </insert>
 
     <insert id="insertItemForTargetSync" parameterClass="publishingSyncItem">
-        INSERT INTO cstudio_publishtotarget (site, environment, path, oldpath, username, version, action, contenttypeclass)
+        INSERT INTO "cstudio_publishtotarget" ("site", "environment", "path", "oldpath", "username", "version", "action", "contenttypeclass")
         values (#site#, #environment#, #path#, #oldPath#, #user#, #timestampVersion#, #action#, #contentTypeClass#)
     </insert>
 
     <select id="getItemsReadyForTargetSync" resultMap="publishingSyncItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *
-        FROM cstudio_publishtotarget
-        WHERE site = #site#
-        AND version = (
-            SELECT min(version) FROM cstudio_publishtotarget
-            WHERE site = #site#
-            AND version &gt; #version#
+        FROM "cstudio_publishtotarget"
+        WHERE "site" = #site#
+        AND "version" = (
+            SELECT min("version") FROM "cstudio_publishtotarget"
+            WHERE "site" = #site#
+            AND "version" &gt; #version#
         )
     </select>
 
     <insert id="insertDeploymentSyncHistoryItem" parameterClass="deploymentSyncHistoryItem">
-        INSERT INTO cstudio_deploymentsynchistory (syncdate, site, environment, path, target, username, contenttypeclass)
+        INSERT INTO "cstudio_deploymentsynchistory" ("syncdate", "site", "environment", "path", "target", "username", "contenttypeclass")
         values (#syncDate#, #site#, #environment#, #path#, #target#, #user#, #contentTypeClass#)
     </insert>
 
     <select id="getDeploymentHistory" resultMap="deploymentSyncHistoryItemResult" cacheModel="deploymentWorkersCache">
-        SELECT dsh1.*
-        FROM cstudio_deploymentsynchistory as dsh1 INNER JOIN (
-        SELECT dsh2.site, dsh2.path, dsh2.target, MAX(dsh2.syncdate) as syncdate
-        FROM cstudio_deploymentsynchistory as dsh2
-        WHERE dsh2.site = #site#
-        AND dsh2.syncdate BETWEEN #from_date# AND #to_date#
-        GROUP BY dsh2.site, dsh2.path, dsh2.target, DATE(dsh2.syncdate)) as dsh3
-        ON dsh1.path = dsh3.path and dsh1.target = dsh3.target and dsh1.syncdate = dsh3.syncdate
-        WHERE dsh1.site = #site#
+        SELECT "dsh1".*
+        FROM "cstudio_deploymentsynchistory" as "dsh1" INNER JOIN (
+        SELECT "dsh2"."site", "dsh2"."path", "dsh2"."target", MAX("dsh2"."syncdate") as "syncdate"
+        FROM "cstudio_deploymentsynchistory" as "dsh2"
+        WHERE "dsh2"."site" = #site#
+        AND "dsh2"."syncdate" BETWEEN #from_date# AND #to_date#
+        GROUP BY "dsh2"."site", "dsh2"."path", "dsh2"."target", DATE("dsh2"."syncdate")) as "dsh3"
+        ON "dsh1"."path" = "dsh3"."path" and "dsh1"."target" = "dsh3"."target" and "dsh1"."syncdate" = "dsh3"."syncdate"
+        WHERE "dsh1"."site" = #site#
         <dynamic prepend=" AND ">
             <isNotNull property="filter">
-                dsh1.contenttypeclass=#filter#
+                "dsh1"."contenttypeclass"=#filter#
             </isNotNull>
         </dynamic>
-        ORDER BY dsh1.syncdate desc LIMIT #limit#
+        ORDER BY "dsh1"."syncdate" desc LIMIT #limit#
     </select>
 
     <select id="getScheduledItems" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *
-        FROM cstudio_copytoenvironment
-        WHERE site = #site#
-        AND state = #state#
-        AND scheduleddate &gt; #now#
-        ORDER BY scheduleddate ASC
+        FROM "cstudio_copytoenvironment"
+        WHERE "site" = #site#
+        AND "state" = #state#
+        AND "scheduleddate" &gt; #now#
+        ORDER BY "scheduleddate" ASC
     </select>
 
     <update id="cancelWorkflow" parameterClass="java.util.HashMap">
-        UPDATE cstudio_copytoenvironment
-        SET state = #canceledstate#
-        WHERE site = #site#
-        AND path = #path#
-        AND state = #state#
-        AND scheduleddate &gt; #now#
+        UPDATE "cstudio_copytoenvironment"
+        SET "state" = #canceledstate#
+        WHERE "site" = #site#
+        AND "path" = #path#
+        AND "state" = #state#
+        AND "scheduleddate" &gt; #now#
     </update>
 </sqlMap>

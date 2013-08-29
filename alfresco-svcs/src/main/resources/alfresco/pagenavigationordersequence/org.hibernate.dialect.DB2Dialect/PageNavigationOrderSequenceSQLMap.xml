@@ -43,7 +43,7 @@
         "path" varchar(255) NOT NULL,
         "max_count" float NOT NULL,
         CONSTRAINT "cstudio_pagenavigationordersequence_pk" PRIMARY KEY("folder_id")
-        );
+        )
     </insert>
 
     <insert id="addFolderIndex">
@@ -55,41 +55,41 @@
     </select>
 
     <select id="getSequence" parameterClass="String" resultMap="pageNavigationOrderSequenceResult" cacheModel="pageNavigationOrderSequenceCache">
-        SELECT folder_id, site, path, max_count
-        FROM cstudio_pagenavigationordersequence
-        WHERE folder_id = #folder_id#
+        SELECT "folder_id", "site", "path", "max_count"
+        FROM "cstudio_pagenavigationordersequence"
+        WHERE "folder_id" = #folder_id#
     </select>
 
     <insert id="createSequence" parameterClass="pageNavigationOrderSequence" >
         INSERT INTO
-        cstudio_pagenavigationordersequence
-        (folder_id, site, path, max_count)
+        "cstudio_pagenavigationordersequence"
+        ("folder_id", "site", "path", "max_count")
         VALUES
         (#folder_id#, #site#, #path#, #max_count#)
     </insert>
 
     <delete id="deleteSequence" parameterClass="String">
         DELETE FROM
-        cstudio_pagenavigationordersequence
-        WHERE folder_id = #folder_id#
+        "cstudio_pagenavigationordersequence"
+        WHERE "folder_id" = #folder_id#
     </delete>
 
     <delete id="deleteSequencesForSite" parameterClass="String">
         DELETE FROM
-        cstudio_pagenavigationordersequence
-        WHERE site = #site#
+        "cstudio_pagenavigationordersequence"
+        WHERE "site" = #site#
     </delete>
 
     <update id="increaseSequence" parameterClass="String" >
-        UPDATE cstudio_pagenavigationordersequence
-        SET max_count = (max_count + 1000)
-        WHERE folder_id = #folder_id#
+        UPDATE "cstudio_pagenavigationordersequence"
+        SET "max_count" = ("max_count" + 1000)
+        WHERE "folder_id" = #folder_id#
     </update>
 
     <update id="setSequence" parameterClass="pageNavigationOrderSequence" >
-        UPDATE cstudio_pagenavigationordersequence
-        SET max_count = (max_count + #max_count#)
-        WHERE folder_id = #folder_id#
+        UPDATE "cstudio_pagenavigationordersequence"
+        SET "max_count" = ("max_count" + #max_count#)
+        WHERE "folder_id" = #folder_id#
     </update>
 
 </sqlMap>

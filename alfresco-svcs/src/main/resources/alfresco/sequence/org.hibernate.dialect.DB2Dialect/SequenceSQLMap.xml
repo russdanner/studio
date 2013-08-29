@@ -40,7 +40,7 @@
         "sql_generator" bigint NOT NULL,
         "step" int NOT NULL,
         CONSTRAINT "cstudio_SEQUENCE_pk" PRIMARY KEY("id")
-        );
+        )
     </insert>
 
     <insert id="addNamespaceIndex">
@@ -52,29 +52,29 @@
     </select>
 
 	<select id="getSequence" parameterClass="String" resultMap="sequenceResult" cacheModel="sequenceCache">
-		SELECT id, namespace, sql_generator, step
-        FROM cstudio_SEQUENCE
-        WHERE namespace = #namespace#
+		SELECT "id", "namespace", "sql_generator", "step"
+        FROM "cstudio_SEQUENCE"
+        WHERE "namespace" = #namespace#
 	</select>
 
 	<insert id="createSequence" parameterClass="sequence" >
 		INSERT INTO 
-			cstudio_SEQUENCE
-		(namespace, sql_generator, step)
+			"cstudio_SEQUENCE"
+		("namespace", "sql_generator", "step")
 		VALUES 
 			(#namespace#, #sql_generator#, #step#)
     </insert>
 
 	<delete id="deleteSequence" parameterClass="String">
 		DELETE FROM
-			cstudio_SEQUENCE
-		WHERE namespace = #namespace#
+			"cstudio_SEQUENCE"
+		WHERE "namespace" = #namespace#
     </delete>
     
 	<update id="increaseIdSpace" parameterClass="String" >
-       	UPDATE cstudio_SEQUENCE 
-       	SET sql_generator = (sql_generator + 1)
-       	WHERE namespace = #namespace#
+       	UPDATE "cstudio_SEQUENCE"
+       	SET "sql_generator" = ("sql_generator" + 1)
+       	WHERE "namespace" = #namespace#
     </update>
 
 </sqlMap>
