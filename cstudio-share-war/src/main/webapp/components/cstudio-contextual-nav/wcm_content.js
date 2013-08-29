@@ -224,22 +224,36 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  * draw navigation after security check on item
                  */
                 _drawNav: function(selectedContent, isWrite, perms) {
-                    var icon = "";
-                    var isAdmin = (CStudioAuthoringContext.role == "admin");
-                    var isBulk = true;
-                    var isRelevant = true;
-                    var state = "";
-                    var prevState = "";
-                    var auxIcon = "";
-                    var isInFlight = false;
+                    var icon = "",
+                        isAdmin = (CStudioAuthoringContext.role == "admin"),
+                        isBulk = true,
+                        isRelevant = true,
+                        state = "",
+                        prevState = "",
+                        auxIcon = "",
+                        isInFlight = false,
+                        isOneItemLocked = false,
+                        itemLocked;
+
                     if(selectedContent.length == 0) {
                         this.renderSelectNone();
                     } else {
                         if(selectedContent.length > 1) {
-                            var i, auxState, count = 0, iconsCount = 0, l = selectedContent.length, newFileFlag = true;
+                            var i, 
+                                auxState, 
+                                count = 0, 
+                                iconsCount = 0, 
+                                l = selectedContent.length, 
+                                newFileFlag = true;
+
                             for(i=0; i< l; i++) {
                                 auxState = CStudioAuthoring.Utils.getContentItemStatus(selectedContent[i], true);
                                 auxIcon = CStudioAuthoring.Utils.getIconFWClasses(selectedContent[i]);
+                                itemLocked = CStudioAuthoring.Utils.isItemLocked(selectedContent[i]);
+
+                                // If there is at least one item locked, isOneItemLocked === true
+                                isOneItemLocked = isOneItemLocked || itemLocked;
+
                                 if (newFileFlag && !selectedContent[i].newFile) {
                                     newFileFlag = false;
                                 }
@@ -275,6 +289,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                             state = CStudioAuthoring.Utils.getContentItemStatus(selectedContent[0], true);
                             icon = CStudioAuthoring.Utils.getIconFWClasses(selectedContent[0]);
                             isInFlight = selectedContent[0].inFlight;
+                            isOneItemLocked = CStudioAuthoring.Utils.isItemLocked(selectedContent[0]);
                             
                             if(selectedContent[0].lockOwner != "") {
                                 if(selectedContent[0].lockOwner != CStudioAuthoringContext.user) {
@@ -294,7 +309,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                             }
                         }
                         
-                        this.renderSelect(icon, state, isBulk, isAdmin, isRelevant, isInFlight, isWrite, perms);
+                        this.renderSelect(icon, state, isBulk, isAdmin, isRelevant, isInFlight, isWrite, perms, isOneItemLocked);
                     }
                     //add class to remove border from last item - would be more efficient using YUI Selector module, but it's currently not loaded
                     var itemContainer = document.getElementById('acn-active-content');
@@ -348,7 +363,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                 /**
                  * render many items
                  */
-                renderSelect: function(icon, state, isBulk, isAdmin, isRelevant, isInFlight, isWrite, perms) {
+                renderSelect: function(icon, state, isBulk, isAdmin, isRelevant, isInFlight, isWrite, perms, isOneItemLocked) {
                     this.containerEl.innerHTML = "";
                     var navLabelEl = document.createElement("div"),
                         statSplit = state.split("|"),
@@ -362,7 +377,9 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                         if(!option.renderer) {
                             navWcmContent.createNavItem(option, isBulk, isAdmin, true, false, perms);
                         } else{
-                            option.renderer.render(option, isBulk, isAdmin, state, isRelevant, isWrite, perms);
+                            // The last parameter (isOneItemLocked) was added for renderDelete which needs to know if one of the 
+                            // content items is currently locked or not
+                            option.renderer.render(option, isBulk, isAdmin, state, isRelevant, isWrite, perms, isOneItemLocked);
                         }
                     }
 
@@ -566,19 +583,21 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                 },
                 
                 renderDelete: {
-                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms) {
+                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms, isOneItemLocked) {
                         if(isWrite && CStudioAuthoring.Service.isDeleteAllowed(perms)) {
                             var isRelevant = true;
                             var isAdminFlag = isAdmin;
-                            if(state.indexOf("Submitted for Delete")>=0 || state.indexOf("Scheduled for Delete")>=0) {
+
+                            if(state.indexOf("Submitted for Delete")>=0 || state.indexOf("Scheduled for Delete")>=0 || isOneItemLocked) {
                                 isRelevant = false;
                                 isAdminFlag =  false;
                             }
+
                             option.onclick = function() {
                                 CStudioAuthoring.Operations.deleteContent(
                                     CStudioAuthoring.SelectedContent.getSelectedContent());
                             }
-                            _this.createNavItem(option, isBulk, isAdminFlag, true, !isWrite);
+                            _this.createNavItem(option, isBulk, isAdminFlag, isRelevant, !isWrite);
                         }
                     }
                 },
