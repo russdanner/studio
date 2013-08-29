@@ -233,6 +233,11 @@
 
                 tree.subscribe('clickEvent', function(args) {
                     Self.onTreeNodeClick(args.node);
+
+                    // Prevent the default behavior (i.e. expand/collapse) of links that should take the user to preview
+                    if (args.node.data.linkToPreview) {
+                        return false;
+                    }
                 });
 
                 tree.subscribe("dblClickEvent", function(node) {
@@ -461,6 +466,10 @@ treeNode.getHtml = function() {
             drawTreeItem: function(treeNodeTO, root) {
                 if (treeNodeTO.container == true || treeNodeTO.name != 'index.xml') {
 
+                    if (!treeNodeTO.style.match(/\bfolder\b/)) {
+                        treeNodeTO.linkToPreview = true;
+                    }
+                    
                     var treeNode = new YAHOO.widget.TextNode(treeNodeTO, root, false);
 
                     treeNode.labelStyle = treeNodeTO.style + " yui-resize-label";
@@ -468,15 +477,6 @@ treeNode.getHtml = function() {
                     treeNode.treeNodeTO = treeNodeTO;
                     treeNode.renderHidden = true;
                     treeNode.nowrap = true;
-
-                    if (!treeNodeTO.style.match(/\bfolder\b/)) {
-                        // Change the default behavior of the text label (i.e. expand/collapse) by adding an href property
-                        treeNodeTO.href = "#";
-                        YEvent.on(treeNodeTO, "click", function(e) {
-                            // Prevent the default behavior of clicking href="#"
-                            YEvent.preventDefault(e);
-                        })
-                    }
 
                     if (!treeNodeTO.isContainer) {
                         treeNode.isLeaf = true;
@@ -1044,14 +1044,17 @@ treeNode.getHtml = function() {
 					d.className = "bd context-menu-load-msg";
 					d.innerHTML = 'Loading&hellip;';
 					menuId.appendChild(d);
-                    var formPath = oCurrentTextNode.data.formPagePath;
-                    var isContainer = oCurrentTextNode.data.isContainer;
-                    var isComponent = oCurrentTextNode.data.isComponent;
-                    var isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor;
-                    var isLocked = (oCurrentTextNode.data.lockOwner != "" && oCurrentTextNode.data.lockOwner != CStudioAuthoringContext.user);
-                    var isInProgress = oCurrentTextNode.data.inProgress;
-                    var isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor;
-                    var isFolder = (isContainer && oCurrentTextNode.data.fileName != 'index.xml') ? true : false;
+
+                    var formPath = oCurrentTextNode.data.formPagePath,
+                        isContainer = oCurrentTextNode.data.isContainer,
+                        isComponent = oCurrentTextNode.data.isComponent,
+                        isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor,
+                        isLocked = (oCurrentTextNode.data.lockOwner != "" && oCurrentTextNode.data.lockOwner != CStudioAuthoringContext.user),
+                        isInProgress = oCurrentTextNode.data.inProgress,
+                        isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor,
+                        isFolder = (isContainer && oCurrentTextNode.data.fileName != 'index.xml') ? true : false,
+                        isOpen = null;
+
  
                     //Get user permissions to get read write operations
 					var checkPermissionsCb = {
@@ -1059,7 +1062,7 @@ treeNode.getHtml = function() {
                             var isCreateFolder = CStudioAuthoring.Service.isCreateFolder(results.permissions);
                             // check if the user is allowed to edit the content
                             var isUserAllowed = CStudioAuthoring.Service.isUserAllowed(results.permissions);
-                            var isDeleteAllowed = CStudioAuthoring.Service.isDeleteAllowed(results.permissions);
+                            var isDeleteAllowed = CStudioAuthoring.Service.isDeleteAllowed(results.permissions) && !isOpen;
                         
 		                    if(isLocked == true && isWrite == true) {
 		                    	p_aArgs.addItems([ menuItems.viewOption ]);
@@ -1279,8 +1282,16 @@ treeNode.getHtml = function() {
                     checkPermissionsCb.formPath = formPath;
                     checkPermissionsCb.d = d;
                     checkPermissionsCb.oCurrentTextNode = oCurrentTextNode;
-					CStudioAuthoring.Clipboard.getPermissions.call({}, (oCurrentTextNode.data.uri), checkPermissionsCb);
-		                  
+
+                    CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, oCurrentTextNode.data.uri, {
+                        success: function (itemTO) {
+                            isOpen = itemTO.item.lockOwner !== "";
+                            CStudioAuthoring.Clipboard.getPermissions.call({}, (oCurrentTextNode.data.uri), checkPermissionsCb);
+                        },
+                        failure: function () {
+                            alert("Unable to look up item. Please contact your system administrator.");
+                        }
+                    }, false, false);
 			},
 			
 			/**
