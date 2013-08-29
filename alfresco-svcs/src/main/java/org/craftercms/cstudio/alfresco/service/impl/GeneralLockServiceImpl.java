@@ -40,7 +40,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
     public void lock(String objectId) {
         ReentrantLock nodeLock;
         if (logger.isDebugEnabled()) {
-            logger.debug("Obtaining lock for id " + objectId);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Obtaining lock for id " + objectId);
         }
         synchronized (this) {
             if (nodeLocks.containsKey(objectId)) {
@@ -52,7 +52,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
         }
         nodeLock.lock();
         if (logger.isDebugEnabled()) {
-            logger.debug("Locked all threads for id " + objectId);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Locked all threads for id " + objectId);
         }
     }
 
@@ -60,7 +60,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
     public boolean tryLock(String objectId) {
         ReentrantLock nodeLock;
         if (logger.isDebugEnabled()) {
-            logger.debug("Trying to get lock for id " + objectId);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Trying to get lock for id " + objectId);
         }
         synchronized (this) {
             if (nodeLocks.containsKey(objectId)) {
@@ -72,7 +72,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
         }
         boolean toRet = nodeLock.tryLock();
         if (logger.isDebugEnabled()) {
-            logger.debug("Result for tryLock on id " + objectId + " : " + toRet);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Result for tryLock on id " + objectId + " : " + toRet);
         }
         return toRet;
     }
@@ -81,7 +81,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
     public void unlock(String objectId) {
         ReentrantLock nodeLock = null;
         if (logger.isDebugEnabled()) {
-            logger.debug("Unlocking id " + objectId);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Unlocking id " + objectId);
         }
         synchronized (this) {
             nodeLock = nodeLocks.get(objectId);
@@ -90,7 +90,7 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
             nodeLock.unlock();
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Finished unlocking id " + objectId);
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Finished unlocking id " + objectId);
         }
     }
 }

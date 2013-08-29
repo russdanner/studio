@@ -245,11 +245,6 @@ public class DmContentServiceScript extends BaseProcessorExtension {
         GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
         // processContent will close the input stream
         NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
-        String lockKey = id;
-        if (nodeRef != null) {
-            lockKey = nodeRef.getId();
-        }
-        generalLockService.lock(lockKey);
         try {
             boolean savaAndClose = (!StringUtils.isEmpty(unlock) && unlock.equalsIgnoreCase("false")) ? false : true;
             DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
@@ -288,11 +283,6 @@ public class DmContentServiceScript extends BaseProcessorExtension {
         }  catch (RuntimeException e) {
             logger.error("error writing content",e);
             throw e;
-        } finally {
-            persistenceManagerService.setSystemProcessing(fullPath, false);
-            if (nodeRef != null) {
-                generalLockService.unlock(lockKey);
-            }
         }
     }
 
