@@ -585,6 +585,18 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         return toRet;
     }
 
+    @Override
+    public void lockRepository() {
+        GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
+        generalLockService.lock(GeneralLockService.MASTER_LOCK);
+    }
+
+    @Override
+    public void unlockRepository() {
+        GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
+        generalLockService.unlock(GeneralLockService.MASTER_LOCK);
+    }
+
     /** dmContentService getter */
     public DmContentService getDmContentService() { return _dmContentService; }
     /** dmContentService setter */

@@ -151,4 +151,8 @@ public interface ContentRepository {
     List<String> getDependentPaths(String site, String path);
 
     boolean isFolder(String site, String path);
+
+    void lockRepository();
+
+    void unlockRepository();
 }

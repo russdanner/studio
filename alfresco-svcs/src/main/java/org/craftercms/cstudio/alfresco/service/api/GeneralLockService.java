@@ -18,6 +18,8 @@ package org.craftercms.cstudio.alfresco.service.api;
 
 public interface GeneralLockService {
 
+    public final static String MASTER_LOCK = "MASTER LOCK";
+
     public void lock(String objectId);
 
     public void unlock(String objectId);
