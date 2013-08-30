@@ -101,39 +101,41 @@ public class PublishContentToDeploymentTarget implements Job {
                                         logger.debug("Filtering out items before sending to deployment agent");
                                         List<PublishingSyncItem> filteredItems = filterItems(syncItems, target);
 
-                                        if (filteredItems != null && filteredItems.size() > 0) {
-                                            try {
+
+                                        try {
+                                            if (filteredItems != null && filteredItems.size() > 0) {
                                                 logger.debug("Sending \"{0}\" items to target \"{1}\", site \"{2}\"", filteredItems.size(), target.getName(), site);
                                                 _publishingManager.deployItemsToTarget(site, filteredItems, target);
-
-                                                long newVersion = getDeployedVersion(syncItems);
-                                                logger.debug("Setting new version for target (target: \"{0}\", site \"{1}\", version \"{2}\"", target.getName(), site, newVersion);
-                                                _publishingManager.setTargetVersion(target, newVersion, site);
-                                                logger.debug("Inserting deployment history for \"{0}\" items on target \"{1}\", site \"{2}\"", filteredItems.size(), target.getName(), site);
-                                                _publishingManager.insertDeploymentHistory(target, filteredItems, new Date());
-                                            } catch (UploadFailedException err) {
-                                                Map<String, Integer> counters = _publishingFailureCounters.get(err.getSite());
-                                                if (counters == null) {
-                                                    counters = new HashMap<String, Integer>();
-                                                }
-                                                Integer count = counters.get(err.getTarget());
-                                                if (count == null) {
-                                                    count = 0;
-                                                } else {
-                                                    count++;
-                                                }
-                                                if (count > _maxTolerableRetries) {
-                                                    // TODO: Send notification - big red alert!
-                                                    logger.error("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err, err.getSite(), err.getTarget(), err.getUrl());
-                                                } else {
-                                                    logger.warn("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
-                                                }
-                                                counters.put(err.getTarget(), count);
-                                                _publishingFailureCounters.put(err.getSite(), counters);
-                                                tx.rollback();
-                                                continue;
                                             }
+
+                                            long newVersion = getDeployedVersion(syncItems);
+                                            logger.debug("Setting new version for target (target: \"{0}\", site \"{1}\", version \"{2}\"", target.getName(), site, newVersion);
+                                            _publishingManager.setTargetVersion(target, newVersion, site);
+                                            logger.debug("Inserting deployment history for \"{0}\" items on target \"{1}\", site \"{2}\"", filteredItems.size(), target.getName(), site);
+                                            _publishingManager.insertDeploymentHistory(target, filteredItems, new Date());
+                                        } catch (UploadFailedException err) {
+                                            Map<String, Integer> counters = _publishingFailureCounters.get(err.getSite());
+                                            if (counters == null) {
+                                                counters = new HashMap<String, Integer>();
+                                            }
+                                            Integer count = counters.get(err.getTarget());
+                                            if (count == null) {
+                                                count = 0;
+                                            } else {
+                                                count++;
+                                            }
+                                            if (count > _maxTolerableRetries) {
+                                                // TODO: Send notification - big red alert!
+                                                logger.error("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err, err.getSite(), err.getTarget(), err.getUrl());
+                                            } else {
+                                                logger.warn("Uploading content failed for site \"{0}\", target \"{1}\", URL \"{2}\"", err.getSite(), err.getTarget(), err.getUrl());
+                                            }
+                                            counters.put(err.getTarget(), count);
+                                            _publishingFailureCounters.put(err.getSite(), counters);
+                                            tx.rollback();
+                                            continue;
                                         }
+
                                     }
                                     Map<String, Integer> counters = _publishingFailureCounters.get(site);
                                     if (counters == null) {
