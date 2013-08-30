@@ -1064,8 +1064,10 @@ var CStudioForms = CStudioForms || function() {
             var unloadFn = function(e){
                 if(_notifyServer){
                     path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
-                    var entityId = buildEntityIdFn();
-                    CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, entityId);
+                    if( path && path.indexOf(".xml") != -1) {
+                        var entityId = buildEntityIdFn();
+                        CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, entityId);
+                    }
                 }
             }
 
@@ -1669,8 +1671,6 @@ var CStudioForms = CStudioForms || function() {
             var formDef = form.definition;
             var html = "";
 
-            // Update the window title
-            window.document.title = (formDef.pageName) ? formDef.title + " | " + formDef.pageName : formDef.title; 
 
             html = "<div class='cstudio-form-container'>";
 
