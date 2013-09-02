@@ -316,6 +316,7 @@ body, var
 	height:33px;
 	position:fixed;
 	top:0;
+	left:0;
 	width:100%;
 	z-index:100;
 	font:12px Arial, Verdana, sans-serif;
