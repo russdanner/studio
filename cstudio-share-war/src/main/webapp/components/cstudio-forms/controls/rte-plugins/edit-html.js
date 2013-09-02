@@ -159,17 +159,19 @@ CStudioAuthoring.Module.requireModule(
 						}
 					});
 				} else {
-					// Clear the current selection -in case there was any
-					editor.codeMirror.setSelection({line: 0, ch: 0});
+					// Bug fix for IE -9: flush the contents of the input field that stores selected content so that it is
+					// not inserted into the code editor
+					if (YAHOO.env.ua.ie <= 9 && 
+								editor.codeMirror.getSelection() != "" && 
+								editor.codeMirror.getSelection() === editor.codeMirror.getInputField().value) {
 
-					// Flush the contents of this textarea used to read input. This textarea 
-					// is known to store the text selection contents. Fixes bug in IE 9, since setting
-					// a new value will result in appending the new content to this value.
-					editor.codeMirror.getInputField().value = "";
+						editor.codeMirror.setSelection({line: 0, ch: 0});	
+						editor.codeMirror.getInputField().value = "";
+					}
 
-					// Set the cursor to the beginning of the code editor
+					// Set the cursor to the beginning of the code editor; this will clear any text selection in
+					// codeMirror -if there's any
 					editor.codeMirror.setCursor({line: 0, ch: 0});
-
 					editor.codeMirror.setValue(editor.codeTextArea.value);
 				}
 				// We resize codeMirror each time in case the user has resized the window
