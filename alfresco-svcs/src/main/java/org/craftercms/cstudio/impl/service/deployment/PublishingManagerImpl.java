@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEventItem;
 import org.craftercms.cstudio.api.log.Logger;
 import org.craftercms.cstudio.api.log.LoggerFactory;
@@ -121,8 +122,12 @@ public class PublishingManagerImpl implements PublishingManager {
             HttpClient client = null;
             try {
                 getMethod = new GetMethod(target.getVersionUrl());
+                String siteId = target.getSiteId();
+                if (StringUtils.isEmpty(siteId)) {
+                    siteId = site;
+                }
                 getMethod.setQueryString(new NameValuePair[] {new NameValuePair(TARGET_REQUEST_PARAMETER, target.getTarget()),
-                        new NameValuePair(SITE_REQUEST_PARAMETER, site) });
+                        new NameValuePair(SITE_REQUEST_PARAMETER, siteId) });
                 client = new HttpClient();
                 int status = client.executeMethod(getMethod);
                 if (status == HttpStatus.SC_OK) {
@@ -187,7 +192,11 @@ public class PublishingManagerImpl implements PublishingManager {
 
             formParts.add(new StringPart(PASSWORD_REQUEST_PARAMETER, target.getPassword()));
             formParts.add(new StringPart(TARGET_REQUEST_PARAMETER, target.getTarget()));
-            formParts.add(new StringPart(SITE_REQUEST_PARAMETER, site));
+            String siteId = target.getSiteId();
+            if (StringUtils.isEmpty(siteId)) {
+                siteId = site;
+            }
+            formParts.add(new StringPart(SITE_REQUEST_PARAMETER, siteId));
 
             LOGGER.debug("Preparing deployment items (bucket {0}) for target {1}", bucketIndex + 1, target.getName());
 
@@ -400,6 +409,10 @@ public class PublishingManagerImpl implements PublishingManager {
                 postMethod = new PostMethod(target.getVersionUrl());
                 postMethod.addParameter(TARGET_REQUEST_PARAMETER, target.getTarget());
                 postMethod.addParameter(VERSION_REQUEST_PARAMETER, String.valueOf(newVersion));
+                String siteId = target.getSiteId();
+                if (StringUtils.isEmpty(siteId)) {
+                    siteId = site;
+                }
                 postMethod.addParameter(SITE_REQUEST_PARAMETER, site);
                 client = new HttpClient();
                 int status = client.executeMethod(postMethod);

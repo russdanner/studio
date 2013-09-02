@@ -65,6 +65,9 @@ public class PublishingTargetItem {
     public int getChunkSize() { return _chunkSize; }
     public void setChunkSize(int chunkSize) { this._chunkSize = chunkSize; }
 
+    public String getSiteId() { return _siteId; }
+    public void setSiteId(String siteId) { this._siteId = siteId; }
+
     protected String _id;
     protected String _name;
     protected String _type;
@@ -77,6 +80,7 @@ public class PublishingTargetItem {
     protected List<String> _excludePattern;
     protected List<String> _includePattern;
     protected int _bucketSize;
+    protected String _siteId;
 
     /** for future use */
     protected int _chunkSize;

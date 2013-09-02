@@ -74,6 +74,9 @@ public class DeploymentEndpointConfigImpl extends ConfigurableServiceBase implem
                 String target = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_TARGET);
                 endpointConfig.setTarget(target);
 
+                String siteId = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_SITE_ID);
+                endpointConfig.setSiteId(siteId);
+
                 String sendMetadataStr = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_SEND_METADATA);
                 boolean sendMetadataVal = (StringUtils.isNotEmpty(sendMetadataStr)) && Boolean.getBoolean(sendMetadataStr);
                 endpointConfig.setSendMetadata(sendMetadataVal);

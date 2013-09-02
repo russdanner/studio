@@ -95,6 +95,7 @@ public class CStudioXmlConstants {
     public static final String DOCUMENT_ELM_ENDPOINT_SERVER_URL = "server-url";
     public static final String DOCUMENT_ELM_ENDPOINT_PASSWORD = "password";
     public static final String DOCUMENT_ELM_ENDPOINT_TARGET = "target";
+    public static final String DOCUMENT_ELM_ENDPOINT_SITE_ID = "site-id";
     public static final String DOCUMENT_ELM_ENDPOINT_SEND_METADATA = "send-metadata";
     public static final String DOCUMENT_ELM_ENDPOINT_EXCLUDE_PATTERN = "exclude";
     public static final String DOCUMENT_ELM_ENDPOINT_INCLUDE_PATTERN = "include";

@@ -107,4 +107,12 @@ public class DeploymentEndpointConfigTO {
     public void setVersionUrl(String versionUrl) {
         this.versionUrl = versionUrl;
     }
+
+    protected String siteId;
+    public String getSiteId() {
+        return siteId;
+    }
+    public void setSiteId(String siteId) {
+        this.siteId = siteId;
+    }
 }
