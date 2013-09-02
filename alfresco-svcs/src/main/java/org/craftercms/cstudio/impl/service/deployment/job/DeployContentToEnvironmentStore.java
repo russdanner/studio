@@ -87,8 +87,8 @@ public class DeployContentToEnvironmentStore implements Job {
 
                             for (int i = 0; i < chunks.size(); i++) {
                                 tx = _transactionService.getTransaction();
-                                _contentRepository.lockRepository();
-                                try {
+                                //_contentRepository.lockRepository();
+                                //try {
                                     tx.begin();
                                     _publishingManager.setLockBehaviourEnabled(false);
                                     List<CopyToEnvironmentItem> itemList = chunks.get(i);
@@ -121,9 +121,9 @@ public class DeployContentToEnvironmentStore implements Job {
                                         _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
                                         throw err;
                                     }
-                                } finally {
-                                    _contentRepository.unlockRepository();
-                                }
+                                //} finally {
+                                    //_contentRepository.unlockRepository();
+                                //}
                             }
                         }
                     }

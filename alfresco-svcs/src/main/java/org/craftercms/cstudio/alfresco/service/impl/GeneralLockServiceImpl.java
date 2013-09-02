@@ -50,7 +50,16 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
                 nodeLocks.put(objectId, nodeLock);
             }
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (before lock)");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock: " + nodeLock.toString());
+        }
         nodeLock.lock();
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (after lock)");
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("[" + Thread.currentThread().getName() + "]" + " Locked all threads for id " + objectId);
         }
@@ -70,7 +79,16 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
                 nodeLocks.put(objectId, nodeLock);
             }
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (before tryLock)");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock: " + nodeLock.toString());
+        }
         boolean toRet = nodeLock.tryLock();
+        if (logger.isDebugEnabled()) {
+            logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (after tryLock)");
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("[" + Thread.currentThread().getName() + "]" + " Result for tryLock on id " + objectId + " : " + toRet);
         }
@@ -87,7 +105,16 @@ public class GeneralLockServiceImpl extends AbstractRegistrableService implement
             nodeLock = nodeLocks.get(objectId);
         }
         if (nodeLock != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (before unlock)");
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock: " + nodeLock.toString());
+            }
             nodeLock.unlock();
+            if (logger.isDebugEnabled()) {
+                logger.debug("[" + Thread.currentThread().getName() + "]" + " Lock hold count " + nodeLock.getHoldCount() + " for id " + objectId + " (after unlock)");
+            }
         }
         if (logger.isDebugEnabled()) {
             logger.debug("[" + Thread.currentThread().getName() + "]" + " Finished unlocking id " + objectId);

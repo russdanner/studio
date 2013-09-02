@@ -230,66 +230,69 @@ public class DmContentServiceScript extends BaseProcessorExtension {
      */
     public void writeContent(String site, String path, String fileName, String contentType, Content input,
                              String createFolders, String edit, String unlock) throws ServiceException {
-
+        Map<String, String> params = new FastMap<String, String>();
+        params.put(DmConstants.KEY_SITE, site);
+        params.put(DmConstants.KEY_PATH, path);
+        params.put(DmConstants.KEY_FILE_NAME, fileName);
+        params.put(DmConstants.KEY_CONTENT_TYPE, contentType);
+        params.put(DmConstants.KEY_CREATE_FOLDERS, createFolders);
+        params.put(DmConstants.KEY_EDIT, edit);
+        params.put(DmConstants.KEY_UNLOCK, unlock);
+        String id = site + ":" + path + ":" + fileName + ":" + contentType;
+        ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
+        String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
+        PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
-        generalLockService.lock(GeneralLockService.MASTER_LOCK);
+        // processContent will close the input stream
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+        String lockKey = id;
+        if (nodeRef != null) {
+            lockKey = nodeRef.getId();
+        }
+        generalLockService.lock(lockKey);
         try {
-            Map<String, String> params = new FastMap<String, String>();
-            params.put(DmConstants.KEY_SITE, site);
-            params.put(DmConstants.KEY_PATH, path);
-            params.put(DmConstants.KEY_FILE_NAME, fileName);
-            params.put(DmConstants.KEY_CONTENT_TYPE, contentType);
-            params.put(DmConstants.KEY_CREATE_FOLDERS, createFolders);
-            params.put(DmConstants.KEY_EDIT, edit);
-            params.put(DmConstants.KEY_UNLOCK, unlock);
-            String id = site + ":" + path + ":" + fileName + ":" + contentType;
-            ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
-            String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
-            PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
+            boolean savaAndClose = (!StringUtils.isEmpty(unlock) && unlock.equalsIgnoreCase("false")) ? false : true;
+            DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
 
-            // processContent will close the input stream
-            NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
-            try {
-                boolean savaAndClose = (!StringUtils.isEmpty(unlock) && unlock.equalsIgnoreCase("false")) ? false : true;
-                DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
+            if (nodeRef != null) {
+                if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
+                    logger.error(String.format("Error Content %s is been process (Object State is %s);", fileName, State.SYSTEM_PROCESSING.toString()));
+                    throw new RuntimeException(String.format("Content \"%s\" is been processed", fileName));
+                }
 
-                if (nodeRef != null) {
-                    if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
-                        logger.error(String.format("Error Content %s is been process (Object State is %s);", fileName, State.SYSTEM_PROCESSING.toString()));
-                        throw new RuntimeException(String.format("Content \"%s\" is been processed", fileName));
-                    }
-
-                    persistenceManagerService.setSystemProcessing(fullPath, true);
-                }
-                //InputStreamContent inputStreamContent = (InputStreamContent)input;
-                dmContentService.processContent(id, input.getInputStream(), true, params, DmConstants.CONTENT_CHAIN_FORM);
-                persistenceManagerService.setSystemProcessing(fullPath, false);
-                String savedFileName = params.get(DmConstants.KEY_FILE_NAME);
-                String savedPath = params.get(DmConstants.KEY_PATH);
-                fullPath = servicesConfig.getRepositoryRootPath(site) + savedPath;
-                if (!savedPath.endsWith(savedFileName)) {
-                    fullPath = fullPath + "/" + savedFileName;
-                }
-                fullPath = fullPath.replace("//", "/");
-                nodeRef = persistenceManagerService.getNodeRef(fullPath);
-                if (nodeRef != null) {
-                    if (savaAndClose) {
-                        persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE);
-                    } else {
-                        persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE_FOR_PREVIEW);
-                    }
-                } else {
-                    persistenceManagerService.insertNewObjectEntry(fullPath);
-                }
-            } catch (ServiceException e) {
-                logger.error("error writing content",e);
-                throw e;
-            }  catch (RuntimeException e) {
-                logger.error("error writing content",e);
-                throw e;
+                persistenceManagerService.setSystemProcessing(fullPath, true);
             }
+            //InputStreamContent inputStreamContent = (InputStreamContent)input;
+            dmContentService.processContent(id, input.getInputStream(), true, params, DmConstants.CONTENT_CHAIN_FORM);
+            persistenceManagerService.setSystemProcessing(fullPath, false);
+            String savedFileName = params.get(DmConstants.KEY_FILE_NAME);
+            String savedPath = params.get(DmConstants.KEY_PATH);
+            fullPath = servicesConfig.getRepositoryRootPath(site) + savedPath;
+            if (!savedPath.endsWith(savedFileName)) {
+                fullPath = fullPath + "/" + savedFileName;
+            }
+            fullPath = fullPath.replace("//", "/");
+            nodeRef = persistenceManagerService.getNodeRef(fullPath);
+            if (nodeRef != null) {
+                if (savaAndClose) {
+                    persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE);
+                } else {
+                    persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE_FOR_PREVIEW);
+                }
+            } else {
+                persistenceManagerService.insertNewObjectEntry(fullPath);
+            }
+        } catch (ServiceException e) {
+            logger.error("error writing content",e);
+            throw e;
+        }  catch (RuntimeException e) {
+            logger.error("error writing content",e);
+            throw e;
         } finally {
-            generalLockService.unlock(GeneralLockService.MASTER_LOCK);
+            persistenceManagerService.setSystemProcessing(fullPath, false);
+            //if (nodeRef != null) {
+                generalLockService.unlock(lockKey);
+            //}
         }
     }
 
