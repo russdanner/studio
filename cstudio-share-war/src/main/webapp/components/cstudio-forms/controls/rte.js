@@ -232,7 +232,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 
 		if (YDom.hasClass(this.containerEl, "text-mode")) {
 			// The RTE is in text mode        	
-			sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + this.editor.id + "_size");
+			sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + this.editor.id + "_size" + window.name);
 			cookieHeight = (sizeCookie) ? sizeCookie.ch : 0;
 
 			// Give priority to the height value stored in the cookie (if there's one)
@@ -266,7 +266,7 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 
 	resizeEditor: function (editor, onInit) {
 
-		var sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + editor.id + "_size");
+		var sizeCookie = tinymce.util.Cookie.getHash("TinyMCE_" + editor.id + "_size" + window.name);
 		var cookieHeight = (sizeCookie) ? sizeCookie.ch : 0;
 		
 		var heightVal = Math.max(editor.settings.height, cookieHeight),
