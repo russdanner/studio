@@ -27,7 +27,7 @@
         <result property="site" column="site" />
         <result property="environment" column="environment" />
         <result property="path" column="path" />
-        <result property="oldPath" column="oldpath" />
+        <result property="oldPath" column="oldpath" nullValue="NULL" />
         <result property="user" column="username" />
         <result property="scheduledDate" column="scheduledDate" />
         <result property="state" column="state" />
@@ -98,12 +98,38 @@
 
     <insert id="insertItemForDeployment" parameterClass="copyToEnvironmentItem">
         INSERT INTO "cstudio_copytoenvironment" ("site", "environment", "path", "oldpath", "username", "scheduleddate", "state", "action", "contenttypeclass", "submissioncomment")
-        values (#site#, #environment#, #path#, #oldPath#, #user#, #scheduledDate#, #state#, #action#, #contentTypeClass#, #submissionComment#)
+        values (#site#, #environment#, #path#
+        <dynamic prepend=",">
+            <isNotNull property="oldPath">
+                #oldPath#
+            </isNotNull>
+            <isNull property="oldPath">
+                null
+            </isNull>
+        </dynamic>
+        ,#user#, #scheduledDate#, #state#, #action#, #contentTypeClass#
+        <dynamic prepend=",">
+            <isNotNull property="submissionComment">
+                #submissionComment#
+            </isNotNull>
+            <isNull property="submissionComment">
+                null
+            </isNull>
+        </dynamic>)
     </insert>
 
     <insert id="insertItemForTargetSync" parameterClass="publishingSyncItem">
         INSERT INTO "cstudio_publishtotarget" ("site", "environment", "path", "oldpath", "username", "version", "action", "contenttypeclass")
-        values (#site#, #environment#, #path#, #oldPath#, #user#, #timestampVersion#, #action#, #contentTypeClass#)
+        values (#site#, #environment#, #path#
+        <dynamic prepend=",">
+            <isNotNull property="oldPath">
+                #oldPath#
+            </isNotNull>
+            <isNull property="oldPath">
+                null
+            </isNull>
+        </dynamic>
+        , #user#, #timestampVersion#, #action#, #contentTypeClass#)
     </insert>
 
     <select id="getItemsReadyForTargetSync" resultMap="publishingSyncItemResult"
@@ -135,10 +161,11 @@
         WHERE "dsh1"."site" = #site#
         <dynamic prepend=" AND ">
             <isNotNull property="filter">
-                "dsh1"."contenttypeclass"=#filter#
+                dsh1.contenttypeclass=#filter#
             </isNotNull>
         </dynamic>
-        ORDER BY "dsh1"."syncdate" desc LIMIT #limit#
+        ORDER BY "dsh1"."syncdate" desc
+        fetch first $limit$ rows only
     </select>
 
     <select id="getScheduledItems" resultMap="copyToEnvironmentItemResult"

@@ -3,7 +3,7 @@ CREATE  TABLE "cstudio_deploymentsynchistory" (
   "syncdate" DATE NOT NULL ,
   "site" VARCHAR(50) NOT NULL ,
   "environment" VARCHAR(20) NOT NULL ,
-  "path" CLOB NOT NULL ,
+  "path" VARCHAR(2048) NOT NULL ,
   "target" VARCHAR(50) NOT NULL ,
   "username" VARCHAR(25) NOT NULL ,
   "contenttypeclass" VARCHAR(25) NOT NULL ,

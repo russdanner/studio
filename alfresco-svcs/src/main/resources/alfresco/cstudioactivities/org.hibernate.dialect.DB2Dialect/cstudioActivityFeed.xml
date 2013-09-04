@@ -78,7 +78,7 @@ CREATE TABLE "cstudio_activity"  (
     <select id="select" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
       <![CDATA[
 
-      select *
+      select * from
       ( select "ca".*, ROW_NUMBER() over(order by "modified_date" desc) as "RN"
       from "cstudio_activity" as "ca"
       where "post_user_id" = #userId#
@@ -90,32 +90,32 @@ CREATE TABLE "cstudio_activity"  (
    </select>
 
     <select id="selectHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
-      <![CDATA[
-
-      select "act".*
+        <![CDATA[
+	  select * from (
+      select "act".*, ROW_NUMBER() over(order by "modified_date" desc) as "RN"
       from "cstudio_activity" "act"
       inner join "cstudio_objectstate" "os" on "act"."site_network"="os"."site" and "act"."content_id"="os"."path"
       where "act"."post_user_id" = #userId#
       and "act"."site_network" = #siteNetwork#
       and "act"."summary_format" = #summaryFormat#
       and "os"."state" NOT IN ]]>
-      <dynamic prepend="">
+        <dynamic prepend="">
             <iterate property="states"  open="(" close=")" conjunction=",">
                 #states[]#
             </iterate>
         </dynamic>
-      <![CDATA[
+        <![CDATA[
       and "os"."state" not in ('EXISTING_UNEDITED_LOCKED', 'EXISTING_UNEDITED_UNLOCKED', 'NEW_DELETED')
-      and ROWNUM between #startPos# and #startPos# + #feedSize#
-      order by "act"."modified_date" desc
+      order by "act"."modified_date" desc)
+	  where "RN" between #startPos# and #startPos# + #feedSize#
 
         ]]>
-   </select>
+    </select>
 
     <select id="selectByContentTypeHideLive" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
-      <![CDATA[
-
-      select "act".*
+        <![CDATA[
+	  select * from (
+      select "act".*, ROW_NUMBER() over(order by "modified_date" desc) as "RN"
       from "cstudio_activity" "act"
       inner join "cstudio_objectstate" "os" on "act"."site_network"="os"."site" and "act"."content_id"="os"."path"
       where "act"."post_user_id" = #userId#
@@ -129,26 +129,24 @@ CREATE TABLE "cstudio_activity"  (
             </iterate>
         </dynamic>
         <![CDATA[
-      and ROWNUM between #startPos# and #startPos# + #feedSize#
-      order by "act"."modified_date" desc
-
+      order by "act"."modified_date" desc)
+	  where "RN" between #startPos# and #startPos# + #feedSize#
         ]]>
-   </select>
+    </select>
 
     <select id="selectByContentType" parameterClass="java.util.HashMap" resultMap="CStudioActivityFeedResult">
-      <![CDATA[
-
-      select *
-      from "cstudio_activity"
-      where "post_user_id" = #userId#
-      and "site_network" = #siteNetwork#
-      and "summary_format" = #summaryFormat#
-	  and "content_type" = #contentType#
-	  and ROWNUM between #startPos# and #startPos# + #feedSize#
-      order by "modified_date" desc
-
-        ]]>
-   </select>
+         <![CDATA[
+         select * from (
+         select "ca".*, ROW_NUMBER() over(order by "modified_date" desc) as "RN"
+         from "cstudio_activity" as "ca"
+         where "post_user_id" = #userId#
+         and "site_network" = #siteNetwork#
+         and "summary_format" = #summaryFormat#
+   	  and "content_type" = #contentType#
+         order by "modified_date" desc
+         ) where "RN" between #startPos# and #startPos# + #feedSize#
+           ]]>
+      </select>
 
     <select id="getCountUserContentFeedEntries" parameterClass="java.util.HashMap" resultClass="int">
       <![CDATA[
@@ -168,11 +166,6 @@ CREATE TABLE "cstudio_activity"  (
         "modified_date", "site_network","content_id","content_type")
         values (#type#, #summary#, #summaryFormat#, #userId#, #creationDate#, #modifiedDate#,
         #siteNetwork#,#contentId#,#contentType#)
-
-        <!-- optionally return auto-generated primary key - only required for debug (can be commented out) -->
-        <selectKey resultClass="long" keyProperty="id" type="post">
-            select LAST_INSERT_ID() AS value
-        </selectKey>
     </insert>
 
     <delete id="delete" parameterClass="Date">
@@ -204,15 +197,15 @@ CREATE TABLE "cstudio_activity"  (
         ]]>
    </update>
 
-   
-	<update id="updateurl" parameterClass="java.util.HashMap">
+
+    <update id="updateurl" parameterClass="java.util.HashMap">
       <![CDATA[
       update "cstudio_activity" set "content_id"=#newUrl# where "content_id" = #oldUrl# and "site_network"=#site#
       ]]>
    </update>
-   
-   
-   	<delete id="deleteOldActivity" parameterClass="java.util.HashMap">
+
+
+    <delete id="deleteOldActivity" parameterClass="java.util.HashMap">
       <![CDATA[
     	DELETE FROM "cstudio_activity"  where "site_network"=#site# and  "content_id"=#newUrl#
       ]]>
