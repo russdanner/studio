@@ -87,7 +87,8 @@
 .cstudio-rteSkin .mceNoIcons span.mceIcon {width:0;}
 .cstudio-rteSkin .mceNoIcons a .mceText {padding-left:10px}
 .cstudio-rteSkin .mceMenu table {background:#FFF}
-.cstudio-rteSkin .mceMenu a, .cstudio-rteSkin .mceMenu span, .cstudio-rteSkin .mceMenu {display:block}
+.cstudio-rteSkin .mceMenu a, .cstudio-rteSkin .mceMenu span, .cstudio-rteSkin .mceMenu {display:block;}
+.cstudio-rteSkin .mceToolbar .mceMenu span.mceText {min-width:85px;}
 .cstudio-rteSkin .mceMenu td {height:20px}
 .cstudio-rteSkin .mceMenu a {position:relative;padding:3px 0 4px 0}
 .cstudio-rteSkin .mceMenu .mceText {position:relative; display:block; font-family:Tahoma,Verdana,Arial,Helvetica; color:#000; cursor:default; margin:0; padding:0 25px 0 25px; display:block}

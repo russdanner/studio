@@ -2103,7 +2103,7 @@ var CStudioForms = CStudioForms || function() {
 
         escapeXml: function(value) {
             if(value && typeof value === 'string') {
-                value = value.replace(/&/g, '&amp;')
+                value = value.replace(/&(?!#)/g, '&amp;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
