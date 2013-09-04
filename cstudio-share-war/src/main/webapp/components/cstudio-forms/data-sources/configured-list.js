@@ -83,7 +83,7 @@ YAHOO.extend(CStudioForms.Datasources.ConfiguredList, CStudioForms.CStudioFormDa
 			defaultValue: [{ // Update this array if the dropdown options need to be updated
 				value: "value",
 				label: "",
-				selected: false
+				selected: true
 			}, {
 				value: "value_s",
 				label: "String",
@@ -95,7 +95,7 @@ YAHOO.extend(CStudioForms.Datasources.ConfiguredList, CStudioForms.CStudioFormDa
 			}, {
 				value: "value_f",
 				label: "Float",
-				selected: true
+				selected: false
 			}, {
 				value: "value_dt",
 				label: "Date",
