@@ -86,43 +86,41 @@ public class DeployContentToEnvironmentStore implements Job {
                             List<List<CopyToEnvironmentItem>> chunks = ListUtils.partition(itemsToDeploy, _processingChunkSize);
 
                             for (int i = 0; i < chunks.size(); i++) {
-                                tx = _transactionService.getTransaction();
-                                _contentRepository.lockRepository();
+
+                                List<CopyToEnvironmentItem> itemList = chunks.get(i);
+                                List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
                                 try {
-                                    tx.begin();
-                                    _publishingManager.setLockBehaviourEnabled(false);
-                                    List<CopyToEnvironmentItem> itemList = chunks.get(i);
-                                    List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
-                                    try {
-                                        logger.debug("Mark items as processing for site \"{0}\"", site);
-                                        _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
+                                    logger.debug("Mark items as processing for site \"{0}\"", site);
+                                    _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
 
-                                        for (CopyToEnvironmentItem item : itemList) {
-                                            logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
-                                            _publishingManager.processItem(item);
-                                            if (_mandatoryDependenciesCheckEnabled) {
-                                                missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
-                                            }
+                                    for (CopyToEnvironmentItem item : itemList) {
+                                        tx = _transactionService.getTransaction();
+                                        tx.begin();
+                                        _publishingManager.setLockBehaviourEnabled(false);
+                                        logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
+                                        _publishingManager.processItem(item);
+                                        if (_mandatoryDependenciesCheckEnabled) {
+                                            missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
                                         }
-
-                                        logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
-                                        if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
-                                            List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
-                                            mergedList.addAll(missingDependencies);
-                                            _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, mergedList);
-                                        } else {
-                                            _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
-                                        }
-                                        logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
-                                        _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
                                         tx.commit();
-                                    } catch (DeploymentException err) {
-                                        logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
-                                        _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
-                                        throw err;
                                     }
-                                } finally {
-                                    _contentRepository.unlockRepository();
+                                    tx = _transactionService.getTransaction();
+                                    tx.begin();
+                                    logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
+                                    if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
+                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
+                                        mergedList.addAll(missingDependencies);
+                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, mergedList);
+                                    } else {
+                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                    }
+                                    logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
+                                    _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
+                                    tx.commit();
+                                } catch (DeploymentException err) {
+                                    logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
+                                    _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
+                                    throw err;
                                 }
                             }
                         }
