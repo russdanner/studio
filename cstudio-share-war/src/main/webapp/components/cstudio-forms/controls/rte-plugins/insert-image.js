@@ -64,7 +64,6 @@ CStudioForms.Controls.RTE.ImageInsert = CStudioForms.Controls.RTE.ImageInsert ||
 
                 cleanUrl: function (url) {
                     var urlVal = url.replace(CStudioAuthoringContext.previewAppBaseUri, "");    // remove domain name & junction (optional) from image URL
-                    urlVal = urlVal.replace( "?crafterSite=" + CStudioAuthoringContext.site, "");    // remove site name from image URL
                     return urlVal;
                 },
 

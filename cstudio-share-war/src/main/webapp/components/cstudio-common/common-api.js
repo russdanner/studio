@@ -917,8 +917,6 @@ YConnect.failureEvent.subscribe(function() {
 						url = CStudioAuthoringContext.previewAppBaseUri +
 							  contentTO.assets[0].uri;
 					}
-					
-					CStudioAuthoring.Utils.Cookies.createCookie("crafterSite", CStudioAuthoringContext.site);
 				}
 				else {
 					url = CStudioAuthoringContext.authoringAppBaseUri 
@@ -957,8 +955,6 @@ YConnect.failureEvent.subscribe(function() {
 			 * @param newly added includeMetaData
 			 */
 			openContentWebForm: function(formId, id, noderef, path, edit, asPopup, callback, auxParams,includeMetaData) {
-
-				CStudioAuthoring.Utils.Cookies.createCookie("crafterSite", CStudioAuthoringContext.site);
 
 				var readOnly = "false";
 				var checkPermissionsCb = {
@@ -6693,3 +6689,15 @@ CStudioAuthoring.InContextEdit = {
     CrafterStudioUtils._addScrollListener.listeningScroll = false;
 
 })(window);
+
+/*
+ * Create crafterSite cookie on DOM Ready (so CStudioAuthoringContext object is available)
+ */
+(function (w) {
+
+    // Parameter 'win' of the anonymous function will be the object passed as parameter 'w'
+    YAHOO.util.Event.onDOMReady(function (e, args, win) {
+        win.CStudioAuthoring.Utils.Cookies.createCookie("crafterSite", win.CStudioAuthoringContext.site);
+    }, w);
+
+}) (window);

@@ -70,7 +70,7 @@ YAHOO.extend(CStudioForms.Controls.VideoPicker, CStudioForms.CStudioFormField, {
         newdiv.className= "yui-pe-content";
 
         newdiv.innerHTML = '<embed src=\"' +
-            CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '?crafterSite=' + CStudioAuthoringContext.site + '\" width=\"500px\" height=\"500px\"></embed>' +
+            CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '\" width=\"500px\" height=\"500px\"></embed>' +
             '<input type="button" class="cstudio-button cstudio-form-control-asset-picker-zoom-cancel-button" id="zoomCancelButton" value="Close"/>';
 
         // Instantiate the Dialog

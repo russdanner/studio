@@ -70,8 +70,8 @@ YAHOO.extend(CStudioForms.Controls.FlashPicker, CStudioForms.CStudioFormField, {
         newdiv.className= "yui-pe-content";
 
         newdiv.innerHTML = '<embed width="500" align="middle" height="500" wmode="transparent" type="application/x-shockwave-flash" ' +
-            'src="' + CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '?crafterSite=' + CStudioAuthoringContext.site + '" ' +
-            '"scale="showall" salign="" quality="high" ' +
+            'src="' + CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '" ' +
+            'scale="showall" salign="" quality="high" ' +
             'pluginspage="http://www.macromedia.com/go/getflashplayer" play="true" ' +
             'menu="true" loop="true" devicefont="false" bgcolor="#ffffff" ' +
             'allowscriptaccess="sameDomain" allowfullscreen="false">'+
