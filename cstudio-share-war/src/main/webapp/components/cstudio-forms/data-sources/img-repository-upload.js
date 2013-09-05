@@ -48,7 +48,7 @@ YAHOO.extend(CStudioForms.Datasources.ImgRepoUpload, CStudioForms.CStudioFormDat
 	 * create preview URL
 	 */
 	createPreviewUrl: function(imagePath) {
-		return CStudioAuthoringContext.previewAppBaseUri + imagePath + "?crafterSite=" + CStudioAuthoringContext.site;
+		return CStudioAuthoringContext.previewAppBaseUri + imagePath + "";
 	},
 	
 	/**
@@ -59,7 +59,6 @@ YAHOO.extend(CStudioForms.Datasources.ImgRepoUpload, CStudioForms.CStudioFormDat
 		
 		if(previewUrl.indexOf(CStudioAuthoringContext.previewAppBaseUri) != -1) {
 			url =  previewUrl.substring(CStudioAuthoringContext.previewAppBaseUri.length);
-			url = url.replace( "?crafterSite=" + CStudioAuthoringContext.site, "");
 			
 			if(url.substring(0,1) != "/") {
 				url = "/" + url;

@@ -79,7 +79,7 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
         var width = (this.originalWidth)?this.originalWidth:500;
         var height = (this.originalHeight)?this.originalHeight:500;
         newdiv.innerHTML = '<img width=\"' + width + 'px\" height=\"' + height + 'px\" src=\"' +
-            CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '?crafterSite=' + CStudioAuthoringContext.site + '\"></img>' +
+            CStudioAuthoringContext.previewAppBaseUri + this.inputEl.value + '\"></img>' +
             '<input type="button" class="cstudio-button cstudio-form-control-asset-picker-zoom-cancel-button" id="zoomCancelButton" value="Close"/>';
 
 

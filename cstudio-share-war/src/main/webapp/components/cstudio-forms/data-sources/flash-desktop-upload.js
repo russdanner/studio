@@ -51,7 +51,7 @@ YAHOO.extend(CStudioForms.Datasources.FlashDesktopUpload, CStudioForms.CStudioFo
 	 * create preview URL
 	 */
 	createPreviewUrl: function(flashPath) {
-		return CStudioAuthoringContext.previewAppBaseUri + flashPath + "?crafterSite=" + CStudioAuthoringContext.site;
+		return CStudioAuthoringContext.previewAppBaseUri + flashPath + "";
 	},
 
 	/**

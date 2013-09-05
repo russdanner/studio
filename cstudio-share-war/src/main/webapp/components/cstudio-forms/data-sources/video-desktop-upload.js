@@ -51,7 +51,7 @@ YAHOO.extend(CStudioForms.Datasources.VideoDesktopUpload, CStudioForms.CStudioFo
 	 * create preview URL
 	 */
 	createPreviewUrl: function(videoPath) {
-		return CStudioAuthoringContext.previewAppBaseUri + videoPath + "?crafterSite=" + CStudioAuthoringContext.site;
+		return CStudioAuthoringContext.previewAppBaseUri + videoPath + "";
 	},
 
 	/**
