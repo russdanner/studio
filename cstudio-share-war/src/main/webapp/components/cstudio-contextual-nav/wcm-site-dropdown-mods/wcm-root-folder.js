@@ -949,6 +949,7 @@ treeNode.getHtml = function() {
                             statusStr,
                             ttFormattedEditDate,
                             retTransferObj.modifier,
+                            retTransferObj.lockOwner,
                             itemNameLabel);
                 }
                 return retTransferObj;
@@ -957,7 +958,7 @@ treeNode.getHtml = function() {
              * build the HTML for the scheduled tool tip.
              *
              */
-            buildToolTipRegular: function(label, style, status, editedDate, modifier, itemNameLabel) {
+            buildToolTipRegular: function(label, style, status, editedDate, modifier, lockOwner, itemNameLabel) {
                 if (!itemNameLabel) {
                     itemNameLabel = "Page";
                 }
@@ -990,9 +991,13 @@ treeNode.getHtml = function() {
                                 "<td class='tooltip-title'>Edited by: </td>",
                                 "<td class='acn-width200'>{5}</td>",
                             "</tr>",
+                            "<tr>",
+                                "<td class='tooltip-title'>Locked by: </td>",
+                                "<td class='acn-width200'>{6}</td>",
+                            "</tr>",
                         "</table>"
                     ].join(''),
-					itemNameLabel, label, style, status, editedDate, modifier);
+					itemNameLabel, label, style, status, editedDate, modifier, lockOwner);
             },
             /**
              * build the HTML for the scheduled tool tip.
