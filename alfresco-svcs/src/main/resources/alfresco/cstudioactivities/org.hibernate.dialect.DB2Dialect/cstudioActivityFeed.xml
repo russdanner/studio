@@ -85,7 +85,7 @@ CREATE TABLE "cstudio_activity"  (
       and "site_network" = #siteNetwork#
       and "summary_format" = #summaryFormat#
       order by "modified_date" desc)
-      where "RN" between #startPos# and #startPos# + #feedSize#
+      where "RN" between $startPos$ and $startPos$ + $feedSize$
         ]]>
    </select>
 
@@ -107,7 +107,7 @@ CREATE TABLE "cstudio_activity"  (
         <![CDATA[
       and "os"."state" not in ('EXISTING_UNEDITED_LOCKED', 'EXISTING_UNEDITED_UNLOCKED', 'NEW_DELETED')
       order by "act"."modified_date" desc)
-	  where "RN" between #startPos# and #startPos# + #feedSize#
+	  where "RN" between $startPos$ and $startPos$ + $feedSize$
 
         ]]>
     </select>
@@ -130,7 +130,7 @@ CREATE TABLE "cstudio_activity"  (
         </dynamic>
         <![CDATA[
       order by "act"."modified_date" desc)
-	  where "RN" between #startPos# and #startPos# + #feedSize#
+	  where "RN" between $startPos$ and $startPos$ + $feedSize$
         ]]>
     </select>
 
@@ -144,7 +144,7 @@ CREATE TABLE "cstudio_activity"  (
          and "summary_format" = #summaryFormat#
    	  and "content_type" = #contentType#
          order by "modified_date" desc
-         ) where "RN" between #startPos# and #startPos# + #feedSize#
+         ) where "RN" between $startPos$ and $startPos$ + $feedSize$
            ]]>
       </select>
 

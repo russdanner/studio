@@ -107,7 +107,23 @@
                 null
             </isNull>
         </dynamic>
-        ,#user#, #scheduledDate#, #state#, #action#, #contentTypeClass#
+        <dynamic prepend=",">
+            <isNotNull property="user">
+                #user#
+            </isNotNull>
+            <isNull property="user">
+                null
+            </isNull>
+        </dynamic>
+        , #scheduledDate#, #state#, #action#
+        <dynamic prepend=",">
+            <isNotNull property="contentTypeClass">
+                #contentTypeClass#
+            </isNotNull>
+            <isNull property="contentTypeClass">
+                null
+            </isNull>
+        </dynamic>
         <dynamic prepend=",">
             <isNotNull property="submissionComment">
                 #submissionComment#
@@ -129,7 +145,15 @@
                 null
             </isNull>
         </dynamic>
-        , #user#, #timestampVersion#, #action#, #contentTypeClass#)
+        , #user#, #timestampVersion#, #action#
+        <dynamic prepend=",">
+            <isNotNull property="contentTypeClass">
+                #contentTypeClass#
+            </isNotNull>
+            <isNull property="contentTypeClass">
+                null
+            </isNull>
+        </dynamic>)
     </insert>
 
     <select id="getItemsReadyForTargetSync" resultMap="publishingSyncItemResult"
@@ -161,7 +185,7 @@
         WHERE "dsh1"."site" = #site#
         <dynamic prepend=" AND ">
             <isNotNull property="filter">
-                dsh1.contenttypeclass=#filter#
+                "dsh1"."contenttypeclass"=#filter#
             </isNotNull>
         </dynamic>
         ORDER BY "dsh1"."syncdate" desc

@@ -1,7 +1,7 @@
 CREATE TABLE "cstudio_activity"  (
 	"id"            	BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-	"modified_date" 	DATE NOT NULL,
-	"creation_date" 	DATE NOT NULL,
+	"modified_date" 	TIMESTAMP NOT NULL,
+	"creation_date" 	TIMESTAMP NOT NULL,
 	"summary"       	VARCHAR(5000) NOT NULL,
 	"summary_format"	VARCHAR(255) NOT NULL,
 	"content_id"    	VARCHAR(5000) NOT NULL,

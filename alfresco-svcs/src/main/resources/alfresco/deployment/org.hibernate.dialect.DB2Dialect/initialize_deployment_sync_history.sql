@@ -1,6 +1,6 @@
 CREATE  TABLE "cstudio_deploymentsynchistory" (
   "id"            	BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-  "syncdate" DATE NOT NULL ,
+  "syncdate" TIMESTAMP NOT NULL ,
   "site" VARCHAR(50) NOT NULL ,
   "environment" VARCHAR(20) NOT NULL ,
   "path" VARCHAR(2048) NOT NULL ,
