@@ -514,113 +514,100 @@ WcmDashboardWidgetCommon.getCurrentWidgetTogglePreference = function(widgetId, p
 /**
  * toggle (expand or collapse) a given line item
  */
-WcmDashboardWidgetCommon.toggleLineItem = function(id) {
+WcmDashboardWidgetCommon.toggleLineItem = function(id, ignoreParent) {
 	
-    var parentId = YDom.get(id);
-    var p = parentId.className;
-    var childItems = new Array();
-    childItems = CStudioAuthoring.Utils.getElementsByClassName(id);
-    var count = 0;
-    var length = childItems.length;
+    var parentId = YDom.get(id),
+    		childItems = CStudioAuthoring.Utils.getElementsByClassName(id),
+    		length = childItems.length,
+    		idx,
+    		item;
 
     if (parentId.className == "ttClose parent-div-widget") {
-        while (count < length) {
-
-            var item = childItems[count];
-            if (item != undefined) {
-
+    		for (idx = 0; idx < length; idx++) {
+    				item = childItems[idx];
+            if (item) {
                 item.style.display = "none";
             }
-            count = count + 1;
-        }
+    		}
         parentId.className = "ttOpen parent-div-widget";
     }
     else {
-        while (count < length) {
-
-            var item = childItems[count];
-            if (item != undefined) {
-
+    		for (idx = 0; idx < length; idx++) {
+    				item = childItems[idx];
+            if (item) {
                 item.style.display = "";
             }
-            count = count + 1;
-        }
+    		}
         parentId.className = "ttClose parent-div-widget";
     }  
-    /**
-     * 
-     */
-    var expandAll = false;
-    var tableEl = YDom.getAncestorByClassName(id,"ttTable");    
-    var rows =    tableEl.rows;
-    var arr = new Array();
-    for(idx = 0;idx <rows.length; idx++) {
-    	if(rows[idx].className === "avoid" || rows[idx].className == "" ) {
+
+    // If all lines are collapsed, then the header link should change to "Expand All" and vice versa.
+    var expandAll = false,
+    		tableEl = YDom.getAncestorByClassName(id, "ttTable"),
+    		rows = tableEl.rows,
+    		arr = [],
+    		widgetId = tableEl.id.split("-")[0],
+    		widget = YDom.get(widgetId),
+    		linkEl = YDom.get("expand-all-" + widgetId);
+
+    for(idx = 0; idx < rows.length; idx++) {
+    	if (rows[idx].className === "avoid" || rows[idx].className == "" ) {
     		continue;
-       }else {
+       } else {
           arr.push(rows[idx]);
        }       
     }
-    for(idx = 1; idx < arr.length; idx ++) {
-       if( arr[idx].style.display === "none" ) {
+
+    for(idx = 0; idx < arr.length; idx++) {
+       if ( arr[idx].style.display === "none" ) {
             expandAll = true;
-        }else {
-            expandAll = false;
+            break;
         }
     }
-    var tableIdSplited = tableEl.id.split("-");
-    var widgetId = tableIdSplited[0] + "-" + tableIdSplited[1] + "-" + tableIdSplited[2];
-    
-    if(expandAll) {
-        YDom.get("expand-all-"+ widgetId).innerHTML = "Expand All";  
-        YDom.get("expand-all-"+ widgetId).className = "widget-collapse-state";      
-    }else {
-        YDom.get("expand-all-"+ widgetId).innerHTML = "Collapse All";
-        YDom.get("expand-all-"+ widgetId).className = "widget-expand-state";        
+
+    if (!ignoreParent) {
+    		this.toggleHeaderLink(widget, linkEl, expandAll);
     }
+
 };
+
+WcmDashboardWidgetCommon.toggleHeaderLink = function(widget, linkEl, showCollapsed) {
+
+		if (showCollapsed) {
+				linkEl.setAttribute("href","javascript:void(0);");
+        linkEl.innerHTML = "Expand All";        
+        linkEl.className = "widget-collapse-state";
+        widget.instance.expanded = false;
+    }
+    else {
+				linkEl.setAttribute("href","javascript:void(0);");
+        linkEl.innerHTML = "Collapse All";
+        linkEl.className = "widget-expand-state";
+        widget.instance.expanded = true;
+    }
+}
 
 /**
  * toggle All items
  */
 WcmDashboardWidgetCommon.toggleAllItems = function(widgetId) {
 
-    var widget = YDom.get(widgetId);
-    var instance = widget.instance;
-    var link = YDom.get("expand-all-" + widgetId);
+    var widget = YDom.get(widgetId),
+				instance = widget.instance,
+				link = YDom.get("expand-all-" + widgetId),
+				items = YDom.getElementsByClassName("parent-div-widget", null, widget),
+				item,
+				length = items.length;
 
-    var items = CStudioAuthoring.Utils.getElementsByClassName("parent-div-widget", null, widget);
-    var count = 0;
-    var length = items.length;
-
-    while (count < length) {
-
-        var item = items[count];
-        if (item != undefined) {
-            if (instance.expanded) {
-                item.className = "ttClose parent-div-widget";
-            }
-            else {
-                item.className = "ttOpen parent-div-widget";
-            }
-
-            this.toggleLineItem(item.id);
+    for (var count = 0; count < length; count++) {
+    		item = items[count];
+        if (item) {
+						item.className = (instance.expanded) ? "ttClose parent-div-widget" : "ttOpen parent-div-widget";
+            this.toggleLineItem(item.id, true);
         }
-        count = count + 1;
     }
 
-    if (instance.expanded) {
-    	link.setAttribute("href","javascript:void(0);");
-        link.innerHTML = "Expand All";        
-        link.className = "widget-collapse-state";
-        instance.expanded = false;
-    }
-    else {
-    	link.setAttribute("href","javascript:void(0);");
-        link.innerHTML = "Collapse All";
-        link.className = "widget-expand-state";
-        instance.expanded = true;
-    }
+    this.toggleHeaderLink(widget, link, instance.expanded);
 };
 
 /**
