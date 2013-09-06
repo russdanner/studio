@@ -3168,8 +3168,8 @@ span.acn-canned-search{
 	margin-right: 2px;
 }
 
-#authoringContextNavHeader .no-preview,
-.no-preview {
+#authoringContextNavHeader .no-preview, .no-preview, 
+#authoringContextNavHeader .folder, .folder {
 	color: #808080 !important;
 	cursor:default !important;
 }
