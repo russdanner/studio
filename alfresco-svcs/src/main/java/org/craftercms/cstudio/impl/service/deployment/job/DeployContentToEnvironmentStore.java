@@ -79,7 +79,7 @@ public class DeployContentToEnvironmentStore implements Job {
                         List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
                         List<String> pathsToDeploy = getPaths(itemsToDeploy);
                         Set<String> missingDependenciesPaths = new HashSet<String>();
-                        tx = _transactionService.getTransaction();
+
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
                             logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
                             logger.debug("Splitting items into chunks for processing", site, itemsToDeploy.size());
@@ -91,8 +91,10 @@ public class DeployContentToEnvironmentStore implements Job {
                                 List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
                                 try {
                                     logger.debug("Mark items as processing for site \"{0}\"", site);
+                                    tx = _transactionService.getTransaction();
+                                    tx.begin();
                                     _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
-
+                                    tx.commit();
                                     for (CopyToEnvironmentItem item : itemList) {
                                         tx = _transactionService.getTransaction();
                                         tx.begin();
