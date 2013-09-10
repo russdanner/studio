@@ -262,7 +262,6 @@ public class DmContentServiceScript extends BaseProcessorExtension {
 
                 persistenceManagerService.setSystemProcessing(fullPath, true);
             }
-            //InputStreamContent inputStreamContent = (InputStreamContent)input;
             dmContentService.processContent(id, input.getInputStream(), true, params, DmConstants.CONTENT_CHAIN_FORM);
             persistenceManagerService.setSystemProcessing(fullPath, false);
             String savedFileName = params.get(DmConstants.KEY_FILE_NAME);
@@ -282,17 +281,16 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             } else {
                 persistenceManagerService.insertNewObjectEntry(fullPath);
             }
+            persistenceManagerService.setSystemProcessing(fullPath, false);
         } catch (ServiceException e) {
+            persistenceManagerService.setSystemProcessing(fullPath, false);
             logger.error("error writing content",e);
             throw e;
         }  catch (RuntimeException e) {
             logger.error("error writing content",e);
             throw e;
         } finally {
-            persistenceManagerService.setSystemProcessing(fullPath, false);
-            //if (nodeRef != null) {
-                generalLockService.unlock(lockKey);
-            //}
+            generalLockService.unlock(lockKey);
         }
     }
 
