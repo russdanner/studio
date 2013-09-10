@@ -207,7 +207,7 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             txnHelper.doInTransaction(renameCallBack, false, true);
             persistenceManagerService.enableBehaviour(CStudioContentModel.ASPECT_PREVIEWABLE);
         } catch (Throwable t) {
-            logger.error("Error while write and rename: ", t);
+            logger.error("Error while executing write and rename: ", t);
         } finally {
             generalLockService.unlock(id);
         }
@@ -256,8 +256,9 @@ public class DmContentServiceScript extends BaseProcessorExtension {
 
             if (nodeRef != null) {
                 if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
-                    logger.error(String.format("Error Content %s is been process (Object State is %s);", fileName, State.SYSTEM_PROCESSING.toString()));
-                    throw new RuntimeException(String.format("Content \"%s\" is been processed", fileName));
+                    logger.error(String.format("Error Content %s is being processed (Object State is %s);", fileName,
+                        State.SYSTEM_PROCESSING.toString()));
+                    throw new RuntimeException(String.format("Content \"%s\" is being processed", fileName));
                 }
 
                 persistenceManagerService.setSystemProcessing(fullPath, true);
@@ -358,8 +359,9 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             
             if (nodeRef != null) {
                 if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
-                    logger.error(String.format("Error Content %s is been process (Object State is %s);", assetName, State.SYSTEM_PROCESSING.toString()));
-                    throw new RuntimeException(String.format("Content \"%s\" is been processed", assetName));
+                    logger.error(String.format("Error Content %s is being processed (Object State is %s);", assetName,
+                        State.SYSTEM_PROCESSING.toString()));
+                    throw new RuntimeException(String.format("Content \"%s\" is being processed", assetName));
                 }
                 persistenceManagerService.setSystemProcessing(fullPath, true);
             }
