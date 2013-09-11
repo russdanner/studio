@@ -19,6 +19,7 @@ package org.craftercms.cstudio.alfresco.dm.service.impl;
 import javolution.util.FastList;
 import org.alfresco.model.WCMWorkflowModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
@@ -26,6 +27,8 @@ import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmPublishService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmRenameService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.workflow.MultiChannelPublishingContext;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
@@ -60,9 +63,9 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
     }
 
     @Override
-    public void publish(String site, List<String> paths, Date launchDate,
-                        MultiChannelPublishingContext mcpContext) {
-        List<String> pathsToPublish = new FastList<String>();
+    public void publish(final String site, List<String> paths, Date launchDate,
+                        final MultiChannelPublishingContext mcpContext) {
+        final List<String> pathsToPublish = new FastList<String>();
         for (String p : paths) {
             DmPathTO dmPathTO = new DmPathTO(p);
             pathsToPublish.add(dmPathTO.getRelativePath());
@@ -70,13 +73,19 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
         if (launchDate == null) {
             launchDate = new Date();
         }
-        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        final String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        final Date ld = launchDate;
 
-        try {
-            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, mcpContext.getSubmissionComment());
-        } catch (DeploymentException ex) {
-            logger.error("Unable to publish files due a error ", ex);
-        }
+        RetryingTransactionHelper txnHelper = _servicesManager.getService(DmTransactionService.class)
+            .getRetryingTransactionHelper();
+        RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
+            public String execute() throws Throwable {
+                deploymentService.deploy(site, "live", pathsToPublish, ld, approver,
+                    mcpContext.getSubmissionComment());
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(renameCallBack);
     }
 
     @Override
