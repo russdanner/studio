@@ -18,10 +18,12 @@
 package org.craftercms.cstudio.alfresco.dm.webscript.content;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.dm.util.WebScriptUtils;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
+import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
 import org.craftercms.cstudio.alfresco.service.api.ObjectStateService;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
 import org.craftercms.cstudio.alfresco.service.api.ServicesConfig;
@@ -95,39 +97,50 @@ public class GetContentWebScript extends AbstractWebScript {
                 */
 
                 PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
+                GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
                 DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
                 ObjectStateService objectStateService = getServicesManager().getService(ObjectStateService.class);
                 ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
                 String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
-                if (isEdit) {
-                    persistenceManagerService.setSystemProcessing(fullPath, true);
+                NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+                if (nodeRef != null) {
+                    generalLockService.lock(nodeRef.getId());
                 }
-                input = dmContentService.getContent(site, path, isEdit, !isChangeTemplate);
-                if (isEdit) {
-                    persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.EDIT);
-                    persistenceManagerService.setSystemProcessing(fullPath, false);
+                try {
+                    if (isEdit) {
+                        persistenceManagerService.setSystemProcessing(fullPath, true);
+                    }
+                    input = dmContentService.getContent(site, path, isEdit, !isChangeTemplate);
+                    if (isEdit) {
+                        persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.EDIT);
+                        persistenceManagerService.setSystemProcessing(fullPath, false);
+                    }
+                    /***************************************/
+                    String[] values = path.split("\\.");
+                    String fileType = values[values.length - 1];
+                    res.setHeader("Content-Type", "application/" + fileType.toLowerCase());
+                    res.setHeader("Content-Disposition", "inline;filename=\"" + fileName + "\"");
+                    res.setHeader("Cache-Control", "max-age=0");
+                    res.setHeader("Pragma", "public");
+                    // write the file
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("content asset found. Transmitting the file.");
+                    }
+                    output = res.getOutputStream();
+                    byte[] buffer = new byte[CStudioWebScriptConstants.READ_BUFFER_LENGTH];
+                    int read = 0;
+                    while ((read = input.read(buffer)) > 0) {
+                        output.write(buffer, 0, read);
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("file transmission completed.");
+                    }
+                } finally {
+                    if (nodeRef != null) {
+                        generalLockService.unlock(nodeRef.getId());
+                    }
                 }
-                /***************************************/
-				String[] values = path.split("\\.");
-				String fileType = values[values.length - 1];
-				res.setHeader("Content-Type", "application/" + fileType.toLowerCase());
-				res.setHeader("Content-Disposition", "inline;filename=\"" + fileName + "\"");
-				res.setHeader("Cache-Control", "max-age=0");
-				res.setHeader("Pragma", "public");
-				// write the file
-				if (logger.isDebugEnabled()) {
-					logger.debug("content asset found. Transmitting the file.");
-				}
-				output = res.getOutputStream();
-				byte[] buffer = new byte[CStudioWebScriptConstants.READ_BUFFER_LENGTH];
-				int read = 0;
-				while ((read = input.read(buffer)) > 0) {
-					output.write(buffer, 0, read);
-				}
-				if (logger.isDebugEnabled()) {
-					logger.debug("file transmission completed.");
-				}
-			} catch (AccessDeniedException e) {
+            } catch (AccessDeniedException e) {
 				res.setStatus(Status.STATUS_CONFLICT);
 				Writer writer = res.getWriter();
 				writer.append(e.getMessage());
