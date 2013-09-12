@@ -91,7 +91,7 @@ var CStudioForms = CStudioForms || function() {
             }
 
             if(path.indexOf("{parentPath}") != -1) {
-                path = path.replace("{parentPath}", CStudioAuthoring.Utils.getQueryParameterByName("path").replace(/\/[^\/]*\/[^\/]*\/(.*)\/[^\/]*\.xml/, "$1"));
+                path = path = path.replace("{parentPath}", CStudioAuthoring.Utils.getQueryParameterByName("path").replace(/\/[^\/]*\/[^\/]*\/([^\.]*)(\/[^\/]*\.xml)?$/, "$1"));
             }
 
             return path;
