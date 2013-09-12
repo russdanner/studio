@@ -617,13 +617,22 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                             resolveSubmittedPaths(site, goLiveItem, goLivePaths);
                         }
                         List<String> nodeRefs = new FastList<String>();
+                        GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService
+                            .class);
                         for (String fullPath : goLivePaths) {
                             NodeRef nr = persistenceManagerService.getNodeRef(fullPath);
                             if (nr != null) {
                                 nodeRefs.add(nr.getId());
+                                generalLockService.lock(nr.getId());
                             }
                         }
-                        dmWorkflowService.goLive(site, sub, goLiveItems, approver, mcpContext);
+                        try {
+                            dmWorkflowService.goLive(site, sub, goLiveItems, approver, mcpContext);
+                        } finally {
+                            for (String nr : nodeRefs) {
+                                generalLockService.unlock(nr);
+                            }
+                        }
                     }
 
                     if (!renameItems.isEmpty()) {
