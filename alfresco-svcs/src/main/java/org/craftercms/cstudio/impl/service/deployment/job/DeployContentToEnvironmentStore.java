@@ -98,11 +98,16 @@ public class DeployContentToEnvironmentStore implements Job {
                                     for (CopyToEnvironmentItem item : itemList) {
                                         tx = _transactionService.getTransaction();
                                         tx.begin();
-                                        _publishingManager.setLockBehaviourEnabled(false);
-                                        logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
-                                        _publishingManager.processItem(item);
-                                        if (_mandatoryDependenciesCheckEnabled) {
-                                            missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
+                                        _contentRepository.lockItem(item.getSite(), item.getPath());
+                                        try {
+                                            _publishingManager.setLockBehaviourEnabled(false);
+                                            logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
+                                            _publishingManager.processItem(item);
+                                            if (_mandatoryDependenciesCheckEnabled) {
+                                                missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
+                                            }
+                                        } finally {
+                                            _contentRepository.unLockItem(item.getSite(), item.getPath());
                                         }
                                         tx.commit();
                                     }
