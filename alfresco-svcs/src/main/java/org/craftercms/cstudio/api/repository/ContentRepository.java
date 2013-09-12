@@ -155,4 +155,8 @@ public interface ContentRepository {
     void lockRepository();
 
     void unlockRepository();
+
+    void lockItem(String site, String path);
+
+    void unLockItem(String site, String path);
 }

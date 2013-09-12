@@ -568,6 +568,28 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         generalLockService.unlock(GeneralLockService.MASTER_LOCK);
     }
 
+    @Override
+    public void lockItem(final String site, final String path) {
+        GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+        if (nodeRef != null) {
+            generalLockService.lock(nodeRef.getId());
+        }
+    }
+
+    @Override
+    public void unLockItem(final String site, final String path) {
+        GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+        if (nodeRef != null) {
+            generalLockService.unlock(nodeRef.getId());
+        }
+    }
+
     /** dmContentService getter */
     public DmContentService getDmContentService() { return _dmContentService; }
     /** dmContentService setter */
