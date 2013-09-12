@@ -89,15 +89,16 @@ public class DeployContentToEnvironmentStore implements Job {
 
                                 List<CopyToEnvironmentItem> itemList = chunks.get(i);
                                 List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
+                                for (CopyToEnvironmentItem item : itemList) {
+                                    _contentRepository.lockItem(item.getSite(), item.getPath());
+                                }
+                                tx = _transactionService.getTransaction();
+                                tx.begin();
                                 try {
                                     logger.debug("Mark items as processing for site \"{0}\"", site);
-                                    tx = _transactionService.getTransaction();
-                                    tx.begin();
+
                                     _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
-                                    tx.commit();
                                     for (CopyToEnvironmentItem item : itemList) {
-                                        tx = _transactionService.getTransaction();
-                                        tx.begin();
                                         _contentRepository.lockItem(item.getSite(), item.getPath());
                                         try {
                                             _publishingManager.setLockBehaviourEnabled(false);
@@ -109,10 +110,7 @@ public class DeployContentToEnvironmentStore implements Job {
                                         } finally {
                                             _contentRepository.unLockItem(item.getSite(), item.getPath());
                                         }
-                                        tx.commit();
                                     }
-                                    tx = _transactionService.getTransaction();
-                                    tx.begin();
                                     logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
                                     if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
                                         List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
@@ -128,13 +126,16 @@ public class DeployContentToEnvironmentStore implements Job {
                                     logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
                                     _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
                                     throw err;
+                                } finally {
+                                    for (CopyToEnvironmentItem item : itemList) {
+                                        _contentRepository.unLockItem(item.getSite(), item.getPath());
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                //tx.commit();
             } catch(Exception err) {
                 logger.error("Error while executing deployment to environment store", err);
                 tx.rollback();
