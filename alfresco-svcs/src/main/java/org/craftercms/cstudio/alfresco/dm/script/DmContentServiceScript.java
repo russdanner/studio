@@ -53,6 +53,12 @@ import org.springframework.extensions.surf.util.InputStreamContent;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 /**
  * A wrapper class of DmContentService that exposes the service in Alfresco
@@ -188,26 +194,27 @@ public class DmContentServiceScript extends BaseProcessorExtension {
                                       final String createFolders, final  String edit, final String unlock, final boolean createFolder) throws ServiceException {
         String id = site + ":" + path + ":" + fileName + ":" + contentType;
         GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
+        final PersistenceManagerService persistenceManagerService = servicesManager.getService(PersistenceManagerService.class);
+        DmTransactionService dmTransactionService = servicesManager.getService(DmTransactionService.class);
+        UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
         if (!generalLockService.tryLock(id)) {
             generalLockService.lock(id);
             generalLockService.unlock(id);
             return;
         }
         try {
-            final PersistenceManagerService persistenceManagerService = servicesManager.getService(PersistenceManagerService.class);
-            final RetryingTransactionHelper txnHelper = servicesManager.getService(DmTransactionService.class).getRetryingTransactionHelper();
+            tx.begin();
             persistenceManagerService.disableBehaviour(CStudioContentModel.ASPECT_PREVIEWABLE);
-            RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
-                public String execute() throws Throwable {
-                    writeContent(site, path, fileName, contentType, input, createFolders, edit, unlock);
-                    rename(site, null, path, targetPath, createFolder);
-                    return null;
-                }
-            };
-            txnHelper.doInTransaction(renameCallBack, false, true);
+            tx.commit();
+            writeContent(site, path, fileName, contentType, input, createFolders, edit, unlock);
+            rename(site, null, path, targetPath, createFolder);
+            tx = dmTransactionService.getNonPropagatingUserTransaction();
+            tx.begin();
             persistenceManagerService.enableBehaviour(CStudioContentModel.ASPECT_PREVIEWABLE);
+            tx.commit();
         } catch (Throwable t) {
-            logger.error("Error while executing write and rename: ", t);
+            logger.error("Error while write and rename: ", t);
+            handleWriteTransactionException(tx);
         } finally {
             generalLockService.unlock(id);
         }
@@ -239,50 +246,129 @@ public class DmContentServiceScript extends BaseProcessorExtension {
         params.put(DmConstants.KEY_EDIT, edit);
         params.put(DmConstants.KEY_UNLOCK, unlock);
         String id = site + ":" + path + ":" + fileName + ":" + contentType;
-        ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
-        String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
+        DmTransactionService dmTransactionService = getServicesManager().getService(DmTransactionService.class);
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
-        // processContent will close the input stream
-        NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+        ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
+        UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
         String lockKey = id;
-        if (nodeRef != null) {
-            lockKey = nodeRef.getId();
+        NodeRef nodeRef = null;
+        String fullPath = "";
+        try {
+            tx.begin();
+            fullPath = servicesConfig.getRepositoryRootPath(site) + path;
+            // processContent will close the input stream
+            nodeRef = persistenceManagerService.getNodeRef(fullPath);
+            if (nodeRef != null) {
+                lockKey = nodeRef.getId();
+            }
+
+            tx.commit();
+        } catch (RollbackException e) {
+            logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+            handleWriteTransactionException(tx);
+            throw new RuntimeException(e);
+        } catch (HeuristicMixedException e) {
+            logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+            handleWriteTransactionException(tx);
+            throw new RuntimeException(e);
+        } catch (HeuristicRollbackException e) {
+            logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+            handleWriteTransactionException(tx);
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
+            logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+            handleWriteTransactionException(tx);
+            throw new RuntimeException(e);
+        } catch (NotSupportedException e) {
+            logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+            handleWriteTransactionException(tx);
+            throw new RuntimeException(e);
         }
         generalLockService.lock(lockKey);
         try {
             boolean savaAndClose = (!StringUtils.isEmpty(unlock) && unlock.equalsIgnoreCase("false")) ? false : true;
             DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
 
-            if (nodeRef != null) {
-                if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
-                    logger.error(String.format("Error Content %s is being processed (Object State is %s);", fileName,
-                        State.SYSTEM_PROCESSING.toString()));
-                    throw new RuntimeException(String.format("Content \"%s\" is being processed", fileName));
-                }
+            tx = dmTransactionService.getNonPropagatingUserTransaction();
+            try {
+                tx.begin();
+                if (nodeRef != null) {
+                    if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
+                        logger.error(String.format("Error Content %s is been process (Object State is %s);", fileName, State.SYSTEM_PROCESSING.toString()));
+                        throw new RuntimeException(String.format("Content \"%s\" is been processed", fileName));
+                    }
 
-                persistenceManagerService.setSystemProcessing(fullPath, true);
-            }
-            dmContentService.processContent(id, input.getInputStream(), true, params, DmConstants.CONTENT_CHAIN_FORM);
-            persistenceManagerService.setSystemProcessing(fullPath, false);
-            String savedFileName = params.get(DmConstants.KEY_FILE_NAME);
-            String savedPath = params.get(DmConstants.KEY_PATH);
-            fullPath = servicesConfig.getRepositoryRootPath(site) + savedPath;
-            if (!savedPath.endsWith(savedFileName)) {
-                fullPath = fullPath + "/" + savedFileName;
-            }
-            fullPath = fullPath.replace("//", "/");
-            nodeRef = persistenceManagerService.getNodeRef(fullPath);
-            if (nodeRef != null) {
-                if (savaAndClose) {
-                    persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE);
-                } else {
-                    persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE_FOR_PREVIEW);
+                    persistenceManagerService.setSystemProcessing(fullPath, true);
                 }
-            } else {
-                persistenceManagerService.insertNewObjectEntry(fullPath);
+                tx.commit();
+            } catch (HeuristicRollbackException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (RollbackException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (SystemException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (HeuristicMixedException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (NotSupportedException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
             }
-            persistenceManagerService.setSystemProcessing(fullPath, false);
+
+            tx = dmTransactionService.getNonPropagatingUserTransaction();
+            try {
+                tx.begin();
+                dmContentService.processContent(id, input.getInputStream(), true, params, DmConstants.CONTENT_CHAIN_FORM);
+                persistenceManagerService.setSystemProcessing(fullPath, false);
+                String savedFileName = params.get(DmConstants.KEY_FILE_NAME);
+                String savedPath = params.get(DmConstants.KEY_PATH);
+                fullPath = servicesConfig.getRepositoryRootPath(site) + savedPath;
+                if (!savedPath.endsWith(savedFileName)) {
+                    fullPath = fullPath + "/" + savedFileName;
+                }
+                fullPath = fullPath.replace("//", "/");
+                nodeRef = persistenceManagerService.getNodeRef(fullPath);
+                if (nodeRef != null) {
+                    if (savaAndClose) {
+                        persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE);
+                    } else {
+                        persistenceManagerService.transition(nodeRef, ObjectStateService.TransitionEvent.SAVE_FOR_PREVIEW);
+                    }
+                } else {
+                    persistenceManagerService.insertNewObjectEntry(fullPath);
+                }
+                persistenceManagerService.setSystemProcessing(fullPath, false);
+                tx.commit();
+            } catch (HeuristicRollbackException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (RollbackException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (SystemException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (HeuristicMixedException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            } catch (NotSupportedException e) {
+                logger.error("Error executing transaction while writing content site " + site + ", path" + path, e);
+                handleWriteTransactionException(tx);
+                throw new RuntimeException(e);
+            }
         } catch (ServiceException e) {
             persistenceManagerService.setSystemProcessing(fullPath, false);
             logger.error("error writing content",e);
@@ -292,6 +378,14 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             throw e;
         } finally {
             generalLockService.unlock(lockKey);
+        }
+    }
+
+    private void handleWriteTransactionException(UserTransaction tx) {
+        try {
+            tx.rollback();
+        } catch (SystemException e1) {
+            logger.warn("Error rolling back transaction for write content action");
         }
     }
 
@@ -349,20 +443,26 @@ public class DmContentServiceScript extends BaseProcessorExtension {
         String fullPath = null;
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
+        DmTransactionService dmTransactionService = getServicesManager().getService(DmTransactionService.class);
         NodeRef nodeRef = null;
+        UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
         try {
+            tx.begin();
             fullPath = servicesConfig.getRepositoryRootPath(site) + path + "/" + assetName;
             //fullPath = fullPath.replaceAll(" ", "");
             nodeRef = persistenceManagerService.getNodeRef(fullPath);
             
             if (nodeRef != null) {
                 if (persistenceManagerService.getObjectState(nodeRef) == State.SYSTEM_PROCESSING){
-                    logger.error(String.format("Error Content %s is being processed (Object State is %s);", assetName,
-                        State.SYSTEM_PROCESSING.toString()));
-                    throw new RuntimeException(String.format("Content \"%s\" is being processed", assetName));
+                    logger.error(String.format("Error Content %s is been process (Object State is %s);", assetName, State.SYSTEM_PROCESSING.toString()));
+                    throw new RuntimeException(String.format("Content \"%s\" is been processed", assetName));
                 }
                 persistenceManagerService.setSystemProcessing(fullPath, true);
             }
+            tx.commit();
+
+            tx = dmTransactionService.getNonPropagatingUserTransaction();
+            tx.begin();
             DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
             ResultTO result = dmContentService.processContent(id, in.getInputStream(), false, params, DmConstants.CONTENT_CHAIN_ASSET);
             if (isSystemAsset) {
@@ -374,11 +474,14 @@ public class DmContentServiceScript extends BaseProcessorExtension {
                 persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.SAVE);
             }
             ResultTO resultTO =  ScriptUtils.createSuccessResult(result.getItem());
+            tx.commit();
             return resultTO;
         } catch (ContentNotAllowedException e) {
+            handleWriteTransactionException(tx);
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_IMAGE_SIZE_ERROR, e.getLocalizedMessage());
         } catch (AlfrescoRuntimeException e) {
             logger.error("Error processing content", e);
+            handleWriteTransactionException(tx);
             Throwable cause = e.getCause();
             if (cause != null) {
                 return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, cause.getLocalizedMessage());
@@ -386,6 +489,7 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
         } catch (Exception e) {
             logger.error("Error processing content", e);
+            handleWriteTransactionException(tx);
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
         } finally {
             if (nodeRef != null) {
@@ -423,21 +527,31 @@ public class DmContentServiceScript extends BaseProcessorExtension {
         String fullPath = null;
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
+        DmTransactionService dmTransactionService = getServicesManager().getService(DmTransactionService.class);
         NodeRef nodeRef = null;
+        UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
         try {
+            tx.begin();
             fullPath = servicesConfig.getRepositoryRootPath(site) + path + "/" + assetName;
             if (nodeRef != null) {
                 persistenceManagerService.setSystemProcessing(fullPath, true);
             }
+            tx.commit();
+
+            tx = dmTransactionService.getNonPropagatingUserTransaction();
+            tx.begin();
             DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
             ResultTO result = dmContentService.processContent(id, in, false, params, DmConstants.CONTENT_CHAIN_ASSET);
             persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.SAVE);
             ResultTO resultTO =  ScriptUtils.createSuccessResult(result.getItem());
+            tx.commit();
             return resultTO;
         } catch (ContentNotAllowedException e) {
+            handleWriteTransactionException(tx);
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_IMAGE_SIZE_ERROR, e.getLocalizedMessage());
         } catch (AlfrescoRuntimeException e) {
             logger.error("Error processing content", e);
+            handleWriteTransactionException(tx);
             Throwable cause = e.getCause();
             if (cause != null) {
                 return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, cause.getLocalizedMessage());
@@ -445,6 +559,7 @@ public class DmContentServiceScript extends BaseProcessorExtension {
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
         } catch (Exception e) {
             logger.error("Error processing content", e);
+            handleWriteTransactionException(tx);
             return ScriptUtils.createFailureResult(CStudioConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
         } finally {
             if (nodeRef != null) {

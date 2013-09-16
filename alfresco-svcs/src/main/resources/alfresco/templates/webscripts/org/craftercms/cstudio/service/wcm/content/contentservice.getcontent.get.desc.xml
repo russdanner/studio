@@ -4,5 +4,5 @@
   <url>/cstudio/wcm/content/get-content?site={site}&amp;path={path}&amp;edit={edit}&amp;draft={draft}</url>
   <format default="xml">argument</format>
   <authentication>user</authentication>
-  <transaction>required</transaction>
+  <transaction>none</transaction>
 </webscript>
