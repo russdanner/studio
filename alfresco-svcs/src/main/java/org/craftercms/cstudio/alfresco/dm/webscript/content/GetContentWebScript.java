@@ -21,6 +21,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.dm.util.WebScriptUtils;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
@@ -30,6 +31,7 @@ import org.craftercms.cstudio.alfresco.service.api.ServicesConfig;
 import org.craftercms.cstudio.alfresco.service.exception.ContentNotFoundException;
 import org.craftercms.cstudio.alfresco.util.ContentUtils;
 import org.craftercms.cstudio.alfresco.webscript.constant.CStudioWebScriptConstants;
+import org.craftercms.cstudio.api.service.transaction.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.extensions.webscripts.*;
@@ -38,6 +40,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 /**
  * Webscript for downloading files from DM
@@ -83,26 +91,16 @@ public class GetContentWebScript extends AbstractWebScript {
 			InputStream input = null;
 			OutputStream output = null;
 			try {
-                /* Disable DRAFT repo Dejan 29.03.2012 */
-                /*
-	            if (isDraft) {
-	                	try {
-	                		input = _dmContentService.getContentFromDraft(site, path, isEdit, !isChangeTemplate);
-	                	} catch (ContentNotFoundException e) {
-	                		input = _dmContentService.getContent(site, path, isEdit, !isChangeTemplate);
-	                	}
-                } else {
-                    input = _dmContentService.getContent(site, path, isEdit, !isChangeTemplate);
-                }
-                */
 
                 PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
                 GeneralLockService generalLockService = getServicesManager().getService(GeneralLockService.class);
                 DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
-                ObjectStateService objectStateService = getServicesManager().getService(ObjectStateService.class);
+                DmTransactionService dmTransactionService = getServicesManager().getService(DmTransactionService
+                    .class);
                 ServicesConfig servicesConfig = getServicesManager().getService(ServicesConfig.class);
                 String fullPath = servicesConfig.getRepositoryRootPath(site) + path;
                 NodeRef nodeRef = persistenceManagerService.getNodeRef(fullPath);
+                UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
                 if (nodeRef != null) {
                     generalLockService.lock(nodeRef.getId());
                 }
@@ -110,7 +108,10 @@ public class GetContentWebScript extends AbstractWebScript {
                     if (isEdit) {
                         persistenceManagerService.setSystemProcessing(fullPath, true);
                     }
+
+                    tx.begin();
                     input = dmContentService.getContent(site, path, isEdit, !isChangeTemplate);
+                    tx.commit();
                     if (isEdit) {
                         persistenceManagerService.transition(fullPath, ObjectStateService.TransitionEvent.EDIT);
                         persistenceManagerService.setSystemProcessing(fullPath, false);
@@ -135,6 +136,16 @@ public class GetContentWebScript extends AbstractWebScript {
                     if (logger.isDebugEnabled()) {
                         logger.debug("file transmission completed.");
                     }
+                } catch (HeuristicRollbackException e) {
+                    handleTransactionError(site, path, tx, res);
+                } catch (RollbackException e) {
+                    handleTransactionError(site, path, tx, res);
+                } catch (SystemException e) {
+                    handleTransactionError(site, path, tx, res);
+                } catch (HeuristicMixedException e) {
+                    handleTransactionError(site, path, tx, res);
+                } catch (NotSupportedException e) {
+                    handleTransactionError(site, path, tx, res);
                 } finally {
                     if (nodeRef != null) {
                         generalLockService.unlock(nodeRef.getId());
@@ -156,4 +167,18 @@ public class GetContentWebScript extends AbstractWebScript {
 		}
 	}
 
+    private void handleTransactionError(String site, String path, UserTransaction tx, WebScriptResponse res) throws
+            IOException {
+        logger.warn("Error rolling executing transaction for get content; site " + site + ", path " + path);
+        res.setStatus(Status.STATUS_BAD_REQUEST);
+        Writer writer = res.getWriter();
+        writer.append("Failed to get content by site: " + site + " and path: " + path);
+        writer.close();
+
+        try {
+            tx.rollback();
+        } catch (SystemException e1) {
+            logger.warn("Error rolling back transaction for get content action");
+        }
+    }
 }
