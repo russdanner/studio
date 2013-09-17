@@ -61,6 +61,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.craftercms.cstudio.alfresco.service.api.GeneralLockService;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -305,80 +306,87 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
             LOGGER.error("Content not found at: " + fullPath);
             throw new ContentNotFoundException();
         }
-        FileInfo fileInfo = getFileInfo(nodeRef);
-        Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
-        String site = "";
-        Matcher m = DmConstants.DM_REPO_PATH_PATTERN.matcher(fullPath);
-        if (m.matches()) {
-            site = m.group(3);
-        }
-        if (nodeRef == null) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER.error("Content not found at: " + fullPath);
-            }
-            throw new ContentNotFoundException("Content not found at: " + fullPath);
-        }
-        // Get content item from cache
-        Cache cache = getCache();
-        String cacheScope = generateCacheScope(site);
-        DmContentItemTO contentItemTO = null;
+        DmContentItemTO toRet = null;
+        GeneralLockService generalLockService = getService(GeneralLockService.class);
+        generalLockService.lock(nodeRef.getId());
         try {
-            CacheItem cacheItem = cache.get(cacheScope, generateKey(fullPath, nodeRef.getId()));
-            if (cacheItem != null) {
-                contentItemTO = (DmContentItemTO) cacheItem.getValue();
+            FileInfo fileInfo = getFileInfo(nodeRef);
+            Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
+            String site = "";
+            Matcher m = DmConstants.DM_REPO_PATH_PATTERN.matcher(fullPath);
+            if (m.matches()) {
+                site = m.group(3);
             }
-        } catch (Exception e) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Failed to get content item from cache: " + fullPath);
-            }
-        }
-        if (contentItemTO == null) {
-            // Content item not found
-            // Step 1: Get content item from repository
-
-            contentItemTO = createDmContentItem(site, fullPath, nodeRef, nodeProperties);
-            String name = contentItemTO.getName();
-            // if the node is an XML file, load content metadata from the file
-            if (name.endsWith(DmConstants.XML_PATTERN)) {
-                loadCommonProperties(site, fullPath, nodeRef, contentItemTO, nodeProperties);
-            } else if (fileInfo.isFolder()) {
-                contentItemTO.setComponent(false);
-                contentItemTO.setContainer(true);
-            } else {
-                contentItemTO.setAsset(CStudioUtils.matchesPatterns(contentItemTO.getUri(), servicesConfig.getAssetPatterns(site)));
-                contentItemTO.setRenderingTemplate(CStudioUtils.matchesPatterns(contentItemTO.getUri(), servicesConfig.getRenderingTemplatePatterns(site)));
-                contentItemTO.setComponent(true);
-            }
-            contentItemTO.setBrowserUri(getBrowserUri(contentItemTO));
-
-            populateProperties(nodeRef, contentItemTO);
-
-            // Step 2: Put item into cache
-            try {
-                if (!_cache.hasScope(cacheScope)) {
-                	// TODO CodeRev: What is 5000?  Should it be configurable?
-                	_cache.addScope(cacheScope, 5000);
-                }
-                // TODO CodeRev: BUT shouldn't first check to see if we actually got the item?
-                _cache.put(cacheScope, generateKey(fullPath, nodeRef.getId()), contentItemTO);
-            } catch (Exception e) {
+            if (nodeRef == null) {
                 if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("Error while putting item to cache " + fullPath);
+                    LOGGER.error("Content not found at: " + fullPath);
+                }
+                throw new ContentNotFoundException("Content not found at: " + fullPath);
+            }
+            // Get content item from cache
+            Cache cache = getCache();
+            String cacheScope = generateCacheScope(site);
+            DmContentItemTO contentItemTO = null;
+            try {
+                CacheItem cacheItem = cache.get(cacheScope, generateKey(fullPath, nodeRef.getId()));
+                if (cacheItem != null) {
+                    contentItemTO = (DmContentItemTO) cacheItem.getValue();
+                }
+            } catch (Exception e) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Failed to get content item from cache: " + fullPath);
                 }
             }
-        }
-        
-        // TODO CodeRev: What if ContentTO is null?
-        DmContentItemTO toRet = new DmContentItemTO(contentItemTO);
-        // populate dependencies
-        if (populateDependencies) {
-            DmDependencyService dmDependencyService = getService(DmDependencyService.class);
-            dmDependencyService.populateDependencyContentItems(site, toRet, false);
-        }
-        populateStateProperties(fullPath, nodeRef, nodeProperties, toRet);
-        if (fileInfo.isFolder()) {
-            ObjectStateService objectStateService = getService(ObjectStateService.class);
-            toRet.setNew(!objectStateService.isFolderLive(fullPath));
+            if (contentItemTO == null) {
+                // Content item not found
+                // Step 1: Get content item from repository
+
+                contentItemTO = createDmContentItem(site, fullPath, nodeRef, nodeProperties);
+                String name = contentItemTO.getName();
+                // if the node is an XML file, load content metadata from the file
+                if (name.endsWith(DmConstants.XML_PATTERN)) {
+                    loadCommonProperties(site, fullPath, nodeRef, contentItemTO, nodeProperties);
+                } else if (fileInfo.isFolder()) {
+                    contentItemTO.setComponent(false);
+                    contentItemTO.setContainer(true);
+                } else {
+                    contentItemTO.setAsset(CStudioUtils.matchesPatterns(contentItemTO.getUri(), servicesConfig.getAssetPatterns(site)));
+                    contentItemTO.setRenderingTemplate(CStudioUtils.matchesPatterns(contentItemTO.getUri(), servicesConfig.getRenderingTemplatePatterns(site)));
+                    contentItemTO.setComponent(true);
+                }
+                contentItemTO.setBrowserUri(getBrowserUri(contentItemTO));
+
+                populateProperties(nodeRef, contentItemTO);
+
+                // Step 2: Put item into cache
+                try {
+                    if (!_cache.hasScope(cacheScope)) {
+                        // TODO CodeRev: What is 5000?  Should it be configurable?
+                        _cache.addScope(cacheScope, 5000);
+                    }
+                    // TODO CodeRev: BUT shouldn't first check to see if we actually got the item?
+                    _cache.put(cacheScope, generateKey(fullPath, nodeRef.getId()), contentItemTO);
+                } catch (Exception e) {
+                    if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error("Error while putting item to cache " + fullPath);
+                    }
+                }
+            }
+
+            // TODO CodeRev: What if ContentTO is null?
+            toRet = new DmContentItemTO(contentItemTO);
+            // populate dependencies
+            if (populateDependencies) {
+                DmDependencyService dmDependencyService = getService(DmDependencyService.class);
+                dmDependencyService.populateDependencyContentItems(site, toRet, false);
+            }
+            populateStateProperties(fullPath, nodeRef, nodeProperties, toRet);
+            if (fileInfo.isFolder()) {
+                ObjectStateService objectStateService = getService(ObjectStateService.class);
+                toRet.setNew(!objectStateService.isFolderLive(fullPath));
+            }
+        } finally {
+            generalLockService.unlock(nodeRef.getId());
         }
 
         return toRet;
