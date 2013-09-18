@@ -455,7 +455,6 @@ public class PublishingManagerImpl implements PublishingManager {
                 } else {
                     LOGGER.debug("Import mode is ON. Create new version is skipped for [{0}] site \"{1}\"", item.getPath(), item.getSite());
                 }
-                _contentRepository.stateTransition(item.getSite(), item.getPath(), TransitionEvent.DEPLOYMENT);
             }
             if (item.getAction() == CopyToEnvironmentItem.Action.MOVE) {
                 if (item.getOldPath() != null && item.getOldPath().length() > 0) {
@@ -464,6 +463,9 @@ public class PublishingManagerImpl implements PublishingManager {
                 }
             }
             _contentRepository.copyToEnvironment(item.getSite(), item.getEnvironment(), item.getPath());
+            if (LIVE_ENVIRONMENT.equalsIgnoreCase(item.getEnvironment())) {
+                _contentRepository.stateTransition(item.getSite(), item.getPath(), TransitionEvent.DEPLOYMENT);
+            }
             _contentRepository.setSystemProcessing(item.getSite(), item.getPath(), false);
         }
     }
