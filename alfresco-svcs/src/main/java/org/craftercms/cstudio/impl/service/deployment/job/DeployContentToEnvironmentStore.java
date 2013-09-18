@@ -28,6 +28,7 @@ import org.craftercms.cstudio.api.service.transaction.TransactionService;
 import org.craftercms.cstudio.api.util.ListUtils;
 import org.craftercms.cstudio.impl.service.deployment.PublishingManager;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -122,10 +123,26 @@ public class DeployContentToEnvironmentStore implements Job {
                                     logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
                                     _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
                                     tx.commit();
-                                } catch (DeploymentException err) {
+                                } catch (Exception err) {
+                                    tx.rollback();
+                                    tx = _transactionService.getTransaction();
+                                    tx.begin();
                                     logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
                                     _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
-                                    throw err;
+                                    List<String> pathsToResetSystemProcessing = new ArrayList<String>();
+                                    if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
+                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
+                                        mergedList.addAll(missingDependencies);
+                                        for (CopyToEnvironmentItem helpItem : mergedList) {
+                                            pathsToResetSystemProcessing.add(helpItem.getPath());
+                                        }
+                                    } else {
+                                        for (CopyToEnvironmentItem helpItem : itemList) {
+                                            pathsToResetSystemProcessing.add(helpItem.getPath());
+                                        }
+                                    }
+                                    _contentRepository.setSystemProcessing(site, pathsToResetSystemProcessing, false);
+                                    tx.commit();
                                 } finally {
                                     for (CopyToEnvironmentItem item : itemList) {
                                         _contentRepository.unLockItem(item.getSite(), item.getPath());
@@ -138,7 +155,9 @@ public class DeployContentToEnvironmentStore implements Job {
 
             } catch(Exception err) {
                 logger.error("Error while executing deployment to environment store", err);
-                tx.rollback();
+                if (tx.getStatus() == Status.STATUS_ACTIVE) {
+                    tx.rollback();
+                }
             }
         }
         catch(Exception err) {
