@@ -5929,9 +5929,9 @@ YConnect.failureEvent.subscribe(function() {
                     date.setTime(date.getTime() + duration);
                     expires = date.toGMTString();
                 } else {
-                    // IE9 doesn't like an empty expire value (i.e. it won't create the cookie)
-                    // For IE9, creating a cookie with an expire value set to half an hour (0.5 hours)
-                    expires = (YAHOO.env.ua.ie == 9) ? (new Date( (new Date()).getTime() + CStudioAuthoring.Utils.Cookies.durationHours(0.5) )).toGMTString() : "";
+                    // IE doesn't like an empty expire value (i.e. it won't create the cookie)
+                    // For IE, creating a cookie with an expire value set to half an hour (0.5 hours)
+                    expires = (YAHOO.env.ua.ie) ? (new Date( (new Date()).getTime() + CStudioAuthoring.Utils.Cookies.durationHours(0.5) )).toGMTString() : "";
                 }
                 domainVal = (CStudioAuthoringContext.cookieDomain != 'localhost') ? "domain=" + CStudioAuthoringContext.cookieDomain : "";
                 document.cookie =
