@@ -60,4 +60,6 @@ public interface PublishingManager {
     void setLockBehaviourEnabled(boolean enabled);
 
     List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths);
+
+    void removeItemFromQueue(String site, String path) throws DeploymentException;
 }

@@ -159,4 +159,6 @@ public interface ContentRepository {
     void lockItem(String site, String path);
 
     void unLockItem(String site, String path);
+
+    boolean isInWorkflow(String site, String path);
 }

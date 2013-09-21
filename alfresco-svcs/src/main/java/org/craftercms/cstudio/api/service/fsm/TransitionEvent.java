@@ -22,5 +22,6 @@ public enum TransitionEvent {
 
     SCHEDULED_DEPLOYMENT,
     DEPLOYMENT,
-    DELETE
+    DELETE,
+    UNSCHEDULED_DEPLOYMENT
 }

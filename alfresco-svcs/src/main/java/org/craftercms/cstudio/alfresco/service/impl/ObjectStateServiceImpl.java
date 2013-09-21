@@ -398,6 +398,36 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
     }
 
     @Override
+    public boolean isSubmitted(String path) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        return isSubmitted(persistenceManagerService.getNodeRef(path));
+    }
+
+    @Override
+    public boolean isSubmitted(NodeRef nodeRef) {
+        if (nodeRef == null) return false;
+        GeneralLockService nodeLockService = getService(GeneralLockService.class);
+        ObjectStateTO state;
+        nodeLockService.lock(nodeRef.getId());
+        try {
+            state = objectStateDAOService.getObjectState(nodeRef.getId());
+            if (state == null) {
+                PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+                DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
+                objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                state = objectStateDAOService.getObjectState(nodeRef.getId());
+            }
+        } finally {
+            nodeLockService.unlock(nodeRef.getId());
+        }
+        if (state != null) {
+            return ObjectStateService.State.isSubmitted(state.getState());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public boolean isInWorkflow(String path) {
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         return isInWorkflow(persistenceManagerService.getNodeRef(path));

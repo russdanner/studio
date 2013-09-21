@@ -203,12 +203,14 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_SCHEDULED);
         put(TransitionEvent.DEPLOYMENT, ObjectStateService.TransitionEvent.DEPLOYMENT);
         put(TransitionEvent.DELETE, ObjectStateService.TransitionEvent.DELETE);
+        put(TransitionEvent.UNSCHEDULED_DEPLOYMENT, ObjectStateService.TransitionEvent.SUBMIT_WITHOUT_WORKFLOW_UNSCHEDULED);
     }};
 
     private final Map<TransitionEvent, ObjectStateService.State> defaultStateForEvent = new HashMap<TransitionEvent, ObjectStateService.State>() {{
         put(TransitionEvent.SCHEDULED_DEPLOYMENT, ObjectStateService.State.NEW_SUBMITTED_NO_WF_SCHEDULED);
         put(TransitionEvent.DEPLOYMENT, ObjectStateService.State.EXISTING_UNEDITED_UNLOCKED);
         put(TransitionEvent.DELETE, ObjectStateService.State.EXISTING_DELETED);
+        put(TransitionEvent.UNSCHEDULED_DEPLOYMENT, ObjectStateService.State.NEW_SUBMITTED_NO_WF_UNSCHEDULED);
     }};
 
     @Override
@@ -587,6 +589,18 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
         if (nodeRef != null) {
             generalLockService.unlock(nodeRef.getId());
+        }
+    }
+
+    @Override
+    public boolean isInWorkflow(final String site, final String path) {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+        if (nodeRef != null) {
+            return persistenceManagerService.isInWorkflow(nodeRef);
+        } else {
+            return false;
         }
     }
 

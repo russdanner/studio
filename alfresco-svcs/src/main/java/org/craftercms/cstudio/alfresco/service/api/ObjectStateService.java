@@ -316,4 +316,8 @@ public interface ObjectStateService {
     public boolean isInWorkflow(String path);
 
     public boolean isInWorkflow(NodeRef nodeRef);
+
+    public boolean isSubmitted(String path);
+
+    public boolean isSubmitted(NodeRef nodeRef);
 }
