@@ -530,11 +530,20 @@ public class PublishingManagerImpl implements PublishingManager {
                     } catch (DeploymentDALException e) {
                         LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, parentPath);
                     }
-                    missingDependenciesPaths.add(parentFullPath);
-                    CopyToEnvironmentItem parentItem = createMissingItem(site, parentPath, item);
-                    processItem(parentItem);
-                    mandatoryDependencies.add(parentItem);
-                    mandatoryDependencies.addAll(processMandatoryDependencies(parentItem, pathsToDeploy, missingDependenciesPaths));
+                    if (_contentRepository.isInWorkflow(site, parentPath)) {
+                        missingDependenciesPaths.add(parentFullPath);
+                        CopyToEnvironmentItem parentItem = createMissingItem(site, parentPath, item);
+                        processItem(parentItem);
+                        mandatoryDependencies.add(parentItem);
+                        mandatoryDependencies.addAll(processMandatoryDependencies(parentItem, pathsToDeploy, missingDependenciesPaths));
+                    } else {
+                        try {
+                            _deploymentDAL.removeItemFromQueue(site, parentPath);
+                        } catch (DeploymentDALException e) {
+                            LOGGER.error("Error while removing item from queue for path {0}, site {1}", e, site,
+                                parentPath);
+                        }
+                    }
                 }
             }
         }
@@ -548,11 +557,20 @@ public class PublishingManagerImpl implements PublishingManager {
                     } catch (DeploymentDALException e) {
                         LOGGER.error("Error while canceling workflow for path {0}, site {1}", e, site, dependentPath);
                     }
-                    missingDependenciesPaths.add(dependentFullPath);
-                    CopyToEnvironmentItem dependentItem = createMissingItem(site, dependentPath, item);
-                    processItem(dependentItem);
-                    mandatoryDependencies.add(dependentItem);
-                    mandatoryDependencies.addAll(processMandatoryDependencies(dependentItem, pathsToDeploy, missingDependenciesPaths));
+                    if (_contentRepository.isInWorkflow(site, dependentPath)) {
+                        missingDependenciesPaths.add(dependentFullPath);
+                        CopyToEnvironmentItem dependentItem = createMissingItem(site, dependentPath, item);
+                        processItem(dependentItem);
+                        mandatoryDependencies.add(dependentItem);
+                        mandatoryDependencies.addAll(processMandatoryDependencies(dependentItem, pathsToDeploy, missingDependenciesPaths));
+                    } else {
+                        try {
+                            _deploymentDAL.removeItemFromQueue(site, dependentPath);
+                        } catch (DeploymentDALException e) {
+                            LOGGER.error("Error while removing item from queue for path {0}, site {1}", e, site,
+                                dependentPath);
+                        }
+                    }
                 }
             }
         }
@@ -579,6 +597,11 @@ public class PublishingManagerImpl implements PublishingManager {
         missingItem.setUser(item.getUser());
         missingItem.setSubmissionComment(item.getSubmissionComment());
         return missingItem;
+    }
+
+    @Override
+    public void removeItemFromQueue(final String site, final String path) throws DeploymentException{
+        _deploymentDAL.removeItemFromQueue(site, path);
     }
 
     public ContentRepository getContentRepository() { return _contentRepository; }

@@ -690,6 +690,10 @@ public interface PersistenceManagerService {
 
     public boolean isScheduled(NodeRef nodeRef);
 
+    public boolean isSubmitted(String fullPath);
+
+    public boolean isSubmitted(NodeRef nodeRef);
+
     public String getAdministratorUserName();
 
     public boolean isInWorkflow(String fullPath);

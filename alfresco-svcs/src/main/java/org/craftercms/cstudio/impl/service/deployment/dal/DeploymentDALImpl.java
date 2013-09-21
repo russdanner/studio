@@ -423,6 +423,24 @@ public class DeploymentDALImpl implements DeploymentDAL {
     }
 
     @Override
+    public void removeItemFromQueue(String site, String path) throws DeploymentDALException {
+        try {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("site", site);
+            params.put("path", path);
+            params.put("state", CopyToEnvironmentItem.State.PROCESSING);
+            params.put("canceledstate", CopyToEnvironmentItem.State.CANCELED);
+            params.put("now", new Date(0L));
+            _sqlMapClient.update(STATEMENT_CANCEL_WORKFLOW_FOR_CONTENT, params);
+        } catch (SQLException e) {
+            logger.error("Error while removing item from queue for content site \"{0}\" path \"{1}\"\nSQL " +
+                "State: " +
+                "\"{2}\"\nError Code: \"{3}\"", e, site, path, e.getSQLState(), e.getErrorCode());
+            throw new DeploymentDALException("Error while removing item from queue for content site " + site + " path " + path , e);
+        }
+    }
+
+    @Override
     public void markItemsCompleted(String site, String environment, List<CopyToEnvironmentItem> processedItems) throws DeploymentDALException {
         try {
             if (processedItems != null && processedItems.size() > 0) {

@@ -37,6 +37,7 @@ public class DeploymentServiceImpl implements DeploymentService {
             _contentRepository.stateTransition(site, paths, TransitionEvent.SCHEDULED_DEPLOYMENT);
             _contentRepository.setSystemProcessing(site, paths, false);
         } else {
+            _contentRepository.stateTransition(site, paths, TransitionEvent.UNSCHEDULED_DEPLOYMENT);
             _contentRepository.setSystemProcessing(site, paths, true);
         }
 

@@ -1839,6 +1839,31 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     @Override
+    public boolean isSubmitted(String fullPath) {
+        NodeRef nodeRef = getNodeRef(fullPath);
+        if (nodeRef == null) {
+            return false;
+        }
+        return isSubmitted(nodeRef);
+    }
+
+    @Override
+    public boolean isSubmitted(NodeRef nodeRef) {
+        if (nodeRef == null) {
+            return false;
+        }
+        ObjectStateService objectStateService = getService(ObjectStateService.class);
+        FileInfo fileInfo = getFileInfo(nodeRef);
+        if (fileInfo.isFolder()) {
+            return false;
+        }
+        if (objectStateService.isSubmitted(nodeRef)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean isInWorkflow(String fullPath) {
         NodeRef nodeRef = getNodeRef(fullPath);
         if (nodeRef == null) {

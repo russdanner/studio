@@ -66,6 +66,7 @@ public class DeployContentToEnvironmentStore implements Job {
 
         try {
 
+            List<String> pathsToDeploy = null;
             UserTransaction tx = _transactionService.getTransaction();
 
             try {
@@ -78,33 +79,56 @@ public class DeployContentToEnvironmentStore implements Job {
                     for (String site : siteNames) {
                         logger.debug("Processing content ready for deployment for site \"{0}\"", site);
                         List<CopyToEnvironmentItem> itemsToDeploy = _publishingManager.getItemsReadyForDeployment(site, LIVE_ENVIRONMENT);
-                        List<String> pathsToDeploy = getPaths(itemsToDeploy);
+                        pathsToDeploy = getPaths(itemsToDeploy);
                         Set<String> missingDependenciesPaths = new HashSet<String>();
 
                         if (itemsToDeploy != null && itemsToDeploy.size() > 0) {
                             logger.debug("Site \"{0}\" has {1} items ready for deployment", site, itemsToDeploy.size());
                             logger.debug("Splitting items into chunks for processing", site, itemsToDeploy.size());
+
                             List<List<CopyToEnvironmentItem>> chunks = ListUtils.partition(itemsToDeploy, _processingChunkSize);
 
                             for (int i = 0; i < chunks.size(); i++) {
 
                                 List<CopyToEnvironmentItem> itemList = chunks.get(i);
+                                List<CopyToEnvironmentItem> processedItemList = new ArrayList<CopyToEnvironmentItem>();
+                                Set<String> pathsToProcess = new HashSet<String>();
                                 List<CopyToEnvironmentItem> missingDependencies = new ArrayList<CopyToEnvironmentItem>();
                                 for (CopyToEnvironmentItem item : itemList) {
-                                    _contentRepository.lockItem(item.getSite(), item.getPath());
+                                    pathsToProcess.add(item.getPath());
+                                    if (_mandatoryDependenciesCheckEnabled) {
+                                        pathsToProcess.addAll(_contentRepository.getDependentPaths(item.getSite(),
+                                            item.getPath()));
+                                    }
                                 }
+                                for (String pathToLock : pathsToProcess) {
+                                    _contentRepository.lockItem(site, pathToLock);
+                                }
+                                List<String> pathsForSystemProcessing = new ArrayList<String>(pathsToProcess);
+                                _contentRepository.setSystemProcessing(site, pathsForSystemProcessing, true);
                                 tx = _transactionService.getTransaction();
+
+                                _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
                                 tx.begin();
                                 try {
                                     logger.debug("Mark items as processing for site \"{0}\"", site);
 
-                                    _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
                                     for (CopyToEnvironmentItem item : itemList) {
                                         _contentRepository.lockItem(item.getSite(), item.getPath());
                                         try {
                                             _publishingManager.setLockBehaviourEnabled(false);
-                                            logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
-                                            _publishingManager.processItem(item);
+                                            logger.debug("Preparing to process [{0}] content item for site \"{1}\"",
+                                                item.getPath(),
+                                                site);
+                                            if (_contentRepository.isInWorkflow(item.getSite(), item.getPath())) {
+                                                logger.debug("Processing [{0}] content item for site \"{1}\"", item.getPath(), site);
+                                                _publishingManager.processItem(item);
+                                                processedItemList.add(item);
+                                            } else {
+                                                logger.debug("Removing from queue [{0}] content item for site " +
+                                                    "\"{1}\"", item.getPath(), site);
+                                                _publishingManager.removeItemFromQueue(item.getSite(), item.getPath());
+                                            }
                                             if (_mandatoryDependenciesCheckEnabled) {
                                                 missingDependencies.addAll(_publishingManager.processMandatoryDependencies(item, pathsToDeploy, missingDependenciesPaths));
                                             }
@@ -114,38 +138,25 @@ public class DeployContentToEnvironmentStore implements Job {
                                     }
                                     logger.debug("Setting up items for publishing synchronization for site \"{0}\"", site);
                                     if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
-                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
+                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(processedItemList);
                                         mergedList.addAll(missingDependencies);
                                         _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, mergedList);
                                     } else {
-                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                        _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, processedItemList);
                                     }
                                     logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
-                                    _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
+
                                     tx.commit();
+                                    _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, processedItemList);
+                                    _contentRepository.setSystemProcessing(site, pathsForSystemProcessing, false);
                                 } catch (Exception err) {
                                     tx.rollback();
-                                    tx = _transactionService.getTransaction();
-                                    tx.begin();
                                     logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
-                                    _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
-                                    List<String> pathsToResetSystemProcessing = new ArrayList<String>();
-                                    if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
-                                        List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
-                                        mergedList.addAll(missingDependencies);
-                                        for (CopyToEnvironmentItem helpItem : mergedList) {
-                                            pathsToResetSystemProcessing.add(helpItem.getPath());
-                                        }
-                                    } else {
-                                        for (CopyToEnvironmentItem helpItem : itemList) {
-                                            pathsToResetSystemProcessing.add(helpItem.getPath());
-                                        }
-                                    }
-                                    _contentRepository.setSystemProcessing(site, pathsToResetSystemProcessing, false);
-                                    tx.commit();
+                                    _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, processedItemList);
+                                    _contentRepository.setSystemProcessing(site, pathsForSystemProcessing, false);
                                 } finally {
-                                    for (CopyToEnvironmentItem item : itemList) {
-                                        _contentRepository.unLockItem(item.getSite(), item.getPath());
+                                    for (String pathToUnlock : pathsToProcess) {
+                                        _contentRepository.unLockItem(site, pathToUnlock);
                                     }
                                 }
                             }
