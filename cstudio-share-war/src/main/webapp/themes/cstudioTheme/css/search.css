@@ -249,4 +249,6 @@ div#cstudio-wcm-search-pagination-controls {
 	float: left;
 }
 
-.cstudio-wcm-search-result-header-pa
+.cstudio-search-result-body .cstudio-search-description .cstudio-search-banner-image {
+	max-width: 640px;
+}
