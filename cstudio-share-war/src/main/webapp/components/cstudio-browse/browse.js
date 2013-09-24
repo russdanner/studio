@@ -215,7 +215,7 @@ CStudioSearch.renderCommonResultWrapper = function(contentTO, resultBody) {
 	return "<div class='cstudio-search-result'>" +
 				"<div id='result-select-" + contentTO.resultId + "' class='cstudio-search-select-container'></div>" +
 				"<div id='result-status" + contentTO.resultId + "' style='float: left; margin-left: 32px;'></div>" +
-				"<div style='margin-top: -16px'>"+
+				"<div>"+
 					"<div class='cstudio-search-result-body'>" +
 						resultBody +
 					"</div>" +

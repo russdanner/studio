@@ -6255,7 +6255,7 @@ YConnect.failureEvent.subscribe(function() {
 			if (addSpacer == true) {
 				var formControlSpacer = document.createElement("div");
 				formControlSpacer.id = "formBottomSpacer";
-				formControlSpacer.style.height = "100px";
+				formControlSpacer.style.height = "30px";
 				this.container.appendChild(formControlSpacer);
 			}
 

@@ -94,13 +94,13 @@
 
 	</script>
 
-	<div id="cstudio-wcm-search-wrapper">	
+	<div id="cstudio-wcm-search-wrapper" style="min-width: 1130px;">
 
 		<div id="cstudio-wcm-search-main">				
 			<div id="cstudio-wcm-search-search-title" class="cstudio-wcm-searchResult-header"></div>
-			<div id="cstudio-wcm-search-filter-controls" style="width:250px; min-height:550px; background-color:white; float:left; padding: 20px 30px; border-radius: 5px; float: left; border: 1px #ccc solid; margin-bottom: 10px;";"></div>
+			<div id="cstudio-wcm-search-filter-controls" style="width:230px; min-height:570px; background-color:white; float:left; padding: 10px 20px; border-radius: 5px; float: left; border: 1px #ccc solid; margin-bottom: 10px;";"></div>
 			 
-		    <div id="cstudio-wcm-search-result" style="width:69%; border-radius: 5px; float: left; border: 1px #ccc solid; margin-bottom: 10px;  margin-left: 10px; overflow:hidden; position: absolute; left: 340px;">
+		    <div id="cstudio-wcm-search-result" style="min-width: 715px; width:67%; border-radius: 5px; float: left; border: 1px #ccc solid; margin-bottom: 10px;  margin-left: 10px; overflow:hidden;">
 			   <div id="cstudio-wcm-search-result-in-progress" class="cstudio-wcm-search-result-in-progress-img"></div>
 				&nbsp;	
 			</div>
