@@ -173,15 +173,18 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             logger.debug("Starting Bulk Go Live for path " + path + " site " + site);
         }
         List<String> childrenPaths = new ArrayList<String>();
-        childrenPaths.add(path);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), path);
         if (nodeRef != null) {
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+            if (!fileInfo.isFolder()) {
+                childrenPaths.add(path);
+            }
             if (path.endsWith("/" + DmConstants.INDEX_FILE) && persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
                 getAllMandatoryChildren(site, path, childrenPaths);
             } else {
-                FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+
                 if (fileInfo.isFolder()) {
                     getAllMandatoryChildren(site, path, childrenPaths);
                 }
