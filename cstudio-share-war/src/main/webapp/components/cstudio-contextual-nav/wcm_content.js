@@ -421,7 +421,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  * handle edit
                  */
                 renderEdit: {
-                    render: function(option, isBulk, isAdmin, state,  isRelevant, isWrite) {
+                    render: function(option, isBulk, isAdmin, state,  isRelevant, isWrite, perms, isOneItemLocked) {
                         var content = CStudioAuthoring.SelectedContent.getSelectedContent();
                         for (var i = 0, l = content.length; i < l; ++i) {
                             if (content[i].asset) return;
@@ -518,7 +518,7 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  * render submit option
                  */
                 renderSimpleSubmit: {
-                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms) {
+                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms, isOneItemLocked) {
                     
                         if(CStudioAuthoring.Service.isPublishAllowed(perms)) {
                             return;
@@ -526,10 +526,11 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                         
                         if(isWrite) {
                             var isRelevant = false;
-                            if (state.indexOf("In Progress")>=0 || state.indexOf("Deleted")>=0 || state.indexOf("Submitted") != -1) {
-                                isRelevant = true;
-                            }
-                            if(state.indexOf("Submitted for Delete")>=0 || state.indexOf("Scheduled for Delete")>=0) {
+                            if (( state.indexOf("In Progress") >= 0 
+                                || state.indexOf("Deleted") >= 0 
+                                || state.indexOf("Submitted") != -1
+                                || state.indexOf("Submitted for Delete") >=0 
+                                || state.indexOf("Scheduled for Delete") >=0 ) && !isOneItemLocked) {
                                 isRelevant = true;
                             }
         
@@ -617,11 +618,12 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
 
             renderApproveCommon: {
                 render: function(option, isBulk, isAdmin,
-                                 state, isRelevant, isWrite, perms) {
+                                 state, isRelevant, isWrite, perms, isOneItemLocked) {
 
                     if (CStudioAuthoring.Service.isPublishAllowed(perms)) {
 
-                        var isRelevant = !(state.toLowerCase().indexOf("live") !== -1);
+                        var isRelevant = (!(state.toLowerCase().indexOf("live") !== -1) 
+                                            && !isOneItemLocked);
 
                         option.onclick = function() {
                             CStudioAuthoring.Operations.approveCommon(
@@ -639,11 +641,11 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  * render approve / golive option
                  */
                 renderApprove: {
-                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms) {
+                    render: function(option, isBulk, isAdmin, state, isRelevant, isWrite, perms, isOneItemLocked) {
                         if(CStudioAuthoring.Service.isPublishAllowed(perms)) {
                             var lowerstate = state.toLowerCase(),
                                 isRelevant = true;
-                            if ( lowerstate.indexOf("live") != -1) {
+                            if ( lowerstate.indexOf("live") != -1 || isOneItemLocked ) {
                               isRelevant = false;
                             }
                             option.onclick = function() {
@@ -659,11 +661,11 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                  * render approve-schedule option
                  */
                 renderApproveSchedule: {
-                    render: function(option, isBulk, isAdmin, state,  isRelevant, isWrite, perms) {
+                    render: function(option, isBulk, isAdmin, state,  isRelevant, isWrite, perms, isOneItemLocked) {
                         if(CStudioAuthoring.Service.isPublishAllowed(perms)) {
                             var lowerstate = state.toLowerCase(),
                                 isRelevant = true;
-                            if ( lowerstate.indexOf("live") != -1) {
+                            if ( lowerstate.indexOf("live") != -1 || isOneItemLocked ) {
                               isRelevant = false;
                             }
                             option.onclick = function() {
