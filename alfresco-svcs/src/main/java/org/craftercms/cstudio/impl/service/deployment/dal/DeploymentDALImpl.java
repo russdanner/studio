@@ -64,6 +64,13 @@ public class DeploymentDALImpl implements DeploymentDAL {
     private static final String STATEMENT_INSERT_DEPLOYMENT_HISTORY = "deploymentWorkers.insertDeploymentSyncHistoryItem";
     private static final String STATEMENT_GET_DEPLOYMENT_HISTORY = "deploymentWorkers.getDeploymentHistory";
 
+    private static final String STATEMENT_DELETE_COPYTOENVIRONMENT_FOR_SITE = "deploymentWorkers" +
+        ".deleteCopyToEnvironmentForSite";
+    private static final String STATEMENT_DELETE_PUNLISHTOTARGET_FOR_SITE = "deploymentWorkers" +
+        ".deletePublishToTargetForSite";
+    private static final String STATEMENT_DELETE_DEPLOYMENTSYNCHISTORY_FOR_SITE = "deploymentWorkers" +
+        ".deleteDeploymentSyncHistoryForSite";
+
     public void initTable() throws DeploymentDALException {
         DataSource dataSource = _sqlMapClient.getDataSource();
         Connection connection = null;
@@ -503,6 +510,29 @@ public class DeploymentDALImpl implements DeploymentDAL {
         } catch (SQLException e) {
             logger.error("Error while marking ready for copy to environment for items\nSQL State: \"{0}\"\nError Code: \"{1}\"", e, e.getSQLState(), e.getErrorCode());
             throw new DeploymentDALException("Error while marking ready for copy to environment for items", e);
+        } finally {
+            try {
+                _sqlMapClient.endTransaction();
+            } catch (SQLException e) {
+                logger.error("Error releasing transaction", e);
+            }
+        }
+    }
+
+    @Override
+    public void deleteDeploymentDataForSite(final String site) throws DeploymentDALException {
+        try {
+            _sqlMapClient.startTransaction();
+            _sqlMapClient.delete(STATEMENT_DELETE_COPYTOENVIRONMENT_FOR_SITE, site);
+            _sqlMapClient.delete(STATEMENT_DELETE_PUNLISHTOTARGET_FOR_SITE, site);
+            _sqlMapClient.delete(STATEMENT_DELETE_DEPLOYMENTSYNCHISTORY_FOR_SITE, site);
+            _sqlMapClient.commitTransaction();
+        } catch (SQLException e) {
+            logger.error("Error while deleting deployment data for site {2}.\nSQL State: \"{0}\"\nError Code: \"{1}\"",
+                e,
+                e.getSQLState(),
+                e.getErrorCode(), site);
+            throw new DeploymentDALException("Error while deleting deployment data for site " + site, e);
         } finally {
             try {
                 _sqlMapClient.endTransaction();

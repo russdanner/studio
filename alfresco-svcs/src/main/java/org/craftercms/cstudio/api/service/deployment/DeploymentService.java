@@ -36,4 +36,6 @@ public interface DeploymentService {
     List<CopyToEnvironmentItem> getScheduledItems(String site);
 
     void cancelWorkflow(String site, String path) throws DeploymentException;
+
+    void deleteDeploymentDataForSite(String site);
 }

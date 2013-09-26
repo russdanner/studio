@@ -23,6 +23,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
+import org.craftercms.cstudio.api.service.deployment.DeploymentService;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -101,6 +102,8 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
     protected String deploymentConfigPath;
 
     protected DeploymentEndpointConfig deploymentEndpointConfig;
+
+    protected DeploymentService deploymentService;
 
     @Override
     public void register() {
@@ -587,6 +590,7 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
         checkForUpdates();
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         persistenceManagerService.deleteSite(site);
+        deploymentService.deleteDeploymentDataForSite(site);
         sitesMappings.remove(site);
     }
     
@@ -792,5 +796,9 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
 
     public void setDeploymentConfigPath(String deploymentConfigPath) {
         this.deploymentConfigPath = deploymentConfigPath;
+    }
+
+    public void setDeploymentService(final DeploymentService deploymentService) {
+        this.deploymentService = deploymentService;
     }
 }

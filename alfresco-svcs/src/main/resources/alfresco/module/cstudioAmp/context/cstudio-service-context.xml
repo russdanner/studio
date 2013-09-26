@@ -169,6 +169,7 @@
         <property name="environment"><value>${environmentConfig.environment}</value></property>
         <property name="deploymentConfigPath"><value>${deploymentConfig.configPath}</value></property>
         <property name="deploymentEndpointConfig" ref="cstudioDeploymentConfig" />
+        <property name="deploymentService" ref="cstudioDeploymentServiceSimple" />
     </bean>
 
     <bean id="cstudioDmContentTypeService" class="org.craftercms.cstudio.alfresco.dm.service.impl.DmContentTypeServiceImpl"

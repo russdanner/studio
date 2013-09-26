@@ -53,4 +53,6 @@ public interface DeploymentDAL {
     void markItemsProcessing(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentDALException;
 
     void markItemsReady(String site, String environment, List<CopyToEnvironmentItem> copyToEnvironmentItems) throws DeploymentDALException;
+
+    void deleteDeploymentDataForSite(String site) throws DeploymentDALException;
 }

@@ -51,8 +51,24 @@ public class PublishContentToDeploymentTarget implements Job {
         return _publishingFailureCounters.get(site);
     }
 
+    private static boolean stopSignaled = false;
+    private static boolean running = false;
+
+    public static synchronized void signalToStop(boolean toStop) {
+        stopSignaled = toStop;
+    }
+
+    public synchronized static boolean isRunning() {
+        return running;
+    }
+
+    public synchronized static void setRunning(boolean isRunning){
+        running = isRunning;
+    }
+
     public void execute() {
-        if (_masterPublishingNode) {
+        if (_masterPublishingNode && !stopSignaled) {
+            setRunning(true);
             if (singleWorkerLock.tryLock()) {
                 try {
                     Method processJobMethod = this.getClass().getMethod("processJobs", new Class[0]);
@@ -64,6 +80,7 @@ public class PublishContentToDeploymentTarget implements Job {
                     singleWorkerLock.unlock();
                 }
             }
+            setRunning(false);
         }
     }
 

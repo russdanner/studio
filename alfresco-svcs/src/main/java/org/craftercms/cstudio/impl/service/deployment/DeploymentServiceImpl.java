@@ -17,6 +17,8 @@
  ******************************************************************************/
 package org.craftercms.cstudio.impl.service.deployment;
 
+import org.craftercms.cstudio.api.log.Logger;
+import org.craftercms.cstudio.api.log.LoggerFactory;
 import org.craftercms.cstudio.api.repository.ContentRepository;
 import org.craftercms.cstudio.api.service.deployment.CopyToEnvironmentItem;
 import org.craftercms.cstudio.api.service.deployment.DeploymentException;
@@ -24,12 +26,17 @@ import org.craftercms.cstudio.api.service.deployment.DeploymentService;
 import org.craftercms.cstudio.api.service.deployment.DeploymentSyncHistoryItem;
 import org.craftercms.cstudio.api.service.fsm.TransitionEvent;
 import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDAL;
+import org.craftercms.cstudio.impl.service.deployment.dal.DeploymentDALException;
+import org.craftercms.cstudio.impl.service.deployment.job.DeployContentToEnvironmentStore;
+import org.craftercms.cstudio.impl.service.deployment.job.PublishContentToDeploymentTarget;
 
 import java.util.*;
 
 /**
  */
 public class DeploymentServiceImpl implements DeploymentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
     public void deploy(String site, String environment, List<String> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentException {
 
@@ -74,6 +81,35 @@ public class DeploymentServiceImpl implements DeploymentService {
         }
 
         _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+    }
+
+    @Override
+    public void deleteDeploymentDataForSite(final String site) {
+        try {
+            signalWorkersToStop();
+            _deploymentDAL.deleteDeploymentDataForSite(site);
+        } catch (DeploymentDALException e) {
+            logger.error("Error while deleting deployment data for site {0}", e, site);
+        } finally {
+            signalWorkersToContinue();
+        }
+    }
+
+    private void signalWorkersToContinue() {
+        DeployContentToEnvironmentStore.signalToStop(false);
+        PublishContentToDeploymentTarget.signalToStop(false);
+    }
+
+    private void signalWorkersToStop() {
+        DeployContentToEnvironmentStore.signalToStop(true);
+        PublishContentToDeploymentTarget.signalToStop(true);
+        while (DeployContentToEnvironmentStore.isRunning() && PublishContentToDeploymentTarget.isRunning()) {
+            try {
+                wait(1000);
+            } catch (InterruptedException e) {
+                logger.info("Interrupted while waiting to stop workers", e);
+            }
+        }
     }
 
     @Override
