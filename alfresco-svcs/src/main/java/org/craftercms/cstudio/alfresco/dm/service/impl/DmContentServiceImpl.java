@@ -667,7 +667,7 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
     public boolean contentExists(String site, String relativePath, String originalPath) {
         String fullPath = getContentFullPath(site, relativePath);
         try {
-            if (fullPath.endsWith(DmConstants.INDEX_FILE)) {
+            if (fullPath.endsWith("/" + DmConstants.INDEX_FILE)) {
                 fullPath = DmUtils.getParentUrl(fullPath);
             }
             PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);

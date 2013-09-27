@@ -476,7 +476,7 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
 
         //Checks that the node is a folder, not if cont
         boolean isFolder = this.getFileInfo(nodeRef).isFolder();
-        item.setContainer(isFolder || fullPath.endsWith(DmConstants.INDEX_FILE));
+        item.setContainer(isFolder || fullPath.endsWith("/" + DmConstants.INDEX_FILE));
         if (isFolder) {
             item.setUri(relativePath);
             String folderPath = (name.equals(DmConstants.INDEX_FILE)) ? relativePath.replace("/" + name, "") : relativePath;
