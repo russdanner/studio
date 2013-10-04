@@ -390,8 +390,8 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
     }
 
     protected void addChildUri(String site, NodeRef node, List<String> paths){
-        CStudioNodeService cStudioNodeService = getService(CStudioNodeService.class);
-        String fullPath = cStudioNodeService.getNodePath(node);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        String fullPath = persistenceManagerService.getNodePath(node);
         if(fullPath.endsWith(DmConstants.XML_PATTERN)){
             DmPathTO path = new DmPathTO(fullPath);
             String childUri = path.getRelativePath();
@@ -532,11 +532,11 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
 
             preRenameCleanWorkFlow(site,sub,sourcePath);
 
-            if (srcNodeParentUrl.equalsIgnoreCase(dstNodeParentUrl)) {
+                    if (srcNodeParentUrl.equalsIgnoreCase(dstNodeParentUrl)) {
                 persistenceManagerService.rename(persistenceManagerService.getNodeRef(srcFullPath), dstNodeName);
-            } else {
+                    } else {
                 persistenceManagerService.move(persistenceManagerService.getNodeRef(srcFullPath), persistenceManagerService.getNodeRef(dstNodeParentUrl), dstNodeName);
-            }
+                    }
 
             NodeRef node = persistenceManagerService.getNodeRef(dstFullPath);
             if (node == null) {
@@ -616,7 +616,9 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
             for(String childUri: childUris){
                 dmWorkflowService.removeFromWorkflow(site, sub, childUri, true);
                 NodeRef nodeRef = getIndexNode(site, childUri);
-                transitionNodes.add(nodeRef.getId());
+                if (nodeRef != null) {
+                    transitionNodes.add(nodeRef.getId());
+                }
             }
             if (!transitionNodes.isEmpty()) {
                 persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
@@ -706,12 +708,12 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
                 updateChildNodes(site, child.getNodeRef(), parentOldPath, parentNewPath, addNodeProperty, user, fileContent);
             }
         } else {
-            CStudioNodeService cStudioNodeService = getService(CStudioNodeService.class);
             DmContentService dmContentService = getService(DmContentService.class);
             ActivityService activityService = getService(ActivityService.class);
             Map<String,String> extraInfo = new HashMap<String,String>();
-            String relativePath = new DmPathTO(cStudioNodeService.getNodePath(node)).getRelativePath();
-            addNodePropertyToChildren(site, cStudioNodeService.getNodePath(node), parentNewPath, parentOldPath, addNodeProperty, user, fileContent);
+            String relativePath = new DmPathTO(persistenceManagerService.getNodePath(node)).getRelativePath();
+            addNodePropertyToChildren(site, persistenceManagerService.getNodePath(node), parentNewPath, parentOldPath, addNodeProperty, user,
+                fileContent);
             extraInfo.put(DmConstants.KEY_CONTENT_TYPE, dmContentService.getContentType(site, getIndexFilePath(relativePath)));
             activityService.postActivity(site, user, getIndexFilePath(relativePath), ActivityService.ActivityType.UPDATED, extraInfo);
         }
@@ -798,10 +800,9 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         List<NodeRef> changeSet = DmUtils.getChangeSet(searchService, servicesConfig, site);
         if (changeSet != null && changeSet.size() > 0) {
             DmContentService dmContentService = getService(DmContentService.class);
-            CStudioNodeService cStudioNodeService = getService(CStudioNodeService.class);
             PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
             for (NodeRef workFlowNode : changeSet) {
-                DmPathTO path = new DmPathTO(cStudioNodeService.getNodePath(workFlowNode));
+                DmPathTO path = new DmPathTO(persistenceManagerService.getNodePath(workFlowNode));
                 List<String> submittedChildPaths = new FastList<String>();
                 getChildrenUri(site, workFlowNode, submittedChildPaths);
 
