@@ -1671,6 +1671,8 @@ var CStudioForms = CStudioForms || function() {
             var formDef = form.definition;
             var html = "";
 
+            // Update the window title
+            window.document.title = (formDef.pageName) ? formDef.title + " | " + formDef.pageName : formDef.title; 
 
             html = "<div class='cstudio-form-container'>";
 
