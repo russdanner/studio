@@ -1130,7 +1130,12 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
 
     @Override
     public FileInfo getFileInfo(String fullPath) {
-        return getFileInfo(getNodeRef(fullPath));
+        NodeRef nodeRef = getNodeRef(fullPath);
+        if (nodeRef != null) {
+            return getFileInfo(nodeRef);
+        } else {
+            return null;
+        }
     }
 
     @Override
