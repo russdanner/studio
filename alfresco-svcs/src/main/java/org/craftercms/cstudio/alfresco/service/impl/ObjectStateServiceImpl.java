@@ -21,6 +21,7 @@ import javolution.util.FastMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.lang.StringUtils;
+import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.objectstate.ObjectStateDAOService;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
@@ -34,6 +35,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 public class ObjectStateServiceImpl extends AbstractRegistrableService implements ObjectStateService {
 
@@ -98,8 +102,17 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
                 state = objectStateDAOService.getObjectState(nodeRef.getId());
                 if (state == null) {
                     PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+                    DmTransactionService dmTransactionService = getService(DmTransactionService.class);
                     DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
-                    objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                    UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
+                    try {
+                        tx.begin();
+                        objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+                        tx.commit();
+                    } catch (Exception e) {
+                        LOGGER.error("[" + Thread.currentThread().getName() + "] Error while adding new object state entry " +
+                            "for site " + dmPathTO.getSiteName() + " , " + "path " + dmPathTO.getRelativePath(), e);
+                    }
                     state = objectStateDAOService.getObjectState(nodeRef.getId());
                 }
             } finally {

@@ -19,7 +19,9 @@ package org.craftercms.cstudio.alfresco.objectstate;
 import com.ibatis.common.jdbc.ScriptRunner;
 import com.ibatis.common.resources.Resources;
 import com.ibatis.sqlmap.client.SqlMapClient;
+import com.ibatis.sqlmap.client.SqlMapSession;
 import javolution.util.FastList;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.service.api.ObjectStateService;
 import org.craftercms.cstudio.alfresco.to.ObjectStateTO;
 import org.slf4j.Logger;
@@ -103,6 +105,10 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
             if (checkTable == null || checkTable.size() < 1) {
                 ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
                 scriptRunner.runScript(Resources.getResourceAsReader(initializeScriptPath));
+            } else {
+                ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
+                scriptRunner.runScript(Resources.getResourceAsReader(initializeScriptPath.replace("initialize.sql",
+                    "alter_path_column_size.sql")));
             }
             List<HashMap> indexCheckResult = _sqlMapClient.queryForList(STATEMENT_CHECK_OBJECT_IDX);
             if (indexCheckResult == null || indexCheckResult.size() < 1) {
@@ -133,28 +139,32 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
 
     @Override
     public void insertNewObject(String objectId, String site, String path) {
-        Long id = null;
-        try {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("object_id", objectId);
-            ObjectStateDAO entity = (ObjectStateDAO) _sqlMapClient.queryForObject(STATEMENT_GET_OBJECT_STATE, params);
-            if (entity != null) {
-            	// TODO CodeRev: warn that item already exists
-                return;
+        if (StringUtils.isNotEmpty(objectId)) {
+            Long id = null;
+            try {
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("object_id", objectId);
+                ObjectStateDAO entity = (ObjectStateDAO) _sqlMapClient.queryForObject(STATEMENT_GET_OBJECT_STATE, params);
+                if (entity != null) {
+                    LOGGER.warn("Object state entry already exists for site " + site + " , path " + path);
+                    return;
+                }
+
+                ObjectStateDAO entry = new ObjectStateDAO();
+                entry.setObjectId(objectId);
+                entry.setSite(site);
+                entry.setPath(path);
+                entry.setState(ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED.name());
+                id = (Long) _sqlMapClient.insert(STATEMENT_INSERT_ENTRY, entry);
+                _sqlMapClient.flushDataCache();
+            } catch (SQLException e) {
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("[" + Thread.currentThread().getName() + "] Error while adding new object state entry " +
+                        "for site " + site + " , " + "path " + path, e);
+                }
             }
-            
-            ObjectStateDAO entry = new ObjectStateDAO();
-            entry.setObjectId(objectId);
-            entry.setSite(site);
-            entry.setPath(path);
-            entry.setState(ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED.name());
-            id = (Long) _sqlMapClient.insert(STATEMENT_INSERT_ENTRY, entry);
-        } catch (SQLException e) {
-            if (LOGGER.isErrorEnabled()) {
-            	// TODO CodeRev: Tell me what object... what can i do if I just know there was some error on some item
-            	// TODO CodeRev: what path, what id, what site... etc etc
-                LOGGER.error("Error while adding new object state entry", e);
-            }
+        } else {
+            LOGGER.warn("Object state can not be inserted for empty object id; site " + site + " ," + " path " + path);
         }
     }
 
@@ -168,7 +178,8 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
                 return toObjectStateTo(entity);
             } else {
                 if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("Object State is not found for " + objectId + ".");
+                    LOGGER.warn("[" + Thread.currentThread().getName() + "] Object State is not found for " +
+                        objectId + ".");
                 }
                 return null;
             }
