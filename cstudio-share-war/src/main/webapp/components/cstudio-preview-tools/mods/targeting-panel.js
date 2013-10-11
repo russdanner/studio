@@ -33,7 +33,7 @@ CStudioAuthoring.TargetingPanel = CStudioAuthoring.TargetingPanel || {
 						var sliderEl = document.getElementById('container');
 						
 						var personalListEl = document.createElement("OL");
-						personalListEl.id = "carousel";
+						personalListEl.id = "craftercmspersonacarousel";
 						sliderEl.appendChild(personalListEl);
 						
 						if(!config.length) {
