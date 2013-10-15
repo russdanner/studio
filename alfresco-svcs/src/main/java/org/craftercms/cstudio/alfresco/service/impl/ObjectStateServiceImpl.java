@@ -20,7 +20,6 @@ import javolution.util.FastList;
 import javolution.util.FastMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.transaction.Status;
+import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
@@ -103,22 +102,8 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
                 state = objectStateDAOService.getObjectState(nodeRef.getId());
                 if (state == null) {
                     PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-                    DmTransactionService dmTransactionService = getService(DmTransactionService.class);
                     DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
-                    UserTransaction tx = dmTransactionService.getNonPropagatingUserTransaction();
-                    try {
-                        tx.begin();
-                        objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
-                        tx.commit();
-                    } catch (Exception e) {
-                        LOGGER.error("[" + Thread.currentThread().getName() + "] Error while adding new object state entry " +
-                            "for site " + dmPathTO.getSiteName() + " , " + "path " + dmPathTO.getRelativePath(), e);
-                        try {
-                            tx.rollback();
-                        } catch (SystemException e1) {
-                            LOGGER.error("Failed to rollback transaction.", e1);
-                        }
-                    }
+                    objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
                     state = objectStateDAOService.getObjectState(nodeRef.getId());
                 }
             } finally {
@@ -260,25 +245,8 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
                 nextState = transitionTable[currentState.getState().ordinal()][event.ordinal()];
             }
             if (currentState == null) {
-                DmTransactionService dmTransactionService = getService(DmTransactionService.class);
                 insertNewObjectEntry(nodeRef);
-                TransactionService transactionService = getService(TransactionService.class);
-                UserTransaction tx = transactionService.getNonPropagatingUserTransaction();
-                try {
-                    tx.begin();
-                    persistenceManagerService.setObjectState(nodeRef, nextState);
-                    tx.commit();
-                } catch (Exception e) {
-                    LOGGER.error("[" + Thread.currentThread().getName() + "] Error while setting object state " +
-                        "for " + nodeRef.getId(), e);
-                    try {
-                        if (tx.getStatus() == Status.STATUS_ACTIVE) {
-                            tx.rollback();
-                        }
-                    } catch (SystemException e1) {
-                        LOGGER.error("Failed to rollback transaction.", e1);
-                    }
-                }
+                persistenceManagerService.setObjectState(nodeRef, nextState);
             } else if (nextState != currentState.getState() && nextState != State.NOOP) {
                 persistenceManagerService.setObjectState(nodeRef, nextState);
             } else if (nextState == State.NOOP) {
@@ -299,6 +267,14 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
         }
     }
 
+    protected void insertNewObjectEntryWithState(NodeRef nodeRef, State state) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
+        if (StringUtils.isNotEmpty(dmPathTO.getSiteName())) {
+            objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
+        }
+    }
+
     @Override
     public void insertNewObjectEntry(String fullPath) {
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
@@ -310,23 +286,7 @@ public class ObjectStateServiceImpl extends AbstractRegistrableService implement
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         DmPathTO dmPathTO = new DmPathTO(persistenceManagerService.getNodePath(nodeRef));
         if (StringUtils.isNotEmpty(dmPathTO.getSiteName())) {
-            TransactionService transactionService = getService(TransactionService.class);
-            UserTransaction tx = transactionService.getNonPropagatingUserTransaction();
-            try {
-                tx.begin();
                 objectStateDAOService.insertNewObject(nodeRef.getId(), dmPathTO.getSiteName(), dmPathTO.getRelativePath());
-                tx.commit();
-            } catch (Exception e) {
-                LOGGER.error("[" + Thread.currentThread().getName() + "] Error while adding new object state entry" +
-                    "for site " + dmPathTO.getSiteName() + " , " + "path " + dmPathTO.getRelativePath(), e);
-                try {
-                    if (tx.getStatus() == Status.STATUS_ACTIVE) {
-                        tx.rollback();
-                    }
-                } catch (SystemException e1) {
-                    LOGGER.error("Failed to rollback transaction.", e1);
-                }
-            }
         }
     }
 
