@@ -1822,7 +1822,7 @@ var CStudioForms = CStudioForms || function() {
                         var section = def.sections[i];
                         section.form = def;
 
-                        var sectionId = section.title.replace(" ","");
+                        var sectionId = section.title.replace(/ /g,"");
                         section.id = sectionId;
 
                         processFieldsFn = function(container) {
@@ -2125,8 +2125,9 @@ var CStudioForms = CStudioForms || function() {
             }
 
             return value;
-        }
+        },
 
+        defaultSectionTitle: "Default Section Title"
     }
 
     return cfe;
