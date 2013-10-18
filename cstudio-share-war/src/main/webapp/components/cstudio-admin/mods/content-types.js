@@ -534,10 +534,17 @@ CStudioAdminConsole.Tool.ContentTypes.FormVisualization.prototype = {
 	 */	
 	renderSections: function() {
 		var sections = this.definition.sections;
+		var reSectionTitle = new RegExp(CStudioForms.Util.defaultSectionTitle + " \\d+");
 		
 		for(var i=0; i<sections.length; i++) {
 			var section = sections[i];
 			var sectionContainerEl = document.createElement("div");
+
+			if (!section.title || reSectionTitle.test(section.title)) {
+				section.title = CStudioForms.Util.defaultSectionTitle;
+				section.timestamp = Number(new Date());	// Save a timestamp to append to the default section name later on
+			}
+			
 			YDom.addClass(sectionContainerEl, "content-type-visual-section-container");
 			this.formVisualContainerEl.appendChild(sectionContainerEl);	
 
@@ -1258,6 +1265,13 @@ CStudioAdminConsole.PropertySheet.prototype = {
 	},
 
 	renderSectionPropertySheet: function(item, sheetEl) {
+		var reSectionTitle = new RegExp(CStudioForms.Util.defaultSectionTitle + " \\d+");
+
+		if (!item.title || reSectionTitle.test(item.title)) {
+			item.title = CStudioForms.Util.defaultSectionTitle;
+			item.timestamp = Number(new Date());	// Save a timestamp to append to the default section name later on
+		}
+
 		this.createRowHeading("Section Basics", sheetEl);
 		this.createRowFn("Title", "title", item.title,  "", "string", sheetEl, function(e, el) { item.title = el.value; } );
 		this.createRowFn("Description",  "description", item.description, "",  "string", sheetEl,  function(e, el) { item.description = el.value; });
@@ -1827,8 +1841,10 @@ CStudioAdminConsole.Tool.ContentTypes.FormDefMain = {
 	 * render the xml for a section
 	 */
 	renderSectionToXml: function(section) {
+		var sectionTitle = (section.title != CStudioForms.Util.defaultSectionTitle) ? section.title : 
+												section.title + " " + section.timestamp;
 		var xml = "\t\t<section>\r\n" +
-			         "\t\t\t<title>" + CStudioForms.Util.escapeXml(section.title) + "</title>\r\n" +
+			         "\t\t\t<title>" + CStudioForms.Util.escapeXml(sectionTitle) + "</title>\r\n" +
 			         "\t\t\t<description>" + CStudioForms.Util.escapeXml(section.description) + "</description>\r\n" +
 			         "\t\t\t<defaultOpen>" + section.defaultOpen + "</defaultOpen>\r\n" +
 					"\t\t\t<fields>\r\n";
