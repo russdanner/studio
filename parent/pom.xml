@@ -18,8 +18,6 @@
 
     <repositories>
 
-
-
         <repository>
             <id>alfresco</id>
             <name>Alfresco Repo</name>
