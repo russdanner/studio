@@ -81,7 +81,6 @@
         FROM "cstudio_copytoenvironment"
         WHERE "site" = #site#
         AND "state" = #state#
-        AND environment = #environment#
         AND "scheduleddate" &lt;= #now#
         ORDER BY "scheduleddate" ASC
     </select>
@@ -162,11 +161,6 @@
         SELECT *
         FROM "cstudio_publishtotarget"
         WHERE "site" = #site#
-        <dynamic prepend=" AND environment IN ">
-            <iterate property="environments"  open="(" close=")" conjunction=",">
-                #environments[]#
-            </iterate>
-        </dynamic>
         AND "version" = (
             SELECT min("version") FROM "cstudio_publishtotarget"
             WHERE "site" = #site#
@@ -216,4 +210,19 @@
         AND "state" = #state#
         AND "scheduleddate" &gt; #now#
     </update>
+
+    <delete id="deleteCopyToEnvironmentForSite" parameterClass="String">
+        DELETE FROM "cstudio_copytoenvironment"
+        WHERE "site" = #site#
+    </delete>
+
+    <delete id="deletePublishToTargetForSite" parameterClass="String">
+        DELETE FROM "cstudio_publishtotarget"
+        WHERE "site" = #site#
+    </delete>
+
+    <delete id="deleteDeploymentSyncHistoryForSite" parameterClass="String">
+        DELETE FROM "cstudio_deploymentsynchistory"
+        WHERE "site" = #site#
+    </delete>
 </sqlMap>
