@@ -68,19 +68,24 @@ public class DeploymentServiceImpl implements DeploymentService {
         groupedPaths.put(CopyToEnvironmentItem.Action.UPDATE, updatedPaths);
 
         // use dal to setup deploy to environment log
+        if (!_contentRepository.environmentRepoExists(site, environment)) {
+            _contentRepository.createEnvironmentRepo(site, environment);
+        }
         _deploymentDAL.setupItemsToDeploy(site, environment, groupedPaths, scheduledDate, approver, submissionComment);
     }
 
     @Override
-    public void delete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
+    public void delete(String site, List<String> paths, String approver, Date scheduledDate) throws DeploymentException {
         if (scheduledDate != null && scheduledDate.after(new Date())) {
             _contentRepository.stateTransition(site, paths, TransitionEvent.DELETE);
             _contentRepository.setSystemProcessing(site, paths, false);
         } else {
             _contentRepository.setSystemProcessing(site, paths, true);
         }
-
-        _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+        Set<String> environments = _contentRepository.getAllPublishingEnvironments(site);
+        for (String environment : environments) {
+            _deploymentDAL.setupItemsToDelete(site, environment, paths, approver, scheduledDate);
+        }
     }
 
     @Override

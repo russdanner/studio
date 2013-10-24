@@ -68,7 +68,7 @@ public class DmPublishServiceScript extends BaseProcessorExtension {
         return jsonObject.toString();
     }
 
-    public void bulkGoLive(String site, String path) {
+    public void bulkGoLive(String site, String environment, String path) {
         String id = site + ":" + path;
         GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
         if (!generalLockService.tryLock(id)) {
@@ -78,7 +78,7 @@ public class DmPublishServiceScript extends BaseProcessorExtension {
         }
         try {
             DmPublishService dmPublishService = getServicesManager().getService(DmPublishService.class);
-            dmPublishService.bulkGoLive(site, path);
+            dmPublishService.bulkGoLive(site, environment, path);
         } finally {
             generalLockService.unlock(id);
         }

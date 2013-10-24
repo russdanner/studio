@@ -34,7 +34,7 @@ public interface DeploymentDAL {
 
     void setupItemsToDeploy(String site, String environment, Map<CopyToEnvironmentItem.Action, List<String>> paths, Date scheduledDate, String approver, String submissionComment) throws DeploymentDALException;
 
-    List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version);
+    List<PublishingSyncItem> getItemsReadyForTargetSync(String site, long version, List<String> environments);
 
     void setupItemsToDelete(String site, String environment, List<String> paths, String approver, Date scheduledDate) throws DeploymentDALException;
 

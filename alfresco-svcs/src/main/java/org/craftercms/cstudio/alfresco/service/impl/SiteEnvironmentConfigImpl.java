@@ -19,6 +19,7 @@ package org.craftercms.cstudio.alfresco.service.impl;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang.StringUtils;
+import org.craftercms.cstudio.alfresco.constant.CStudioXmlConstants;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -176,7 +177,7 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
 
 		Document document = persistenceManagerService.loadXml(configRef);
 		if (document != null) {
-			Element root = document.getRootElement();
+            Element root = document.getRootElement();
 			EnvironmentConfigTO config = new EnvironmentConfigTO();
 			String previewServerUrl = root.valueOf("preview-server-url");
 			config.setPreviewServerUrl(previewServerUrl);
@@ -214,6 +215,20 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
                     pcConfigTO.setName(channel.getText());
                     pcgConfigTo.getChannels().add(pcConfigTO);
                 }
+                node = element.selectSingleNode("live-environment");
+                if (node != null) {
+                    String isLiveEnvStr = node.getText();
+                    boolean isLiveEnvVal = (StringUtils.isNotEmpty(isLiveEnvStr)) && Boolean.getBoolean(isLiveEnvStr);
+                    pcgConfigTo.setLiveEnvironment(isLiveEnvVal);
+                    if (isLiveEnvVal) {
+                        if (config.getLiveEnvironmentPublishingGroup() == null) {
+                            config.setLiveEnvironmentPublishingGroup(pcgConfigTo);
+                        } else {
+                            pcgConfigTo.setLiveEnvironment(false);
+                            LOGGER.warn("Multiple publishing groups assigned as live environment. Only one publishing group can be live environment. " + config.getLiveEnvironmentPublishingGroup().getName() + " is already set as live environment.");
+                        }
+                    }
+                }
                 config.getPublishingChannelGroupConfigs().put(pcgConfigTo.getName(), pcgConfigTo);
             }
             
@@ -245,6 +260,16 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
             return config.getPublishingChannelGroupConfigs();
         }
         return Collections.emptyMap();
+    }
+
+    @Override
+    public PublishingChannelGroupConfigTO getLiveEnvironmentPublishingGroup(String site) {
+        checkForUpdate(site);
+        EnvironmentConfigTO config = _siteMapping.get(site);
+        if (config != null) {
+            return config.getLiveEnvironmentPublishingGroup();
+        }
+        return null;
     }
 
     @Override

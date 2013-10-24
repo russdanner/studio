@@ -81,6 +81,7 @@
         FROM "cstudio_copytoenvironment"
         WHERE "site" = #site#
         AND "state" = #state#
+        AND "environment" = #environment#
         AND "scheduleddate" &lt;= #now#
         ORDER BY "scheduleddate" ASC
     </select>
@@ -161,10 +162,22 @@
         SELECT *
         FROM "cstudio_publishtotarget"
         WHERE "site" = #site#
+        AND "environment"
+        <dynamic prepend="  IN ">
+            <iterate property="environments"  open="(" close=")" conjunction=",">
+                #environments[]#
+            </iterate>
+        </dynamic>
         AND "version" = (
             SELECT min("version") FROM "cstudio_publishtotarget"
             WHERE "site" = #site#
             AND "version" &gt; #version#
+            AND "environment"
+            <dynamic prepend="  IN ">
+                <iterate property="environments"  open="(" close=")" conjunction=",">
+                    #environments[]#
+                </iterate>
+            </dynamic>
         )
     </select>
 

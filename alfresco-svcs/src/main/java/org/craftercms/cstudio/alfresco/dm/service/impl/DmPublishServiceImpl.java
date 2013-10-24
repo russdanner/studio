@@ -80,7 +80,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             .getRetryingTransactionHelper();
         RetryingTransactionHelper.RetryingTransactionCallback<String> renameCallBack = new RetryingTransactionHelper.RetryingTransactionCallback<String>() {
             public String execute() throws Throwable {
-                deploymentService.deploy(site, "live", pathsToPublish, ld, approver,
+                deploymentService.deploy(site, mcpContext.getPublishingChannelGroup(), pathsToPublish, ld, approver,
                     mcpContext.getSubmissionComment());
                 return null;
             }
@@ -99,7 +99,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             scheduleDate = new Date();
         }
         try {
-            deploymentService.delete(site, "live", paths, approver, scheduleDate);
+            deploymentService.delete(site, paths, approver, scheduleDate);
         } catch (DeploymentException ex) {
             logger.error("Unable to delete files due a error ",ex);
         }
@@ -168,11 +168,12 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
     }
 
     @Override
-    public void bulkGoLive(String site, String path) {
+    public void bulkGoLive(String site, String environment, String path) {
         if (logger.isDebugEnabled()) {
             logger.debug("Starting Bulk Go Live for path " + path + " site " + site);
         }
         List<String> childrenPaths = new ArrayList<String>();
+        childrenPaths.add(path);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), path);
@@ -184,7 +185,6 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             if (path.endsWith("/" + DmConstants.INDEX_FILE) && persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
                 getAllMandatoryChildren(site, path, childrenPaths);
             } else {
-
                 if (fileInfo.isFolder()) {
                     getAllMandatoryChildren(site, path, childrenPaths);
                 }
@@ -202,7 +202,7 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             logger.debug("Deploying " + pathsToPublish.size() + " items");
         }
         try {
-            deploymentService.deploy(site, "live", pathsToPublish, launchDate, approver, comment);
+            deploymentService.deploy(site, environment, pathsToPublish, launchDate, approver, comment);
         } catch (DeploymentException e) {
             logger.error("Error while running bulk Go Live operation", e);
         } finally {

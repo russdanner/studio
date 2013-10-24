@@ -102,6 +102,7 @@ public class PublishContentToDeploymentTarget implements Job {
                         tx.commit();
                         for (PublishingTargetItem target : targets) {
                             logger.debug("Starting publishing on target \"{0}\", site \"{1}\"", target.getName(), site);
+                            if (target.getEnvironments() == null || target.getEnvironments().isEmpty()) continue;
                             if (_publishingManager.checkConnection(target)) {
                                 tx = _transactionService.getTransaction();
                                 tx.begin();
@@ -111,7 +112,7 @@ public class PublishContentToDeploymentTarget implements Job {
 
                                 logger.debug("Target version: \"{0}\" (target: \"{1}\", site: \"{2}\"", targetVersion, target.getName(), site);
                                 if(targetVersion != -1) {
-                                    List<PublishingSyncItem> syncItems = _publishingManager.getItemsToSync(site, targetVersion);
+                                    List<PublishingSyncItem> syncItems = _publishingManager.getItemsToSync(site, targetVersion, target.getEnvironments());
                                     if (syncItems != null && syncItems.size() > 0) {
                                         logger.info("publishing \"{0}\" item(s) to \"{1}\" for site \"{2}\"", syncItems.size(), target.getName(), site);
 

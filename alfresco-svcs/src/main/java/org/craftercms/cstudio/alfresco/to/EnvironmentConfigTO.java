@@ -44,6 +44,8 @@ public class EnvironmentConfigTO implements TimeStamped {
 
 	protected boolean _openDropdown = false;
 
+    protected PublishingChannelGroupConfigTO _liveEnvironmentPublishingGroup = null;
+
 	
 	public String getAdminEmailAddress() {
 		return _adminEmailAddress;
@@ -175,5 +177,13 @@ public class EnvironmentConfigTO implements TimeStamped {
 
     public void setPublishingChannelGroupConfigs(Map<String, PublishingChannelGroupConfigTO> publishingChannelGroupConfigs) {
         this._publishingChannelGroupConfigs = publishingChannelGroupConfigs;
+    }
+
+    public PublishingChannelGroupConfigTO getLiveEnvironmentPublishingGroup() {
+        return _liveEnvironmentPublishingGroup;
+    }
+
+    public void setLiveEnvironmentPublishingGroup(PublishingChannelGroupConfigTO liveEnvironmentPublishingGroup) {
+        this._liveEnvironmentPublishingGroup = liveEnvironmentPublishingGroup;
     }
 }

@@ -37,7 +37,7 @@ public interface PublishingManager {
 
     long getTargetVersion(PublishingTargetItem target, String site);
 
-    List<PublishingSyncItem> getItemsToSync(String site, long targetVersion);
+    List<PublishingSyncItem> getItemsToSync(String site, long targetVersion, List<String> environments);
 
     void deployItemsToTarget(String site, List<PublishingSyncItem> filteredItems, PublishingTargetItem target) throws ContentNotFoundForPublishingException, UploadFailedException;
 
@@ -45,7 +45,7 @@ public interface PublishingManager {
 
     List<CopyToEnvironmentItem> getItemsReadyForDeployment(String site, String environment);
 
-    void processItem(CopyToEnvironmentItem item);
+    void processItem(CopyToEnvironmentItem item) throws DeploymentException;
 
     void setupItemsForPublishingSync(String site, String environment, List<CopyToEnvironmentItem> itemsToDeploy) throws DeploymentException;
 
@@ -59,5 +59,5 @@ public interface PublishingManager {
 
     void setLockBehaviourEnabled(boolean enabled);
 
-    List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths);
+    List<CopyToEnvironmentItem> processMandatoryDependencies(CopyToEnvironmentItem item, List<String> pathsToDeploy, Set<String> missingDependenciesPaths) throws DeploymentException;
 }

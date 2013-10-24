@@ -99,4 +99,6 @@ public interface SiteEnvironmentConfig {
     public Map<String, PublishingChannelGroupConfigTO> getPublishingChannelGroupConfigs(String site);
     
     public boolean exists(String site);
+
+    PublishingChannelGroupConfigTO getLiveEnvironmentPublishingGroup(String site);
 }
