@@ -616,8 +616,11 @@ var CStudioForms = CStudioForms || function() {
 
             var formDefinition = CStudioForms.Util.loadFormDefinition(formId, {
                 success: function(formDef) {
-                    CStudioForms.Util.LoadFormController(formId, {
-                        success: function(customControllerClass) {
+                    CStudioForms.Util.LoadFormConfig(formId, {
+                        success: function(customControllerClass, formConfig) {
+
+                            formDef.config = formConfig;    // Make the form configuration available in the form definition
+
                             var path = CStudioAuthoring.Utils.getQueryVariable(location.search, "path");
                             if( path && path.indexOf(".xml") != -1) {
                                 //Check if the form is locked
@@ -1877,16 +1880,16 @@ var CStudioForms = CStudioForms || function() {
 
 
         /**
-         * Load the form field controller
+         * Load the form field controller and form configuration
          */
-        LoadFormController: function(formId, cb) {
+        LoadFormConfig: function(formId, cb) {
             var configCb = {
-                success: function(config) {
+                success: function(formConfig) {
 
-                    if(config['controller'] && config['controller'] == "true") {
+                    if(formConfig['controller'] && formConfig['controller'] == "true") {
                         var moduleCb = {
                             moduleLoaded: function(moduleName, clazz, config) {
-                                cb.success(clazz);
+                                cb.success(clazz, formConfig);
                             },
                             failure: function() {
                                 cb.failure();
@@ -1902,7 +1905,7 @@ var CStudioForms = CStudioForms || function() {
                             moduleConfig, moduleCb);
                     }
                     else {
-                        cb.success();
+                        cb.success(undefined, formConfig);
                     }
                 },
                 failure: function() {
@@ -2049,58 +2052,87 @@ var CStudioForms = CStudioForms || function() {
                 }
             }
 
-            for (var key in form.model) {
-
-                // "content-type","display-template" and "merge-strategy" will appear as part of the model
-                // after the form has been saved for the first time.
-                // To prevent duplicates values in the model
-                if (key == "content-type" || key ==  "display-template" || key ==  "merge-strategy") {
-                    continue;
-                }
-
-                var modelItem = form.model[key];
-
-                if(Object.prototype.toString.call( modelItem ) === '[object Array]') {
-                    xml += "\t<"+key+">";
-                    for(var j=0; j<modelItem.length; j++) {
-                        xml += "\t<item>";
-                        var repeatItem = modelItem[j];
-                        for (var repeatKey in repeatItem) {
-                            var repeatValue = modelItem[j][repeatKey];
-
-                            xml += "\t<"+repeatKey+">";
-                            if(Object.prototype.toString.call( repeatValue ).indexOf('[object Array]') != -1) {
-                                for (var k=0; k<repeatValue.length; k++) {
-                                    var subModelItem = repeatValue[k];
-                                    xml += "\t\t<item>";
-                                    for (var subRepeatKey in subModelItem) {
-                                        var subRepeatValue = subModelItem[subRepeatKey];
-                                        xml += "<"+subRepeatKey+">";
-                                        xml +=  this.escapeXml(subRepeatValue);
-                                        xml += "</"+subRepeatKey+">\r\n";
-                                    }
-                                    xml += "\t\t</item>";
-                                }
-                            }
-                            else {
-                                xml +=  this.escapeXml(repeatValue);
-                            }
-                            xml += "</"+repeatKey+">\r\n";
-                        }
-                        xml += "\t</item>";
-                    }
-                    xml += "</"+key+">\r\n";
-                }
-                else {
-                    xml += "\t<"+key+">";
-                    xml += this.escapeXml(modelItem);
-                    xml += "</"+key+">\r\n";
-                }
-            }
-
+            xml += this.printFieldsToXml(form.model, form.sections, form.definition.config);
             xml += "</"+form.definition.objectType+">";
 
             return xml;
+        },
+
+        printFieldsToXml: function(formModel, formSections, formConfig) {
+            var validFields = ['$!', 'objectGroupId', 'objectId', 'folder-name', 'createdDate', 'lastModifiedDate'],
+                output = '',
+                validFieldsStr, fieldRe, section;
+
+            // Add valid fields from form sections
+            for (var i = formSections.length - 1; i >= 0; i--) {
+                section = formSections[i];
+
+                for (var j = section.fields.length - 1; j >= 0; j--)
+                validFields.push(section.fields[j].id);
+            }
+
+            // Add valid fields from form config
+            if (formConfig && formConfig.customFields) {
+                for (var i in formConfig.customFields) {
+                    if (formConfig.customFields.hasOwnProperty(i)) {
+                        if (formConfig.customFields[i].removeOnChangeType == 'false') {
+                            validFields.push(formConfig.customFields[i].name);
+                        }
+                    }
+                }
+            }
+
+            validFields.push('$!');     // End element
+            validFieldsStr = validFields.join(",");
+
+            for (var key in formModel) {
+
+                // Because we added start and end elements, we can be sure that any field names will
+                // be delimited by the delimiter token (ie. comma)
+                fieldRe = new RegExp("," + key + "(?:,|\|\d+\|)", "g");
+
+                if (fieldRe.test(validFieldsStr)) {
+                    var modelItem = formModel[key];
+
+                    if(Object.prototype.toString.call( modelItem ) === '[object Array]') {
+                        output += "\t<"+key+">";
+                        for(var j = 0; j < modelItem.length; j++) {
+                            output += "\t<item>";
+                            var repeatItem = modelItem[j];
+                            for (var repeatKey in repeatItem) {
+                                var repeatValue = modelItem[j][repeatKey];
+
+                                output += "\t<"+repeatKey+">";
+                                if(Object.prototype.toString.call( repeatValue ).indexOf('[object Array]') != -1) {
+                                    for (var k = 0; k < repeatValue.length; k++) {
+                                        var subModelItem = repeatValue[k];
+                                        output += "\t\t<item>";
+                                        for (var subRepeatKey in subModelItem) {
+                                            var subRepeatValue = subModelItem[subRepeatKey];
+                                            output += "<"+subRepeatKey+">";
+                                            output +=  this.escapeXml(subRepeatValue);
+                                            output += "</"+subRepeatKey+">\r\n";
+                                        }
+                                        output += "\t\t</item>";
+                                    }
+                                }
+                                else {
+                                    output +=  this.escapeXml(repeatValue);
+                                }
+                                output += "</"+repeatKey+">\r\n";
+                            }
+                            output += "\t</item>";
+                        }
+                        output += "</"+key+">\r\n";
+                    }
+                    else {
+                        output += "\t<"+key+">";
+                        output += this.escapeXml(modelItem);
+                        output += "</"+key+">\r\n";
+                    }
+                }
+            }
+            return output;
         },
 
         escapeXml: function(value) {
