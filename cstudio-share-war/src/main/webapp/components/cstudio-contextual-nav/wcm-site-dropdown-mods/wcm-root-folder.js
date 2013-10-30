@@ -1773,48 +1773,93 @@ treeNode.getHtml = function() {
              */
             changeTemplate: function(sType, args, tree) {
 
-                var assignTemplateCb = {
-                    success: function(selectedType) {
-                        var path = (this.activeNode.data.uri);
+                var modalBody = YDom.get("cstudio-wcm-popup-div");
+                if (modalBody === null) {
+                    modalBody = document.createElement("div");
+                    modalBody.setAttribute("id", "cstudio-wcm-popup-div");
+                    document.body.appendChild(modalBody);
+                }
 
-                        var editCb = {
-                            success: function() {
-                                this.callingWindow.location.reload(true);
-                            },
+                var continueFn = function continueFn (e) {
+                    e.preventDefault();
 
-                            failure: function() {
-                            },
+                    var assignTemplateCb = {
+                        success: function(selectedType) {
+                            var path = (this.activeNode.data.uri);
 
-                            callingWindow: window
-                        };
-                        /* reload dashboard is heavy, to reflect changed content-type */
-                        //window.location.reload(true);
-                        //this.activeNode.data.formId = selectedType;
-                        var auxParams = new Array();
-                        var param1 = {};
-                        param1['name'] = "draft";
-                        param1['value'] = "true";
-                        var param2 = {};
-                        param2['name'] = "changeTemplate";
-                        param2['value'] = "true";
-                        auxParams.push(param1);
-                        auxParams.push(param2);
-                        CStudioAuthoring.Operations.editContent(
-                                selectedType,
-                                CStudioAuthoringContext.site,
-                                path,
-                                this.activeNode.data.nodeRef, path, false, editCb,auxParams);
-                    },
-                    failure: function() { },
-                    activeNode: oCurrentTextNode
+                            var editCb = {
+                                success: function() {
+                                    this.callingWindow.location.reload(true);
+                                },
+
+                                failure: function() {
+                                },
+
+                                callingWindow: window
+                            };
+                            /* reload dashboard is heavy, to reflect changed content-type */
+                            //window.location.reload(true);
+                            //this.activeNode.data.formId = selectedType;
+                            var auxParams = new Array();
+                            var param1 = {};
+                            param1['name'] = "draft";
+                            param1['value'] = "true";
+                            var param2 = {};
+                            param2['name'] = "changeTemplate";
+                            param2['value'] = "true";
+                            auxParams.push(param1);
+                            auxParams.push(param2);
+                            CStudioAuthoring.Operations.editContent(
+                                    selectedType,
+                                    CStudioAuthoringContext.site,
+                                    path,
+                                    this.activeNode.data.nodeRef, path, false, editCb,auxParams);
+                        },
+                        failure: function() { },
+                        activeNode: oCurrentTextNode
+                    };
+
+                    CStudioAuthoring.Operations.assignContentTemplate(
+                            CStudioAuthoringContext.site,
+                            CStudioAuthoringContext.user,
+                            oCurrentTextNode.data.uri,
+                            assignTemplateCb,
+                            oCurrentTextNode.data.formId);
                 };
 
-                CStudioAuthoring.Operations.assignContentTemplate(
-                        CStudioAuthoringContext.site,
-                        CStudioAuthoringContext.user,
-                        oCurrentTextNode.data.uri,
-                        assignTemplateCb,
-                        oCurrentTextNode.data.formId);
+                var cancelFn = function cancelFn (e) {
+                    e.preventDefault();
+                    dialog.destroy();
+                }
+
+                modalBody.innerHTML = '<div class="contentTypePopupInner" style="width:460px;height:140px;">' +
+                                        '<div class="contentTypePopupContent">' +
+                                            '<form name="contentFromWCM">' +
+                                            '<div class="contentTypePopupHeader">Warning: Change Content Type</div> ' +
+                                            '<div>The following operation may result in data loss. Would you like to proceed?</div>' +
+                                            '<div class="contentTypePopupBtn">' +
+                                                '<input type="submit" class="ok" id="acceptCTChange" value="Yes" />' +
+                                                '<input type="submit" class="cancel" id="cancelCTChange" value="No" />' +
+                                            '</div>' +
+                                            '</form> ' +
+                                        '</div>' +
+                                      '</div>';
+
+                var dialog = new YAHOO.widget.Dialog("cstudio-wcm-popup-div", 
+                                { fixedcenter : true,
+                                  visible : false,
+                                  modal:false,
+                                  close:false,
+                                  constraintoviewport : true,
+                                  underlay:"none"                                                       
+                                });
+
+                dialog.render();
+
+                YAHOO.util.Event.addListener("acceptCTChange", "click", continueFn);
+                YAHOO.util.Event.addListener("cancelCTChange", "click", cancelFn);
+
+                dialog.show();
             },
             /**
              * given a path, attempt to open the folder to that path
