@@ -752,18 +752,15 @@ public class DmImportServiceImpl extends AbstractRegistrableService implements D
 	 * @return
 	 */
 	private NodeRef createDirectory(final NodeRef parentRef, final String name) {
-		// Map<QName, Serializable> nodeProperties = new FastMap<QName,
-		// Serializable>();
-		// nodeProperties.put(ContentModel.PROP_NAME, name);
-		// return getPersistenceManager().createNewFolder(parentRef, name,
-		// nodeProperties);
 		RetryingTransactionHelper helper = this.getDmTransactionService().getRetryingTransactionHelper();
 		NodeRef nodeRef = helper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>() {
 			@Override
 			public NodeRef execute() throws Throwable {
 				Map<QName, Serializable> nodeProperties = new FastMap<QName, Serializable>();
 				nodeProperties.put(ContentModel.PROP_NAME, name);
-				return getPersistenceManager().createNewFolder(parentRef, name, nodeProperties);
+				NodeRef node = getPersistenceManager().createNewFolder(parentRef, name, nodeProperties);
+                getPersistenceManager().insertNewObjectEntry(node);
+                return node;
 			}
 		}, false, true);
 		return nodeRef;
