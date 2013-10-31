@@ -1851,7 +1851,8 @@ treeNode.getHtml = function() {
                                   modal:false,
                                   close:false,
                                   constraintoviewport : true,
-                                  underlay:"none"                                                       
+                                  underlay:"none",
+                                  zIndex: 100000
                                 });
 
                 dialog.render();
