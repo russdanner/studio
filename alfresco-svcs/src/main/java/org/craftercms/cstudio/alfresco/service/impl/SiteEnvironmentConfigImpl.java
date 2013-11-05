@@ -218,7 +218,7 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
                 node = element.selectSingleNode("live-environment");
                 if (node != null) {
                     String isLiveEnvStr = node.getText();
-                    boolean isLiveEnvVal = (StringUtils.isNotEmpty(isLiveEnvStr)) && Boolean.getBoolean(isLiveEnvStr);
+                    boolean isLiveEnvVal = (StringUtils.isNotEmpty(isLiveEnvStr)) && Boolean.valueOf(isLiveEnvStr);
                     pcgConfigTo.setLiveEnvironment(isLiveEnvVal);
                     if (isLiveEnvVal) {
                         if (config.getLiveEnvironmentPublishingGroup() == null) {
