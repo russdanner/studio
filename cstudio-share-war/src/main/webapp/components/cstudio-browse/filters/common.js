@@ -302,7 +302,7 @@ CStudioSearch.FilterRenderer.Common.PathSelect = function(rootPath) {
 			failure: function() {
 			   YDom.removeClass(label, "loading");
 			}			
-		});
+		}, false);
 	},
 
 	/**
@@ -319,7 +319,7 @@ CStudioSearch.FilterRenderer.Common.PathSelect = function(rootPath) {
 		site = node.treeNodeTO.site,
 		pathToOpenTo = node.openToPath;
 
-		CStudioAuthoring.Service.lookupSiteFolders(site, path, 2, "default", {
+		CStudioAuthoring.Service.lookupSiteFolders(site, path, 1, "default", {
 			success: function(treeData, args) {
 				if(treeData.item.children.length == 0) {
 					node.isLeaf = true;
@@ -340,7 +340,7 @@ CStudioSearch.FilterRenderer.Common.PathSelect = function(rootPath) {
 				"fnLoadComplete": fnLoadComplete,
 				pathToOpenTo: pathToOpenTo
 			}
-		});		
+		}, false);
     },
 
    /**

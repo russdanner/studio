@@ -103,10 +103,12 @@ public class DmContentServiceScript extends BaseProcessorExtension {
      * @return pages
      * @throws org.craftercms.cstudio.alfresco.service.exception.ContentNotFoundException
      */
-    public String getFolders(String site, String sub, String relativePath, int depth, String orderName, boolean checkChildren)
+    public String getFolders(String site, String sub, String relativePath, int depth, String orderName,
+                             boolean checkChildren, boolean populateDependencies)
             throws ContentNotFoundException {
         DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
-        DmContentItemTO item = dmContentService.getItems(site, sub, relativePath, depth, true, orderName, checkChildren);
+        DmContentItemTO item = dmContentService.getItems(site, sub, relativePath, depth, true, orderName,
+            checkChildren, populateDependencies);
 
         item = item.filterOutFiles();
         item=item.filterOutHidden();

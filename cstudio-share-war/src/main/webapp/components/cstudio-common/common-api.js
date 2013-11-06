@@ -3401,9 +3401,13 @@ YConnect.failureEvent.subscribe(function() {
 			/**
 			 * lookup folders
 			 */
-			lookupSiteFolders: function(site, path, depth, order, callback) {
+			lookupSiteFolders: function(site, path, depth, order, callback, populateDependencies) {
 
 				var serviceUri = this.lookupFoldersServiceUri + "?site=" + site + "&path=" + path + "&depth=" + depth + "&order=" + order;
+
+                if (populateDependencies != undefined && !populateDependencies) {
+                    serviceUri = serviceUri + "&populateDependencies=false";
+                }
 
 				var serviceCallback = {
 					success: function(response) {
