@@ -1730,6 +1730,12 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     }
 
     protected String generateCacheScope(String site) {
+        if (StringUtils.isEmpty(DmConstants.CACHE_CSTUDIO_SITE_SCOPE)) {
+            return site;
+        }
+        if (StringUtils.isEmpty(site)) {
+            return DmConstants.CACHE_CSTUDIO_SITE_SCOPE.replace("{site}", "");
+        }
         return DmConstants.CACHE_CSTUDIO_SITE_SCOPE.replace("{site}", site);
     }
 

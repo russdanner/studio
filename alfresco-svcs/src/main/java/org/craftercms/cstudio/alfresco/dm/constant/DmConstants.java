@@ -135,7 +135,7 @@ public class DmConstants {
 	public final static Pattern WEBAPP_RELATIVE_PATH_PATTERN = Pattern.compile("([^:]+:/"
 			+ WEB_PROJECT_ROOT + "/([^/]+))(.*)");
     public final static Pattern DM_WEBAPP_RELATIVE_PATH_PATTERN = Pattern.compile("(/wem-projects/[-\\w]*/[-\\w]*/work-area)(/.*)");
-    public final static Pattern DM_SITE_PATH_PATTERN = Pattern.compile("(/wem-projects/[-\\w]*/[-\\w]*)([-\\w]*)(/.*)");
+    public final static Pattern DM_SITE_PATH_PATTERN = Pattern.compile("(/wem-projects/[-\\w]*/[-\\w]*)([-\\w\\s]*)(/.*)");
     public final static Pattern DM_SITE_LIVE_PATH_PATTERN = Pattern.compile("(/wem-projects/[-\\w]*/)([-\\w]*)/live(/.*)");
     public static final String CONTENT_LIFECYCLE_OPERATION ="contentLifecycleOperation" ;
     
@@ -173,7 +173,7 @@ public class DmConstants {
                     .append("/")
                     .append("(").append("[-\\w]*").append(")")
                     .append("/")
-                    .append("(").append("[-\\w]*").append(")")
+                    .append("(").append("[-\\w\\s]*").append(")")
                     .append("(/.*)").toString();
     public static final Pattern DM_REPO_PATH_PATTERN = Pattern.compile(DM_REPO_PATH_PATTERN_STRING);
 
