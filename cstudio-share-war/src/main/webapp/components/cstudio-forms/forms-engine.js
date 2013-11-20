@@ -857,14 +857,22 @@ var CStudioForms = CStudioForms || function() {
 
             var buildEntityIdFn = function() {
                 var entityId = path.replace(".html", ".xml");
+                var changeTemplate = CStudioAuthoring.Utils.getQueryVariable(location.search, "changeTemplate");
                 var length = entityId.length;
                 var index_html = "";
                 var fileName   = form.model["file-name"];
-                var folderName = form.model["folder-name"];
+                var folderName = form.definition.contentAsFolder ? form.model["folder-name"] : undefined;
                 /*
                  * No folderName means it is NOT a content-as-folder content type.
                  * See file-name.js function _onChange().
                  */
+
+                if (changeTemplate == "true") {
+                    if (form.definition.contentAsFolder == "false") {
+                        entityId = entityId.replace("/index.xml");
+                    }
+                }
+
                 if (folderName != undefined && folderName.length == 0)
                     folderName = undefined;
                 if (folderName) {
@@ -1675,7 +1683,7 @@ var CStudioForms = CStudioForms || function() {
             var html = "";
 
             // Update the window title
-            window.document.title = (formDef.pageName) ? formDef.title + " | " + formDef.pageName : formDef.title; 
+            window.document.title = (formDef.pageName) ? formDef.title + " | " + formDef.pageName : formDef.title;
 
             html = "<div class='cstudio-form-container'>";
 
@@ -2068,7 +2076,7 @@ var CStudioForms = CStudioForms || function() {
                 section = formSections[i];
 
                 for (var j = section.fields.length - 1; j >= 0; j--)
-                validFields.push(section.fields[j].id);
+                    validFields.push(section.fields[j].id);
             }
 
             // Add valid fields from form config

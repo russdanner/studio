@@ -146,9 +146,11 @@ public class PreviewableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     @Override
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef) {
         final PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
-        String oldParentPath = DmUtils.getNodePath(persistenceManagerService, oldChildAssocRef.getParentRef());
-        String oldName = oldChildAssocRef.getQName().getLocalName();
-        deleteFile(oldParentPath + "/" + oldName);
+        if (oldChildAssocRef.getParentRef() != null && persistenceManagerService.exists(oldChildAssocRef.getParentRef())) {
+            String oldParentPath = DmUtils.getNodePath(persistenceManagerService, oldChildAssocRef.getParentRef());
+            String oldName = oldChildAssocRef.getQName().getLocalName();
+            deleteFile(oldParentPath + "/" + oldName);
+        }
         deployFile(newChildAssocRef.getChildRef());
         final String user = AuthenticationUtil.getFullyAuthenticatedUser();
         final Runnable worker = new Runnable() {

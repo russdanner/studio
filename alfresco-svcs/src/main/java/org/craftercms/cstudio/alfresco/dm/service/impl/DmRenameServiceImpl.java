@@ -532,11 +532,26 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
 
             preRenameCleanWorkFlow(site,sub,sourcePath);
 
-                    if (srcNodeParentUrl.equalsIgnoreCase(dstNodeParentUrl)) {
-                persistenceManagerService.rename(persistenceManagerService.getNodeRef(srcFullPath), dstNodeName);
-                    } else {
+            if (srcNodeParentUrl.equalsIgnoreCase(dstNodeParentUrl)) {
+                FileInfo srcNodeInfo = persistenceManagerService.getFileInfo(srcFullPath);
+                if (srcNodeInfo != null && srcNodeInfo.isFolder() && dstFullPath.endsWith(DmConstants.XML_PATTERN)) {
+                    persistenceManagerService.move(persistenceManagerService.getNodeRef(srcOrgFullPath),
+                        persistenceManagerService.getNodeRef(dstNodeParentUrl), dstNodeName);
+                        persistenceManagerService.deleteNode(srcFullPath);
+                } else if (srcNodeInfo != null && !srcNodeInfo.isFolder()
+                                && !dstFullPath.endsWith(DmConstants.XML_PATTERN)) {
+                    Map<QName, Serializable> nodeProperties = new FastMap<QName, Serializable>();
+                    nodeProperties.put(ContentModel.PROP_NAME, dstNodeName);
+                    NodeRef parentNode = persistenceManagerService.createNewFolder(persistenceManagerService
+                        .getNodeRef(dstNodeParentUrl), dstNodeName, nodeProperties);
+                    persistenceManagerService.move(persistenceManagerService.getNodeRef(srcFullPath), parentNode,
+                        DmConstants.INDEX_FILE);
+                } else {
+                    persistenceManagerService.rename(persistenceManagerService.getNodeRef(srcFullPath), dstNodeName);
+                }
+            } else {
                 persistenceManagerService.move(persistenceManagerService.getNodeRef(srcFullPath), persistenceManagerService.getNodeRef(dstNodeParentUrl), dstNodeName);
-                    }
+            }
 
             NodeRef node = persistenceManagerService.getNodeRef(dstFullPath);
             if (node == null) {
