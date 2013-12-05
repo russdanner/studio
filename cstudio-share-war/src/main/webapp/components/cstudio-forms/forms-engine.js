@@ -1978,20 +1978,13 @@ var CStudioForms = CStudioForms || function() {
                             this.xmlModelToMapArray(node, child);
                         }
                         else {
-                            this.xmlModelToMapNoArray(node, child);
+                            node[child.nodeName] = this.getModelItemValue(child);
                         }
                     }
                 }
                 catch(err) {
                 }
             }
-        },
-
-        xmlModelToMapNoArray: function(node, child) {
-            // single item
-            //var value = (!child.wholeText) ? child.firstChild.wholeText : child.wholeText;
-            var value = this.getModelItemValue(child);
-            node[child.nodeName] = this.unEscapeXml(value);
         },
 
         xmlModelToMapArray: function(node, child) {
@@ -2157,11 +2150,10 @@ var CStudioForms = CStudioForms || function() {
 
         unEscapeXml: function(value) {
             if(value && typeof value === 'string') {
-                value = value.replace(/&amp;/g, '&')
-                    .replace(/&lt;/g, '<')
+                value = value.replace(/&lt;/g, '<')
                     .replace(/&gt;/g, '>')
                     .replace(/&quot;/g, '\"')
-                    .replace(/&amp;nbsp;/g, '&nbsp;');
+                    .replace(/&amp;/g, '&');
             }
 
             return value;
