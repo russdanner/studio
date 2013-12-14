@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.craftercms</groupId>
@@ -11,7 +11,7 @@
     <properties>
         <env>local</env>
         <app.context>/</app.context>
-        <alfresco.version>4.0.e</alfresco.version>
+        <alfresco.version>4.2.e</alfresco.version>
         <spring.version>3.0.5.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -52,16 +52,6 @@
             </releases>
         </repository>
 
-        <repository>
-            <id>ibiblio</id>
-            <name>ibiblio Repo</name>
-            <url>http://mirrors.ibiblio.org/maven2/</url>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-        </repository>
 
 
     </repositories>
@@ -88,8 +78,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.0.2</version>
                     <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
+                        <source>1.7</source>
+                        <target>1.7</target>
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
@@ -554,7 +544,7 @@
         <profile>
             <id>community</id>
             <properties>
-                <alfresco.version>4.0.e</alfresco.version>
+                <alfresco.version>4.2.e</alfresco.version>
             </properties>
         </profile>
     </profiles>

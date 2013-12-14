@@ -256,6 +256,7 @@
         <property name="ehCacheAdapter" ref="cstudioEhCache"/>
     </bean>
 
+
     <bean id="cstudioEHCacheManager" class="org.alfresco.repo.cache.EhCacheManagerFactoryBean">
         <property name="configLocation">
             <value>classpath:alfresco/module/cstudioAmp/context/cstudio-cache-config.xml</value>
@@ -274,5 +275,6 @@
             </bean>
         </property>
     </bean>
+
 
 </beans>
