@@ -20,8 +20,8 @@ package org.craftercms.cstudio.alfresco.cache;
 import java.io.Serializable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.alfresco.repo.cache.EhCacheAdapter;
+import org.craftercms.cstudio.alfresco.constant.CStudioConstants;
 import org.craftercms.cstudio.alfresco.dm.service.impl.GoLiveQueue;
 import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 
@@ -30,7 +30,7 @@ import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 public class EhCacheManagerImpl implements ThreadSafeCacheManager {
 
 
-    protected EhCacheAdapter<CacheKey, Serializable> ehCacheAdapter;
+    protected EhCacheAdapter<CacheKey, Serializable> cacheAdapter;
 
     protected ReentrantReadWriteLock lock=new ReentrantReadWriteLock();
 
@@ -44,7 +44,7 @@ public class EhCacheManagerImpl implements ThreadSafeCacheManager {
         lock.writeLock().lock();
         try {
             CacheKey cacheKey = new CacheKey(scope, key);
-            ehCacheAdapter.put(cacheKey, item);
+            cacheAdapter.put(cacheKey, item);
         } finally {
             lock.writeLock().unlock();
         }
@@ -63,7 +63,7 @@ public class EhCacheManagerImpl implements ThreadSafeCacheManager {
         lock.readLock().lock();
         try {
             CacheKey cacheKey = new CacheKey(scope, key);
-            return ehCacheAdapter.get(cacheKey);
+            return cacheAdapter.get(cacheKey);
         } finally {
             lock.readLock().unlock();
         }
@@ -83,7 +83,7 @@ public class EhCacheManagerImpl implements ThreadSafeCacheManager {
         lock.writeLock().lock();
         try {
             CacheKey cacheKey = new CacheKey(scope, key);
-            ehCacheAdapter.remove(cacheKey);
+            cacheAdapter.remove(cacheKey);
         } finally {
          lock.writeLock().unlock();
         }
@@ -98,7 +98,7 @@ public class EhCacheManagerImpl implements ThreadSafeCacheManager {
     public void invalidate() {
         lock.writeLock().lock();
         try {
-            ehCacheAdapter.clear();
+            cacheAdapter.clear();
         } finally {
             lock.writeLock().unlock();
         }
@@ -135,11 +135,11 @@ public class EhCacheManagerImpl implements ThreadSafeCacheManager {
     }
 
     public EhCacheAdapter<CacheKey, Serializable> getEhCacheAdapter() {
-        return ehCacheAdapter;
+        return cacheAdapter;
     }
 
     public void setEhCacheAdapter(EhCacheAdapter<CacheKey, Serializable> ehCacheAdapter) {
-        this.ehCacheAdapter = ehCacheAdapter;
+        this.cacheAdapter = ehCacheAdapter;
     }
 
     protected class CacheKey implements Serializable {
