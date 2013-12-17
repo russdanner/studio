@@ -2041,7 +2041,7 @@ var CStudioForms = CStudioForms || function() {
                 }
             }
 
-            xml += this.printFieldsToXml(form.model, form.sections, form.definition.config);
+            xml += this.printFieldsToXml(form.model, form.definition.sections, form.definition.config);
             xml += "</"+form.definition.objectType+">";
 
             return xml;
