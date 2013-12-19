@@ -560,10 +560,20 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 						YEvent.on(inputEl, 'keypress', _thisControl.count, countEl);
 						YEvent.on(inputEl, 'mouseup', _thisControl.count, countEl);
 						
-						// Bind focus event 
-						tinymce.dom.Event.add(ed.getWin(), 'focus', function(e) {
-							_thisControl.form.setFocusedField(_thisControl);
-						});
+						if (!YAHOO.env.ua.ie || YAHOO.env.ua.ie < 10) {
+							// Bind focus event 
+							tinymce.dom.Event.add(ed.getWin(), 'focus', function(e) {
+								_thisControl.form.setFocusedField(_thisControl);
+							}); 
+						} else {
+							// IE10 fires the 'focus' event on the window every time
+							// you click on it; therefore, it becomes impossible for 
+							// the RTE to lose focus. To work around this, we'll focus
+							// on the RTE only after clicking on its body.
+							tinymce.dom.Event.add(ed.getBody(), 'click', function(e) {
+								_thisControl.form.setFocusedField(_thisControl);
+							});
+						}
 
 						ed.contextControl._applyOverrideStyles(ed, rteConfig);
 
