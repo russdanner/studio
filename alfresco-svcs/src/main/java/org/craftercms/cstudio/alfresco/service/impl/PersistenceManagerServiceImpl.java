@@ -492,17 +492,13 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
         }
         item.setDefaultWebApp(path.getDmSitePath());
 
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        try {
-            Serializable strLastEditDate = nodeProperties.get(CStudioContentModel.PROP_WEB_LAST_EDIT_DATE);
-            if (strLastEditDate != null && !StringUtils.isEmpty(strLastEditDate.toString())) {
-                Date lastEditDate = sdf.parse(strLastEditDate.toString());
-                item.setLastEditDate(lastEditDate);
-            }
-        } catch (ParseException e) {
-            // do nothing
+        Date lastEditDate = DefaultTypeConverter.INSTANCE.convert(Date.class,
+            nodeProperties.get(CStudioContentModel.PROP_WEB_LAST_EDIT_DATE));
+        if (lastEditDate == null) {
+            lastEditDate = DefaultTypeConverter.INSTANCE.convert(Date.class,
+                nodeProperties.get(ContentModel.PROP_MODIFIED));
         }
-
+        item.setLastEditDate(lastEditDate);
 
         // default event date is the modified date
         item.setEventDate(DefaultTypeConverter.INSTANCE.convert(Date.class, nodeProperties.get(ContentModel.PROP_MODIFIED)));
