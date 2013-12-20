@@ -450,6 +450,7 @@ public class ImportDmContentProcessor extends PathMatchProcessor implements DmCo
             Map<QName, Serializable> nodeProperties = persistenceManagerService.getProperties(contentNode);
             nodeProperties.put(ContentModel.PROP_MODIFIER, user);
             nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
+            nodeProperties.put(CStudioContentModel.PROP_WEB_LAST_EDIT_DATE, new Date());
             persistenceManagerService.setProperties(contentNode, nodeProperties);
             // unlock the content upon save if the flag is true
             if (unlock) {
