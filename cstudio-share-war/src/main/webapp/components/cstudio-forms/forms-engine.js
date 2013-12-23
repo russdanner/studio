@@ -1016,7 +1016,7 @@ var CStudioForms = CStudioForms || function() {
                                                 internalName = (internalName && internalName != "")? internalName: entityId;
 
                                                 // Let the parent window know that the form is closing
-                                                openerChildformMgr.signalFormClose(formId, entityId, internalName);
+                                                window.opener.CStudioAuthoring.ChildFormManager.signalFormClose(formId, entityId, internalName);
                                             }
                                             catch(err) {
                                                 alert(err);
