@@ -995,32 +995,28 @@ var CStudioForms = CStudioForms || function() {
                                     }
                                     else {
                                         //Keep the parentWindowLocation updated
-                                        parentWindowLocation = (window.opener)?window.opener.location.href: window.location.href;
+                                        parentWindowLocation = (window.opener) ? window.opener.location.href : window.location.href;
 
-                                        var childForm = false;
-                                        var childFormValue = CStudioAuthoring.Utils.getQueryVariable(location.search.substring(1), 'childForm');
-                                        if(childFormValue && childFormValue == "true") {
-                                            childForm = true;
-                                        }
+                                        var dashboardUrl,
+                                            childFormValue = CStudioAuthoring.Utils.getQueryVariable(location.search.substring(1), 'childForm'),
+                                            childForm = (childFormValue && childFormValue == "true") ? true : false;
 
-                                        //window.parent.location = window.parent.location;
-                                        if(childForm == false) {
-                                            var dashboardUrl = CStudioAuthoringContext.authoringAppBaseUri + CStudioAuthoringContext.homeUri;
-                                            if (parentWindowLocation.indexOf(dashboardUrl) == -1 && parentWindowLocation != previewUrl) {
-                                                parentWindowLocation = previewUrl;
+                                        if (!childForm) {
+                                            dashboardUrl = CStudioAuthoringContext.authoringAppBaseUri + CStudioAuthoringContext.homeUri;
+
+                                            if (parentWindowLocation.indexOf(dashboardUrl) == -1 && parentWindowLocation == previewUrl) {
+                                                CStudioAuthoring.Utils.Cookies.createCookie("cstudio-main-window",
+                                                    new Date() + "|" + parentWindowLocation + "|" + false + "|" + window.previewTargetWindowId);
                                             }
-                                            CStudioAuthoring.Utils.Cookies.createCookie("cstudio-main-window",
-                                                new Date() + "|" + parentWindowLocation + "|"+false + "|" + window.previewTargetWindowId);
                                         }
 
-                                        if(window.opener) {
+                                        if (window.opener) {
                                             try {
                                                 var internalName = form.model["internal-name"];
                                                 internalName = (internalName && internalName != "")? internalName: entityId;
+
+                                                // Let the parent window know that the form is closing
                                                 openerChildformMgr.signalFormClose(formId, entityId, internalName);
-                                                if(childForm == false) {
-                                                    window.opener.location = parentWindowLocation;
-                                                }
                                             }
                                             catch(err) {
                                                 alert(err);
@@ -2053,7 +2049,7 @@ var CStudioForms = CStudioForms || function() {
                 }
             }
 
-            xml += this.printFieldsToXml(form.model, form.sections, form.definition.config);
+            xml += this.printFieldsToXml(form.model, form.definition.sections, form.definition.config);
             xml += "</"+form.definition.objectType+">";
 
             return xml;
