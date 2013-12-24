@@ -204,7 +204,6 @@ YAHOO.extend(CStudioForms.Controls.ImagePicker, CStudioForms.CStudioFormField, {
                         } else {
                             var image = new Image();
                             var imagePicker = this.imagePicker;
-                            image.src="";
 
                             function imageLoaded(){
                                 imagePicker.originalWidth = this.width;
