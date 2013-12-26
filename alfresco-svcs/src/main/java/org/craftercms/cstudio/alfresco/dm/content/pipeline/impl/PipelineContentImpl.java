@@ -125,14 +125,14 @@ public class PipelineContentImpl implements PipelineContent {
                     _document = saxReader.read(_contentStream);
                     _contentStream = null;
                 } catch (DocumentException e) {
-                    throw new ContentProcessException("Error while converting " + _id + " into docuemnt.", e);
+                    throw new ContentProcessException("Error while converting " + _id + " into document.", e);
                 } finally {
                     ContentUtils.release(_contentStream);
                     _contentStream = null;
                 }
             } else {
                 throw new ContentProcessException("Error while converting " + _id
-                        + " into docuemnt. Both document and content stream cannot be null.");
+                        + " into document. Both document and content stream cannot be null.");
             }
         }
         return _document;
