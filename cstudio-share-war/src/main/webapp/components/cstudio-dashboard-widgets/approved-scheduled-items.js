@@ -105,7 +105,8 @@ CStudioAuthoringWidgets.ApprovedScheduledItemsDashboard = CStudioAuthoringWidget
         var html = [],
 
             name = item.internalName,
-            displayName = WcmDashboardWidgetCommon.getFormattedString(name, 40, item.newFile);
+            displayName = WcmDashboardWidgetCommon.getFormattedString(name, 40, item.newFile),
+            editLinkId;
 
         if (isFirst) {
 
@@ -135,6 +136,8 @@ CStudioAuthoringWidgets.ApprovedScheduledItemsDashboard = CStudioAuthoringWidget
                 displayBrowserUri = WcmDashboardWidgetCommon.getFormattedString(browserUri, 80),
                 uri = item.uri;
 
+                editLinkId = 'editLink_' + this.widgetId + '_' + WcmDashboardWidgetCommon.encodePathToNumbers(item.uri);
+
 	    var ttSpanId =  "tt_" + this.widgetId + "_" + item.uri + "_" + (this.tooltipLabels.length + 1);
             var itemTitle = CStudioAuthoring.Utils.getTooltipContent(item);
             this.tooltipLabels.push(ttSpanId);
@@ -161,9 +164,8 @@ CStudioAuthoringWidgets.ApprovedScheduledItemsDashboard = CStudioAuthoringWidget
                 lastEditTime = CStudioAuthoring.Utils.formatDateFromString(item.lastEditDateAsString);
             }
             
-            var editHtml = "";
             if(item.uri.indexOf(".xml") != -1) {
-                editHtml = editHtml.concat('<a href="javascript:" class="editLink', ((item.deleted || item.inFlight ) ? ' non-previewable-edit' : ''), '">Edit</a>');
+                WcmDashboardWidgetCommon.insertEditLink(item, editLinkId);
             }
 
             html = html.concat([
@@ -179,9 +181,7 @@ CStudioAuthoringWidgets.ApprovedScheduledItemsDashboard = CStudioAuthoringWidget
                         '</div>',
                     '</div>',
                 '</td>',
-                "<td>",
-                    editHtml,
-                "</td>",
+                '<td id="' + editLinkId + '"></td>',
                 "<td title='",browserUri,"'>", displayBrowserUri, "</td>",
                 "<td title='fullUri' class='width0'>", uri, "</td>",                
                 "<td class='alignRight ttThColLast'>", lastEditTime, "</td>"

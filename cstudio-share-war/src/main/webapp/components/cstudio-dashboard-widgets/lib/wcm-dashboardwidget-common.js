@@ -16,6 +16,43 @@ WcmDashboardWidgetCommon.sortClick = function (event, matchedEl, el, params) {
     WcmDashboardWidgetCommon.loadTableData(sortBy, YDom.get(params.widgetId), params.widgetId, null, true);
 };
 
+WcmDashboardWidgetCommon.encodePathToNumbers = function (path) {
+    var re1 = new RegExp('/', 'g');
+
+    var res = path.replace(re1, '00');    // substitute all forward slash with '00'
+    res = res.replace(/\./g, '010');      // substitute all periods with '010'
+    return res;
+};
+
+WcmDashboardWidgetCommon.insertEditLink = function (item, editLinkId) {
+    CStudioAuthoring.Service.getUserPermissions(CStudioAuthoringContext.site, item.uri, { 
+        success: function(results) {
+
+            function addEditLink() {
+                var editLink = document.getElementById(editLinkId);
+
+                if (editLink) {
+                    editLink.innerHTML = ''.concat('<a href="javascript:" class="editLink', ((item.deleted || item.inFlight ) ? ' non-previewable-edit' : ''), '">Edit</a>');
+                } else {
+                    // We cannot assume the DOM will be ready to insert the edit link
+                    // that's why we'll poll until the element is available in the DOM
+                    setTimeout(addEditLink, 200);
+                }
+            }
+
+            var isUserAllowed = CStudioAuthoring.Service.isUserAllowed(results.permissions);
+
+            if (isUserAllowed) {
+                // If the user's role is allowed to edit the content then add an edit link
+                addEditLink();
+            }
+        },
+        failure: function() {
+            throw new Error('Unable to retrieve user permissions');
+        }
+    });
+};
+
 WcmDashboardWidgetCommon.convertDate = function(dateString) {
     if (!dateString) return 0;
     //our eventDate are passing in the format "YYYY-MM-DDTHH:MM:SS;"
