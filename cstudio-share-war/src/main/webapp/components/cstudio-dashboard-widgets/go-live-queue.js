@@ -131,7 +131,8 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
     this.renderLineItem = function(item, isFirst, count, depth) {
 
         var html = [],
-            name = item.internalName;
+            name = item.internalName,
+            editLinkId;
 
         //reducing max character length to support 1024 screen resolution
         var removeCharCount = ((window.innerWidth <= 1024)?5:0);
@@ -164,8 +165,9 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
             var browserUri = item.browserUri,
                 displayBrowserUri = WcmDashboardWidgetCommon.getFormattedString(browserUri, (50 - removeCharCount)),
                 uri = item.uri,
-
                 fmt = CStudioAuthoring.Utils.formatDateFromString;
+
+            editLinkId = 'editLink_' + this.widgetId + '_' + WcmDashboardWidgetCommon.encodePathToNumbers(item.uri);
 
             var ttSpanId =  "tt_" + this.widgetId + "_" + item.uri + "_" + (this.tooltipLabels.length + 1);
             var itemTitle = CStudioAuthoring.Utils.getTooltipContent(item);
@@ -187,9 +189,9 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
             // this API will replace double quotes with ASCII character
             // to resolve page display issue
             displayName = CStudioAuthoring.Utils.replaceWithASCIICharacter(displayName);
-            var editHtml = "";
+            
             if(item.uri.indexOf(".xml") != -1) {
-                editHtml = editHtml.concat('<a href="javascript:" class="editLink', ((item.deleted || item.inFlight ) ? ' non-previewable-edit' : ''), '">Edit</a>');
+                WcmDashboardWidgetCommon.insertEditLink(item, editLinkId);
             }
             
             html = html.concat([
@@ -207,9 +209,7 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
                         '</div>' : '',
                     '</div>',
                 '</td>',
-                "<td>",
-                    editHtml,
-                "</td>",
+                '<td id="' + editLinkId + '"></td>',
                 "<td title='",browserUri,"'>", displayBrowserUri, "</td>",
                 "<td title='fullUri' class='width0'>", uri, "</td>",
                 '<td class="">', item.scheduled ? fmt(item.scheduledDate, 'tooltipformat') : '', '</td>',
