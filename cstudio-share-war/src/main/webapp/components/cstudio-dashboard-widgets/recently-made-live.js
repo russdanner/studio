@@ -112,7 +112,8 @@ CStudioAuthoringWidgets.RecentlyMadeLiveDashboard = CStudioAuthoringWidgets.Rece
             name = item.internalName,
             endpoint = item.endpoint,
             displayEndpoint = item.endpoint,
-            displayName = WcmDashboardWidgetCommon.getFormattedString(name, 40);
+            displayName = WcmDashboardWidgetCommon.getFormattedString(name, 40),
+            editLinkId;
 
         if (isFirst) {
 
@@ -142,6 +143,8 @@ CStudioAuthoringWidgets.RecentlyMadeLiveDashboard = CStudioAuthoringWidgets.Rece
                 displayBrowserUri = WcmDashboardWidgetCommon.getFormattedString(browserUri, 80),
                 uri = item.uri;
 
+            editLinkId = 'editLink_' + this.widgetId + '_' + WcmDashboardWidgetCommon.encodePathToNumbers(item.uri);
+
             if (item.component && item.internalName != "crafter-level-descriptor.level.xml") {
                 browserUri = "";
                 displayBrowserUri = "";
@@ -162,9 +165,8 @@ CStudioAuthoringWidgets.RecentlyMadeLiveDashboard = CStudioAuthoringWidgets.Rece
             // to resolve page display issue
             displayName = CStudioAuthoring.Utils.replaceWithASCIICharacter(displayName);
 
-            var editHtml = "";
             if(!item.deleted && item.uri.indexOf(".xml") != -1) {
-            	editHtml = editHtml.concat('<a href="javascript:" class="editLink', ((item.deleted || item.inFlight ) ? ' non-previewable-edit' : ''), '">Edit</a>');
+            	WcmDashboardWidgetCommon.insertEditLink(item, editLinkId);
             }
             
             html = html.concat([
@@ -180,9 +182,7 @@ CStudioAuthoringWidgets.RecentlyMadeLiveDashboard = CStudioAuthoringWidgets.Rece
                         '</div>',
                     '</div>',
                 '</td>',
-                "<td>",
-                    editHtml,
-                "</td>",
+                '<td id="' + editLinkId + '"></td>',
                 "<td title='",browserUri,"'>", displayBrowserUri, "</td>",
                 "<td title='fullUri' class='width0'>", uri, "</td>",
                 "<td title='",endpoint,"'>", displayEndpoint, "</td>",
