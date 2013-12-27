@@ -162,6 +162,7 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
             var browserUri = item.browserUri,
                 fullUri = item.uri,
                 itemName = item.internalName,
+                editLinkId = 'editLink_' + this.widgetId + '_' + WcmDashboardWidgetCommon.encodePathToNumbers(item.uri),
 
                 fmt = CStudioAuthoring.Utils.formatDateFromString;
 
@@ -191,10 +192,8 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
         itemNameForDisplay = CStudioAuthoring.Utils.replaceWithASCIICharacter(itemNameForDisplay);
 
         // TODO Use TemplateAgent + TemplateHolder
-        var editHtml = "";
        	if(!item.deleted && item.uri.indexOf(".xml") != -1) {
-			editHtml = editHtml.concat('<a href="javascript:" class="editLink', ((item.deleted || item.inFlight ) ? ' non-previewable-edit' : ''), '">Edit</a>');
-   
+            WcmDashboardWidgetCommon.insertEditLink(item, editLinkId);
        	}
        	
         var itemRow = [
@@ -210,9 +209,7 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
                     '</div>',
                 '</div>',
 			'</td>',
-			'<td>',
-				editHtml,
-			'</td>',
+			'<td id="' + editLinkId + '"></td>',
 			'<td title="', browserUri, '">', displayBrowserUri, '</td>',
 			'<td title="fullUri" class="width0">', fullUri, '</td>',
             '<td class="">', item.scheduled ? fmt(item.scheduledDate, 'tooltipformat') : '', '</td>',
