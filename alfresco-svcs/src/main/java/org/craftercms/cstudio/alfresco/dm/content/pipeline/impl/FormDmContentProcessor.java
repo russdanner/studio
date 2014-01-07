@@ -300,6 +300,7 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
         nodeProperties.put(ContentModel.PROP_MODIFIER, user);
         nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);		
         nodeProperties.put(ContentModel.PROP_MODIFIED, new Date());
+        nodeProperties.put(CStudioContentModel.PROP_WEB_LAST_EDIT_DATE, new Date());
         persistenceManagerService.setProperties(content, nodeProperties);
 	}
     
@@ -472,6 +473,7 @@ public class FormDmContentProcessor extends PathMatchProcessor implements DmCont
             Map<QName, Serializable> nodeProperties = persistenceManagerService.getProperties(contentNode);
             nodeProperties.put(ContentModel.PROP_MODIFIER, user);
             nodeProperties.put(CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
+            nodeProperties.put(CStudioContentModel.PROP_WEB_LAST_EDIT_DATE, new Date());
             nodeProperties.put(ContentModel.PROP_MODIFIED, new Date());
             nodeProperties.put(ContentModel.PROP_AUTO_VERSION, false);
             nodeProperties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
