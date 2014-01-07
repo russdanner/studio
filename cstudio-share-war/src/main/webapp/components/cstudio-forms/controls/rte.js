@@ -294,12 +294,28 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 		var rteSidePadding = 40,
 		  	rteMarginLeft = 230,
 			rteContainerWidth = +rteWidth + rteSidePadding,
+			sectionContainer,
         	fieldContainerWidth = (window.getComputedStyle) ? window.getComputedStyle(containerEl).getPropertyValue("width") :
                               	  (containerEl.currentStyle) ? containerEl.currentStyle.width : null;
 
-        if (fieldContainerWidth) {
-            fieldContainerWidth = +(fieldContainerWidth.split("px")[0]);	// Get the number value
+		// If the section is collapsed by default, then the RTE's container width will not be calculated
+		// correctly and we'll have to get the width from the section container
+        if (!fieldContainerWidth || fieldContainerWidth == 'auto') {
+        	// We assume the section container is the first ancestor with width value set in pixels
+	        sectionContainer = YDom.getAncestorBy(containerEl, function(el) {
+	        	var fieldWidth = (window.getComputedStyle) ? window.getComputedStyle(el).getPropertyValue("width") :
+                              	  (el.currentStyle) ? el.currentStyle.width : null;
+			    if (fieldWidth && fieldWidth != 'auto') {
+			        return el;
+			    }
+			});
+			fieldContainerWidth = (window.getComputedStyle) ? window.getComputedStyle(sectionContainer).getPropertyValue("width") :
+                              	  	(sectionContainer.currentStyle) ? sectionContainer.currentStyle.width : "0px";
+        }
 
+        fieldContainerWidth = +(fieldContainerWidth.split("px")[0]);
+
+        if (typeof fieldContainerWidth == 'number') {
             if (elements['rte-container']) {
             	if (rteContainerWidth < fieldContainerWidth - rteMarginLeft) {
 	                YDom.setStyle(elements['rte-container'], "margin-left", rteMarginLeft + "px");
@@ -310,12 +326,15 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 	            } else {
 	            	YDom.setStyle(elements['rte-container'], "max-width", ((rteContainerWidth > fieldContainerWidth) ? fieldContainerWidth : rteContainerWidth) + "px");	// If the RTEs width exceeds that of its container, then use the container's width instead
 	                YDom.setStyle(elements['rte-container'], "width", "100%");
+	                rteWidth = "96%";
 	                if (elements['rte-table']) {
-		            	YDom.setStyle(elements['rte-table'], "width", "96%");
+		            	YDom.setStyle(elements['rte-table'], "width", rteWidth);
 		            }
 	            }
             }
-        }	
+            return rteWidth;
+        }
+        return null;
 	},
 
 	/**
@@ -387,19 +406,8 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 					this.imageManagerName = (prop.value && prop.Value != "") ? prop.value : null;
 					break;
 				case "width" :
-					width = (typeof prop.value == "string" && prop.value) ? prop.value : "400";
-					this.rteWidth = width;
-
-                    rteContainerWidth = +width + rteSidePadding;
-                    fieldContainerWidth = (window.getComputedStyle) ? window.getComputedStyle(containerEl).getPropertyValue("width") :
-                                          (containerEl.currentStyle) ? containerEl.currentStyle.width : null;
-                    if (fieldContainerWidth) {
-                        fieldContainerWidth = +(fieldContainerWidth.split("px")[0]);	// Get the number value
-                        if (rteContainerWidth > fieldContainerWidth - rteMarginLeft) {
-                            width = "96%";	// Make RTE fluid if there's a chance for it to exceed the viewport width
-                        }
-                    }
-                    this.resizeTextView(containerEl, this.rteWidth, { "rte-container" : controlWidgetContainerEl});
+					this.rteWidth = (typeof prop.value == "string" && prop.value) ? prop.value : "400";
+                    width = this.resizeTextView(containerEl, this.rteWidth, { "rte-container" : controlWidgetContainerEl});
                     break;
 				case "height" : 
 					var height = (prop.value === undefined) ? 140 : (Array.isArray(prop.value)) ? 140 : Math.max(+(prop.value), 50);
@@ -560,10 +568,20 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 						YEvent.on(inputEl, 'keypress', _thisControl.count, countEl);
 						YEvent.on(inputEl, 'mouseup', _thisControl.count, countEl);
 						
-						// Bind focus event 
-						tinymce.dom.Event.add(ed.getWin(), 'focus', function(e) {
-							_thisControl.form.setFocusedField(_thisControl);
-						});
+						if (!YAHOO.env.ua.ie || YAHOO.env.ua.ie < 10) {
+							// Bind focus event 
+							tinymce.dom.Event.add(ed.getWin(), 'focus', function(e) {
+								_thisControl.form.setFocusedField(_thisControl);
+							}); 
+						} else {
+							// IE10 fires the 'focus' event on the window every time
+							// you click on it; therefore, it becomes impossible for 
+							// the RTE to lose focus. To work around this, we'll focus
+							// on the RTE only after clicking on its body.
+							tinymce.dom.Event.add(ed.getBody(), 'click', function(e) {
+								_thisControl.form.setFocusedField(_thisControl);
+							});
+						}
 
 						ed.contextControl._applyOverrideStyles(ed, rteConfig);
 

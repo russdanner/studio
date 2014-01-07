@@ -11,14 +11,14 @@
    createFrame function changed from:
    var B="yuiIO"+this._transaction_id;var C;if(YAHOO.env.ua.ie)
    To:
-   var B="yuiIO"+this._transaction_id;var dM = document.documentMode ? document.documentMode : false;var ie9 = (dM === 9) ? true : false;var C;if(YAHOO.env.ua.ie && !ie9)
+   var B="yuiIO"+this._transaction_id;var dM = document.documentMode ? document.documentMode : false;var ie9plus = (dM >= 9) ? true : false;var C;if(YAHOO.env.ua.ie && !ie9plus)
 
    uploadFile function changed from:
    ﻿var I="yuiIO"+D.tId,J="multipart/form-data",L=document.getElementById(I),O=this,K=(N&&N.argument)?N.argument:null,M,H,B,G;
    if(YAHOO.env.ua.ie)
    To:
-   ﻿var I="yuiIO"+D.tId,J="multipart/form-data",L=document.getElementById(I),O=this,K=(N&&N.argument)?N.argument:null,M,H,B,G;var dM = document.documentMode ? document.documentMode : false;var ie8 = (dM >= 8) ? true : false;
-   if(YAHOO.env.ua.ie && !ie8)
+   ﻿var I="yuiIO"+D.tId,J="multipart/form-data",L=document.getElementById(I),O=this,K=(N&&N.argument)?N.argument:null,M,H,B,G;var dM = document.documentMode ? document.documentMode : false;var ie9plus = (dM >= 9) ? true : false;
+   if(YAHOO.env.ua.ie && !ie9plus)
    
 >> selector.js, selector-min.js :
    Add support for IE9
