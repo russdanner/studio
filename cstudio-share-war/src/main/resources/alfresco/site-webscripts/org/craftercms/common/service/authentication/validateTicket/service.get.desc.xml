@@ -1,0 +1,6 @@
+<webscript>
+    <shortname>Validate Login Ticket</shortname>
+    <description>Validate that specified ticket is still valid</description>
+    <url>/cstudio/services/login/ticket/{ticket}</url>
+    <format default="json">argument</format>
+</webscript>
