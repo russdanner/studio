@@ -116,7 +116,7 @@ public class DeployContentToEnvironmentStore implements Job {
                                     try {
                                         logger.debug("Mark items as processing for site \"{0}\"", site);
 
-                                        _publishingManager.markItemsProcessing(site, LIVE_ENVIRONMENT, itemList);
+                                        _publishingManager.markItemsProcessing(site, environment, itemList);
                                         for (CopyToEnvironmentItem item : itemList) {
                                             _contentRepository.lockItem(item.getSite(), item.getPath());
                                             try {
@@ -134,16 +134,21 @@ public class DeployContentToEnvironmentStore implements Job {
                                         if (_mandatoryDependenciesCheckEnabled && missingDependencies.size() > 0) {
                                             List<CopyToEnvironmentItem> mergedList = new ArrayList<CopyToEnvironmentItem>(itemList);
                                             mergedList.addAll(missingDependencies);
-                                            _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, mergedList);
+                                            _publishingManager.setupItemsForPublishingSync(site, environment, mergedList);
                                         } else {
-                                            _publishingManager.setupItemsForPublishingSync(site, LIVE_ENVIRONMENT, itemList);
+                                            _publishingManager.setupItemsForPublishingSync(site, environment, itemList);
                                             }
                                         logger.debug("Mark deployment completed for processed items for site \"{0}\"", site);
-                                        _publishingManager.markItemsCompleted(site, LIVE_ENVIRONMENT, itemList);
+                                        _publishingManager.markItemsCompleted(site, environment, itemList);
                                         tx.commit();
                                     } catch (DeploymentException err) {
                                         logger.error("Error while executing deployment to environment store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
-                                        _publishingManager.markItemsReady(site, LIVE_ENVIRONMENT, itemList);
+                                        _publishingManager.markItemsReady(site, environment, itemList);
+                                        throw err;
+                                    } catch (Exception err) {
+                                        logger.error("Unexpected error while executing deployment to environment " +
+                                            "store for site \"{0}\", number of items \"{1}\", chunk number \"{2}\" (chunk size {3})", err, site, itemsToDeploy.size(), i, _processingChunkSize);
+                                        _publishingManager.markItemsReady(site, environment, itemList);
                                         throw err;
                                     } finally {
                                         for (CopyToEnvironmentItem item : itemList) {

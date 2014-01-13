@@ -37,6 +37,7 @@ import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
 import org.craftercms.cstudio.alfresco.dm.filter.DmFilterWrapper;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmDependencyService;
+import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
 import org.craftercms.cstudio.alfresco.event.EventService;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.*;
@@ -280,7 +281,14 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
             if (envNode == null) {
                 envNode = createLiveRepositoryCopy(envRepoRoot, path, nodeRef);
             } else {
-                persistenceManagerService.copy(nodeRef, envNode);
+                FileInfo envNodeInfo = persistenceManagerService.getFileInfo(envNode);
+                if (envNodeInfo.isFolder()) {
+                    Map<QName, Serializable> copyNodeProps = persistenceManagerService.getProperties(nodeRef);
+                    copyNodeProps.put(ContentModel.PROP_NAME, envNodeInfo.getName());
+                    persistenceManagerService.setProperties(envNode, copyNodeProps);
+                } else {
+                    persistenceManagerService.copy(nodeRef, envNode);
+                }
             }
             Serializable sendEmailValue = persistenceManagerService.getProperty(nodeRef, CStudioContentModel.PROP_WEB_WF_SEND_EMAIL);
             boolean sendEmail = (sendEmailValue != null) && (Boolean) sendEmailValue;
