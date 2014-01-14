@@ -1,5 +1,5 @@
 {
-    code: ${code},
-    message: ${message},
-    response: ${response}
+    "code": ${code},
+    "message": "${message}",
+    "response": "${response}"
 }
