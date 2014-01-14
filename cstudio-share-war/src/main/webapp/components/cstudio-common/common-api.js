@@ -2160,6 +2160,7 @@ YConnect.failureEvent.subscribe(function() {
 			setObjectStateServiceUrl: "/proxy/alfresco/cstudio/objectstate/set-object-state",
 			getWorkflowJobsServiceUrl: "/proxy/alfresco/cstudio/workflow/get-jobs",
 			createWorkflowJobsServiceUrl: "/proxy/alfresco/cstudio/workflow/create-jobs",
+            verifyAlfrescoTicketUrl: "/service/cstudio/services/login/ticket/",
 						
 			/** 
 			 * lookup authoring role. having 'admin' role in one of user roles will return admin. otherwise it will return contributor
@@ -6705,3 +6706,103 @@ CStudioAuthoring.InContextEdit = {
     }, w);
 
 }) (window);
+
+
+(function startAuthLoop() {    
+
+    if (typeof CStudioAuthoringContext != 'undefined') {
+
+        var authLoopCb = {
+            success: function(config){
+
+                function authRedirect(authConfig) {
+                    var redirectStr, redirectUrl,
+                        placeholder = '{currentUrl}';
+
+                    if (YAHOO.lang.isObject(authConfig)) {
+                        redirectStr = typeof authConfig.ticketExpireRedirectUrl == 'string' ?
+                                        authConfig.ticketExpireRedirectUrl : '';
+
+                        if (redirectStr) {
+                            // Redirect to the authentication url specified in config
+                            redirectUrl = redirectStr.replace(placeholder, window.location.href);
+                            window.location.assign(redirectUrl);
+                        } else {
+                            // If authConfig's redirectUrl value is undefined, then 
+                            // use share's login authentication
+                            location.reload();
+                        }
+                    } else {
+                        // If authConfig is not an object or it's null, then 
+                        // use share's login authentication
+                        location.reload();
+                    }
+                }
+
+                function authLoop(configObj) {
+                    var alfrescoTicket,
+                        serviceUri,
+                        serviceCallback,
+                        delay = 750;
+
+                    if (document.hasFocus()) {
+                        alfrescoTicket = CStudioAuthoring.Utils.Cookies.readCookie("alf_ticket");
+                        serviceUri = CStudioAuthoring.Service.verifyAlfrescoTicketUrl + alfrescoTicket;
+
+                        serviceCallback = {
+                            success: function(response) {
+                                var resObj;
+                                try {
+                                    resObj = JSON.parse(response.responseText);
+                                } catch (e) {
+                                    throw new Error('Error retrieving session ticket information: ' + e.message);
+                                }
+                                if (YAHOO.lang.isObject(resObj)) {
+                                    if (resObj.code === 200) {
+                                        // Ticket is valid
+                                        setTimeout(function() {
+                                            authLoop(configObj);
+                                        }, delay);
+                                    } else {
+                                        // Ticket is invalid
+                                        authRedirect(configObj);
+                                    }
+                                } else {
+                                    throw new Error('Invalid format for session ticket information');
+                                }
+                            },
+                            failure: function(response) {
+                                throw new Error('Unable to read session ticket');
+                            }
+                        };
+
+                        YConnect.asyncRequest("GET", CStudioAuthoring.Service.createServiceUri(serviceUri), serviceCallback);
+                    } else {
+                        setTimeout(function() {
+                            authLoop(configObj);
+                        }, delay);
+                    }
+                }
+
+                // Start the authentication loop
+                if (config.authentication) {
+                    authLoop(config.authentication);
+                } else {
+                    authLoop(null);
+                }
+            },
+
+            failure: function(){
+                throw new Error('Unable to read site configuration');
+            }
+        }
+
+        CStudioAuthoring.Service.lookupConfigurtion(
+            CStudioAuthoringContext.site, "/site-config.xml", authLoopCb);
+
+    } else {
+        // The authentication loop cannot be started until CStudioAuthoringContext exists
+        setTimeout(startAuthLoop, 1000);
+    }
+
+})();
