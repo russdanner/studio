@@ -16,7 +16,6 @@ var result = conn.get("/api/login/ticket/" + ticket);
 
 model.code = "code";
 model.message = "message";
-model.response = result;
 
 status.code = 200;
 
@@ -36,9 +35,7 @@ if (resultStr != undefined && resultStr.length > 0) {
 
     model.code = statusCodeVal;
     model.message = statusMessageVal;
-    model.response = resultDom;
 } else {
     model.code = "404";
     model.message = "Ticket not found";
-    model.response = result;
 }
