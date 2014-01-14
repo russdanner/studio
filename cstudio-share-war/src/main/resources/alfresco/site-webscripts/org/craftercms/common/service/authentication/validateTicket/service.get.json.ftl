@@ -1,5 +1,4 @@
 {
     "code": ${code},
-    "message": "${message}",
-    "response": "${response}"
+    "message": "${message}"
 }
