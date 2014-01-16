@@ -1,0 +1,18 @@
+<extension>
+   <modules>
+      <module>
+         <id>CStudio Login</id>
+         <auto-deploy>true</auto-deploy>
+
+         <!-- Enhance individual WebScripts when their paths match -->
+
+         <customizations>
+            <customization>
+               <targetPackageRoot>org.alfresco</targetPackageRoot>
+               <sourcePackageRoot>org.craftercms.wcm</sourcePackageRoot>
+            </customization>
+         </customizations>
+
+      </module>
+   </modules>
+</extension>
