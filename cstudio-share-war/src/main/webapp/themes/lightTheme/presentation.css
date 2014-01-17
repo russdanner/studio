@@ -1508,7 +1508,8 @@ body.alfresco-guest
 .login input[type="text"],
 .login input[type="password"]
 {
-   width: 260px;
+   width: 210px;
+   margin-top: 4px;
 }
 
 .login label
