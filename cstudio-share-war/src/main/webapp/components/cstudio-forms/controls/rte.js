@@ -458,6 +458,8 @@ YAHOO.extend(CStudioForms.Controls.RTE, CStudioForms.CStudioFormField, {
 			force_br_newlines: forceBRTags,
 			forced_root_block: forceRootBlockPTag,
 			inlinepopups_skin: "cstudio-rte",
+			min_height: 74,
+			remove_trailing_brs: false,
 
 	        theme_advanced_resizing : true,
 	        theme_advanced_resize_horizontal : false,
