@@ -12718,7 +12718,7 @@ tinymce.create('tinymce.ui.Separator:tinymce.ui.Control', {
 
 				t.isMenuVisible = 0;
 				t.onHideMenu.dispatch();
-				t.keyboardNav.destroy();
+				if (t.keyboardNav) t.keyboardNav.destroy();
 			}
 		},
 
