@@ -116,7 +116,7 @@ h3 {font-size:14px;}
 #colorpicker #colors {float:left; border:1px solid gray; cursor:crosshair;}
 #colorpicker #light {border:1px solid gray; margin-left:5px; float:left;width:15px; height:150px; cursor:crosshair;}
 #colorpicker #light div {overflow:hidden;}
-#colorpicker #previewblock { display: inline-block; color: #FEFEFE; margin-left: -30px; }
+#colorpicker #previewblock { display: inline-block; color: #FEFEFE; margin-left: 10px; }
 #colorpicker #previewblock input { width: 50px; margin-left: 4px; }
 #colorpicker .panel_wrapper div.current {height:175px;}
 #colorpicker #named_panel {width:252px;}
