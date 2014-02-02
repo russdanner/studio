@@ -75,7 +75,7 @@
 
 			switch (plugin) {
 				case "color_picker.htm":
-					f.height = 270;
+					f.height = 300;
 					f.opaque = true;
 					break;
 				case "link.htm": 
