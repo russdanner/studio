@@ -6743,7 +6743,7 @@ CStudioAuthoring.InContextEdit = {
                     var alfrescoTicket,
                         serviceUri,
                         serviceCallback,
-                        delay = 750;
+                        delay = 60000;  // poll once every minute
 
                     if (document.hasFocus()) {
                         alfrescoTicket = CStudioAuthoring.Utils.Cookies.readCookie("alf_ticket");
