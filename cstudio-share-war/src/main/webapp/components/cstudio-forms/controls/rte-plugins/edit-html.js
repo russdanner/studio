@@ -126,17 +126,13 @@ CStudioAuthoring.Module.requireModule(
 				var rteControl = editor.contextControl,
 					rteContainer = YAHOO.util.Selector.query('.cstudio-form-control-rte-container', rteControl.containerEl, true);
 
-				// A meta node used to dispatch an artificial event. The reason to use a meta node is because it is VERY unlikely 
-				// that any buttons will ever respond to changes on a node of this kind.
-				var metaNode = document.createElement('meta');
-
 				editor.onDeactivate.dispatch(editor, null); // Fire tinyMCE handlers for onDeactivate
 
 				// Clear any selections on the text editor, then dispatch an artificial event so all buttons go back to their 
 				// default state before saving their state. Then, when we restore the buttons' state (when we go back to text mode),
-				// we'll have their default state again!
+				// we'll have their default state again
 				rteControl.clearTextEditorSelection();
-				editor.onNodeChange.dispatch(editor, editor.controlManager, metaNode, true, editor);
+				editor.nodeChanged({fakeNode: true});
 
 				buttonStateArr = this.getEditorControlsStates(editor);
 				this.disableTextControls(editor, buttonStateArr);
