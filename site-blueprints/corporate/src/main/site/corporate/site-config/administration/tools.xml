@@ -28,6 +28,7 @@
 				<datasource>video-desktop-upload</datasource>
 				<datasource>key-value-list</datasource>
                 <datasource>configured-list</datasource>
+                <datasource>file-browse-repo</datasource>
 			</datasources>
 			<objectTypes>
 				<type>
