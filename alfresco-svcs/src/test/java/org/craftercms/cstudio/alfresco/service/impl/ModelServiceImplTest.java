@@ -18,7 +18,7 @@
 package org.craftercms.cstudio.alfresco.service.impl;
 
 
-import org.alfresco.repo.version.BaseVersionStoreTest;
+//import org.alfresco.repo.version.BaseVersionStoreTest;
 
 import org.craftercms.cstudio.alfresco.service.api.NamespaceService;
 
@@ -28,7 +28,7 @@ import org.craftercms.cstudio.alfresco.service.api.NamespaceService;
  * @author hyanghee
  *
  */
-public class ModelServiceImplTest extends BaseVersionStoreTest {
+public class ModelServiceImplTest {//extends BaseVersionStoreTest {
 
 	ModelServiceImpl modelService = null;
 	NamespaceService namespaceService = null;
@@ -38,6 +38,7 @@ public class ModelServiceImplTest extends BaseVersionStoreTest {
     /**
      * Called during the transaction setup
      */
+    /*
     protected void onSetUpInTransaction() throws Exception {
         super.onSetUpInTransaction();
         modelService = (ModelServiceImpl) getApplicationContext().getBeanFactory().getBean("cstudioModelService");
@@ -45,7 +46,7 @@ public class ModelServiceImplTest extends BaseVersionStoreTest {
         
         namespaceService = (NamespaceService) getApplicationContext().getBeanFactory().getBean("cstudioNamespaceService");
     }
-
+    */
     /**
      * test getting content assets' metadata
      * 

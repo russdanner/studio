@@ -17,20 +17,21 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.service.impl;
 
-import org.alfresco.repo.version.BaseVersionStoreTest;
+//import org.alfresco.repo.version.BaseVersionStoreTest;
 
-public class FormServiceImplTest extends BaseVersionStoreTest {
+public class FormServiceImplTest { // extends BaseVersionStoreTest {
 
 	private FormServiceImpl formService = null;
 	
     /**
      * Called during the transaction setup
      */
+    /*
     protected void onSetUpInTransaction() throws Exception {
         super.onSetUpInTransaction();
         formService = (FormServiceImpl) getApplicationContext().getBeanFactory().getBean("cstudioFormService");
         assertNotNull(formService);
-    }
+    } */
     
     public void testGetWidgetConfiguration() {
     	// check on widget-config.xml 
