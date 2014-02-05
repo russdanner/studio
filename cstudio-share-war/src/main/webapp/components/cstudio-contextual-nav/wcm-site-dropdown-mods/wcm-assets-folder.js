@@ -109,6 +109,8 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
         var currentLevelPath = null;
         var remainingPath = null;
         var nodeToOpen = null;
+        var contextMenuPrefix = "ContextMenu-";
+        var contextMenuId = contextMenuPrefix + tree.id;
 
         if(pathToOpenTo != null && pathToOpenTo != undefined) {
             var pathParts = pathToOpenTo.split("/");
@@ -174,7 +176,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
         });
 
         var contextMenu = new YAHOO.widget.ContextMenu(
-            "ContextmenuWrapper",
+            contextMenuId,
             {
                 container: "acn-context-menu",
                 trigger: "acn-dropdown-menu-wrapper",
@@ -185,7 +187,13 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
         );
 
         contextMenu.subscribe('beforeShow', function() {
-            CStudioAuthoring.ContextualNav.WcmAssetsFolder.onTriggerContextMenu(tree, this);
+            CStudioAuthoring.ContextualNav.WcmAssetsFolder.onTriggerContextMenu(tree, this, contextMenuId);
+        }, tree, false);
+
+        contextMenu.subscribe('show', function() {
+            if (!YDom.isAncestor(tree.id, this.contextEventTarget)) {
+                this.hide();
+            }
         }, tree, false);
 
         tree.draw();
@@ -425,7 +433,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
         return retTransferObj;
     },
 
-    onTriggerContextMenu: function(tree, p_aArgs)	{
+    onTriggerContextMenu: function(tree, p_aArgs, contextMenuId)	{
 
         target = p_aArgs.contextEventTarget;
         var aMenuItems;
@@ -463,15 +471,17 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             ]
         };
 
-        /* Get the TextNode instance that that triggered the display of the ContextMenu instance. */
-        oCurrentTextNode = tree.getNodeByElement(target);
+        var targetNode = tree.getNodeByElement(target);
 
-        if(oCurrentTextNode!= null) {
+        if ( targetNode != null && YDom.isAncestor(tree.id, p_aArgs.contextEventTarget) ) {
+            // Get the TextNode instance that that triggered the display of the ContextMenu instance.
+            oCurrentTextNode = targetNode;
+
             var formPath = oCurrentTextNode.data.formPagePath;
             var isContainer = oCurrentTextNode.data.isContainer;
             var isComponent = oCurrentTextNode.data.isComponent;
             var isLevelDescriptor = oCurrentTextNode.data.isLevelDescriptor;
-            var menuId = YDom.get("ContextmenuWrapper");
+            var menuId = YDom.get(contextMenuId);
             var isAssetsFolder = (oCurrentTextNode.instance.type == "wcm-assets-folder")? true : false;
             p_aArgs.clearContent();
 
@@ -486,23 +496,23 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
                             this.menuWidth = "100px";
                             if (isDeleteAllowed) {
                                 if (isCreateFolder) {
-                                    this.aMenuItems = this.menuItems["assetsFolderMenu"];
+                                    this.aMenuItems = this.menuItems["assetsFolderMenu"].slice();
                                 } else {
-                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoCreateFolder"];
+                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoCreateFolder"].slice();
                                 }
                             } else {
                                 if (isCreateFolder) {
-                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoDelete"];
+                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoDelete"].slice();
                                 } else {
-                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoDeleteNoCreateFolder"];
+                                    this.aMenuItems = this.menuItems["assetsFolderMenuNoDeleteNoCreateFolder"].slice();
                                 }
                             }
                         } else {
                             this.menuWidth = "100px";
                             if (isDeleteAllowed) {
-                                this.aMenuItems = this.menuItems["assetsMenu"];
+                                this.aMenuItems = this.menuItems["assetsMenu"].slice();
                             } else {
-                                this.aMenuItems = this.menuItems["assetsMenuNoDelete"];
+                                this.aMenuItems = this.menuItems["assetsMenuNoDelete"].slice();
                             }
                         }
 
@@ -517,17 +527,11 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
                     } else {
                         if (this.isContainer) {
                             this.menuWidth = "130px";
-                            this.aMenuItems = this.menuItems["assetsFolderMenuRead"];
+                            this.aMenuItems = this.menuItems["assetsFolderMenuRead"].slice();
                         } else {
                             this.menuWidth = "100px";
-                            this.aMenuItems = this.menuItems["assetsMenuRead"];
+                            this.aMenuItems = this.menuItems["assetsMenuRead"].slice();
                         }
-                    }
-
-                    if (!this.oCurrentTextNode) {
-                        // Cancel the display of the ContextMenu instance.
-                        this.p_aArgs.cancel();
-                        this.menuId.style.display = "none";
                     }
 
                     var checkClipboardCb = {
@@ -547,6 +551,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
                             this.menuEl.style.display = "block";
                             this.menuEl.style.width = this.menuWidth;
                             this.args.render();
+                            this.args.show();
                         },
 
                         failure: function() {
