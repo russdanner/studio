@@ -538,7 +538,7 @@
         <profile>
             <id>enterprise</id>
             <properties>
-                <alfresco.version>4.2.0</alfresco.version>
+                <alfresco.version>4.2.0.3</alfresco.version>
             </properties>
         </profile>
         <profile>
