@@ -17,7 +17,7 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.service.impl;
 
-import org.alfresco.repo.version.BaseVersionStoreTest;
+//import org.alfresco.repo.version.BaseVersionStoreTest;
 
 /**
  * CStudio NotificationService test case
@@ -25,18 +25,19 @@ import org.alfresco.repo.version.BaseVersionStoreTest;
  * @author hyanghee
  *
  */
-public class NotificationServiceImplTest extends BaseVersionStoreTest {
+public class NotificationServiceImplTest {//} extends BaseVersionStoreTest {
 
 	private NotificationServiceImpl notificationService = null;
 	
     /**
      * Called during the transaction setup
      */
+    /*
     protected void onSetUpInTransaction() throws Exception {
         super.onSetUpInTransaction();
         notificationService = (NotificationServiceImpl) getApplicationContext().getBeanFactory().getBean("cstudioNotificationService");
         assertNotNull(notificationService);
-    }
+    } */
     
     /**
      * test getting complete messages that are used in workflow action pop-ups (e.g. submit to go live pop-up)
