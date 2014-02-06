@@ -477,6 +477,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             // Get the TextNode instance that that triggered the display of the ContextMenu instance.
             oCurrentTextNode = targetNode;
 
+            var CSA = CStudioAuthoring;
             var formPath = oCurrentTextNode.data.formPagePath;
             var isContainer = oCurrentTextNode.data.isContainer;
             var isComponent = oCurrentTextNode.data.isComponent;
@@ -488,9 +489,11 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             //Get user permissions to get read write operations
             var checkPermissionsCb = {
                 success: function(results) {
-                    var isWrite = CStudioAuthoring.Service.isWrite(results.permissions);
-                    var isDeleteAllowed = CStudioAuthoring.Service.isDeleteAllowed(results.permissions);
-                    var isCreateFolder = CStudioAuthoring.Service.isCreateFolder(results.permissions);
+                    var perms = results.permissions,
+                        isWrite = CSA.Service.isWrite(perms),
+                        isDeleteAllowed = CSA.Service.isDeleteAllowed(perms),
+                        isCreateFolder = CSA.Service.isCreateFolder(perms);
+
                     if (isWrite == true) {
                         if (this.isContainer) {
                             this.menuWidth = "100px";
@@ -518,10 +521,14 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
 
                         if(oCurrentTextNode.data.uri.indexOf(".ftl") != -1
                             ||  oCurrentTextNode.data.uri.indexOf(".js") != -1
-                            ||  oCurrentTextNode.data.uri.indexOf(".css") != -1) {
+                            ||  oCurrentTextNode.data.uri.indexOf(".css") != -1
+                            ||  oCurrentTextNode.data.uri.indexOf(".groovy") != -1
+                            ||  oCurrentTextNode.data.uri.indexOf(".html") != -1
+                            ||  oCurrentTextNode.data.uri.indexOf(".hbs") != -1) {
                             // item is a template
+
                             this.aMenuItems.push(
-                                { text: "Edit", disabled: false, onclick: { fn: CStudioAuthoring.ContextualNav.WcmAssetsFolder.editTemplate } });
+                                { text: "Edit", disabled: false, onclick: { fn: CSA.ContextualNav.WcmAssetsFolder.editTemplate } });
                         }
 
                     } else {
@@ -534,16 +541,23 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
                         }
                     }
 
+                    if (CSA.Utils.hasPerm(CSA.Constants.PERMISSION_WRITE, perms)){
+                        this.aMenuItems.push({
+                            text: "Bulk Upload Assets",
+                            onclick: { fn: CSA.ContextualNav.WcmAssetsFolder.bulkUpload }
+                        });
+                    }
+
                     var checkClipboardCb = {
                         success: function(collection) {
 
                             if(collection.count > 0) {
                                 if (isWrite == true) {
                                     this.menuItems.push(
-                                        { text: "Paste", onclick: { fn: CStudioAuthoring.ContextualNav.WcmAssetsFolder.pasteContent } });
+                                        { text: "Paste", onclick: { fn: CSA.ContextualNav.WcmAssetsFolder.pasteContent } });
                                 } else {
                                     this.menuItems.push(
-                                        { text: "Paste", disabled: true, onclick: { fn: CStudioAuthoring.ContextualNav.WcmAssetsFolder.pasteContent } });
+                                        { text: "Paste", disabled: true, onclick: { fn: CSA.ContextualNav.WcmAssetsFolder.pasteContent } });
                                 }
                             }
 
@@ -563,7 +577,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
                         menuWidth: this.menuWidth
                     };
 
-                    CStudioAuthoring.Clipboard.getClipboardContent(checkClipboardCb);
+                    CSA.Clipboard.getClipboardContent(checkClipboardCb);
 
                 },
                 failure: function() { }
@@ -575,7 +589,7 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             checkPermissionsCb.p_aArgs = p_aArgs;
             checkPermissionsCb.oCurrentTextNode = oCurrentTextNode;
             checkPermissionsCb.isContainer = isContainer;
-            CStudioAuthoring.Service.getUserPermissions(CStudioAuthoringContext.site, oCurrentTextNode.data.uri, checkPermissionsCb);
+            CSA.Service.getUserPermissions(CStudioAuthoringContext.site, oCurrentTextNode.data.uri, checkPermissionsCb);
 
         }
 
@@ -690,6 +704,52 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             oCurrentTextNode.data.uri,
             "upload",
             uploadCb);
+    },
+
+    bulkUpload: function () {
+
+        var CSA = CStudioAuthoring,
+            CSAC = CStudioAuthoringContext,
+
+            fmt = CSA.StringUtils.format;
+
+        CSA.Env.Loader.use('component-dropbox', 'dialog-bulkupload', function () {
+
+            var view = new CSA.Dialogs.BulkUpload(),
+                Dropbox = CSA.Component.Dropbox,
+                treeNode = oCurrentTextNode;
+
+            document.body.appendChild(view.element);
+
+            var dropbox = new Dropbox({
+                element: view.element,
+                display: fmt(
+                    '#{0} .file-display-container .pad',
+                    view.id),
+                progress: '.progress .bar',
+                target: fmt(
+                    '{0}/proxy/alfresco/cstudio/wcm/content/upload-content-asset?site={1}&path={2}',
+                    CSAC.baseUri, CSAC.site, treeNode.data.uri),
+                uploadPostKey: 'file',
+                formData: {
+                    site: CSAC.site,
+                    path: oCurrentTextNode.data.uri
+                },
+                template: fmt('template_{0}', view.id),
+                newOnTop: true
+            });
+
+            dropbox.showUploadProgress = function (elem, progress) {
+                elem.style.width = progress + '%';
+            }
+
+            dropbox.on(Dropbox.UPLOAD_SUCCESS_EVENT, function (data) {
+                if (treeNode.expanded){
+                    CSA.ContextualNav.WcmAssetsFolder.refreshNodes(treeNode);
+                }
+            });
+
+        });
     },
 
     /**

@@ -3350,3 +3350,183 @@ body.masked {
 .no-overlay {
 	color: #9FB6CD !important;
 }
+
+/**
+ * Bulk Upload Styles
+**/
+
+.full-screen-overlay {
+    z-index: 99999;
+    background: rgba(50, 50, 50, .8);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    -webkit-box-shadow: inset 2px 1px 10px 5px rgba(200, 200, 200, .5);
+    -moz-box-shadow: inset 2px 1px 10px 5px rgba(200, 200, 200, .5);
+    box-shadow: inset 2px 1px 10px 5px rgba(200, 200, 200, .5);
+    -webkit-transition: background 300ms ease;
+    -moz-transition: background 300ms ease;
+    -ms-transition: background 300ms ease;
+    -o-transition: background 300ms ease;
+    transition: background 300ms ease;
+}
+
+.full-screen-overlay .message {
+    top: 20px;
+    background: #ccc;
+    /*border-radius: 10px;*/
+    text-align: center;
+    vertical-align: middle;
+    font-size: 20px;
+    height: 95px;
+    overflow: auto;
+}
+
+.full-screen-overlay .message > * {
+    font-size: 20px;
+    line-height: 25px;
+}
+
+.full-screen-overlay .message .pad {
+    padding: 25px;
+    padding-bottom: 0;
+}
+
+.full-screen-overlay .close {
+    background-color: rgba(200, 200, 200, 0.5);
+    border-radius: 10px 10px 10px 10px;
+    padding: 5px;
+    position: absolute;
+    right: 20px;
+    text-decoration: none;
+    top: 20px;
+}
+
+.full-screen-overlay .close:hover {
+    background-color: rgba(200, 200, 200, 1);
+}
+
+.file-display-container .pad {
+    padding: 15px;
+}
+
+.file-display-container {
+    background: #fff;
+    top: 140px;
+    bottom: 20px;
+    overflow: auto;
+    min-height: 200px;
+}
+
+.file-display-container,
+.full-screen-overlay .message {
+    position: absolute;
+    left: 50%;
+    width: 450px;
+    margin-left: -225px;
+    border: 4px solid #000;
+}
+
+.dropbox-element.dropbox-dragover {
+    background: rgba(10, 10, 10, .85);
+}
+
+.dropbox-element.dropbox-dragover {
+    -webkit-box-shadow: inset 0px 0px 50px #777;
+    -moz-box-shadow: inset 0px 0px 50px #777;
+    box-shadow: inset 0px 0px 50px #777;
+}
+
+.dropbox-element .title {
+    display: block;
+}
+
+.dropbox-element .detalis {
+    font-style: italic;
+}
+
+.dropbox-element .dropbox-file-display {
+    color: #fff;
+    background-color: #7F9DB9;
+    margin-bottom: 10px;
+    padding-right: 10px;
+}
+
+.dropbox-element .dropbox-file-display img,
+.dropbox-element .dropbox-file-display .img {
+    float: left;
+    width: 175px;
+    height: 100px;
+    margin-right: 10px;
+    overflow: hidden;
+    background-color: #ccc;
+}
+
+.dropbox-element .dropbox-file-display .img .pad {
+    font-size: 15px;
+    padding: 40px 20px;
+    padding-bottom: 0;
+    text-align: center;
+}
+
+.file-display-area {
+    background-color: #FFFFFF;
+    height: 300px;
+    overflow: auto;
+}
+
+.dropbox-file-display .progress {
+    margin: 10px 0;
+}
+
+/**
+ * Progress bar styles from Twitter's Bootstrap */
+.progress {
+    height: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #f7f7f7;
+    background-image: -moz-linear-gradient(top, #f5f5f5, #f9f9f9);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#f9f9f9));
+    background-image: -webkit-linear-gradient(top, #f5f5f5, #f9f9f9);
+    background-image: -o-linear-gradient(top, #f5f5f5, #f9f9f9);
+    background-image: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
+    background-repeat: repeat-x;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#fff9f9f9', GradientType=0);
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.progress .bar {
+    float: left;
+    width: 0;
+    height: 100%;
+    font-size: 12px;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #0e90d2;
+    background-image: -moz-linear-gradient(top, #888, #333);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#888), to(#333));
+    background-image: -webkit-linear-gradient(top, #888, #333);
+    background-image: -o-linear-gradient(top, #888, #333);
+    background-image: linear-gradient(to bottom, #888, #333);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff149bdf', endColorstr='#ff0480be', GradientType=0);
+    -webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-transition: width 0.6s ease;
+    -moz-transition: width 0.6s ease;
+    -o-transition: width 0.6s ease;
+    transition: width 0.6s ease;
+}
