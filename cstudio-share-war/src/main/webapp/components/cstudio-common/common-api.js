@@ -132,8 +132,27 @@ YConnect.failureEvent.subscribe(function() {
             return (o !== undefined);
         }
     }
+
+
+    var CSA = CStudioAuthoring;
+
+    function CStudioConstant (value) {
+        this.getValue = function () {
+            return value;
+        }
+    }
+
+    CStudioConstant.prototype.toString = function () {
+        return this.getValue();
+    }
+
+    CStudioConstant.toString = function () {
+        return "CStudioAuthoring.Constant";
+    }
+
 	CStudioAuthoring.register({
-		/**
+        Constant: CStudioConstant,
+        /**
 		 * authoring events
 		 */
 		Events: {
@@ -151,6 +170,12 @@ YConnect.failureEvent.subscribe(function() {
 		 * general place for constants
 		 */
 		Constants: {
+            /*
+             * Permission checking constants */
+            PERMISSION_READ: new CStudioConstant("read"),
+            PERMISSION_WRITE: new CStudioConstant("write"),
+            PERMISSION_DELETE: new CStudioConstant("delete"),
+            PERMISSION_CREATE_FOLDER: new CStudioConstant("create folder")
 		},
 		/**
 		 * required resources, exension of the authoring environment bootstrap
@@ -4147,6 +4172,28 @@ YConnect.failureEvent.subscribe(function() {
             _counter: 0,
 			addedCss: [],
 			addedJs: [],
+
+            /**
+             * Verifies if the user has a specific permission
+             * @param permission {CStudioAuthoring.Constant} The permission to check whether user has it or not.
+             * @param userPermssions {Array} The collection of permissions the user is granted
+             * @return {boolean} true if user has the permission, false if not
+             */
+            hasPerm: function (permission, permssions) {
+                if (permission instanceof CStudioConstant) {
+                    var has = false;
+                    CSA.Utils.each(permssions, function (index, value) {
+                        if (value.permission === permission.toString()) {
+                            has = true;
+                            return false; // exit the loop
+                        }
+                    });
+                    return has;
+                } else {
+                    throw ('Invalid Argument Exception: The permission to check must be of type ' + CStudioConstant);
+                }
+            },
+
             /**
              * Returns a page scope unique integer
              */

@@ -107,6 +107,13 @@
 
     Loader.addModule({
         type: "js",
+        name: "component-dropbox",
+        path: "cstudio-components/dropbox.js",
+        requires: emptyArray
+    });
+
+    Loader.addModule({
+        type: "js",
         name:"template-schedulefordelete",
         path: "cstudio-templates/schedule-for-delete.js",
         requires: emptyArray
@@ -192,6 +199,13 @@
     });
 
     Loader.addModule({
+        type: 'js',
+        name: 'dialog-bulkupload',
+        path: 'cstudio-dialogs/bulk-upload.js',
+        requires: ['component-dropbox']
+    });
+
+    Loader.addModule({
         type: "js",
         name:"template-cancel-workflow",
         path: "cstudio-templates/cancel-workflow.js",
@@ -206,3 +220,4 @@
     });
 
 })();
+ 
