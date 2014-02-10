@@ -145,6 +145,66 @@ CStudioForms.Controls.RTE.InsertComponent = CStudioForms.Controls.RTE.InsertComp
 				        };
 					});
 
+                    c.onRenderMenu.add(function(c, m) {
+                        /* ==== */
+                        // Add widget Libraries
+                        var rteWidgetLibraries = editor.contextControl.rteConfig.rteWidgetLibraries;
+                        if(!rteWidgetLibraries) {
+                            rteWidgetLibraries = [];
+                        }
+                
+                        if(typeof rteWidgetLibraries == "object" && !Array.isArray(rteWidgetLibraries)) {
+                            // FIX-ME: Strangely if there's only one widget in the rte config, rteWidgets will not be an array of widgets
+                            // but an object instead
+                            rteWidgetLibraries = [rteWidgetLibraries.library];
+                        }
+
+                        if(rteWidgetLibraries.length > 0) { 
+                            c.rteWidgetLibraries = rteWidgetLibraries;
+
+                            c.onRenderMenu.add(function(c, m) {
+                                for(var i=0; i<rteWidgetLibraries.length; i++) {
+                                    var library = rteWidgetLibraries[i];
+
+                                    var formSaveCb = { 
+                                        success: function(searchId, selectedTOs) {
+                                            var item = selectedTOs[0];
+                                            var name = item.uri;
+                                            var id = name.substring(name.lastIndexOf("/")+1).replace(".xml", "");
+                                        
+                                            if(!model['rteComponents']) {
+                                                model['rteComponents'] = [];
+                                            }
+                                        
+                                            var componentItem = {   
+                                                id: id, 
+                                                contentId: name,
+                                                include: name
+                                            };
+                                        
+                                            model['rteComponents'][model['rteComponents'].length] = componentItem;                                          
+                                            editor.execCommand('mceInsertContent', false, 
+                                            "<div id=\"" + id + "\" class='crComponent' >" + WAITING_IMG + "</div>");
+                                        
+                                            _self.renderComponent(editor, componentItem);   
+                                        },
+                                        failure: function() {
+                                        }   
+                                    };
+
+                                    var onclickFn = function() {
+                                         var path = this.onclick.library.contentPath;
+                                         CStudioAuthoring.Operations.openBrowse("", path, 1, "select", true, formSaveCb);
+                                    };                          
+                            
+                                    onclickFn.library = library;
+
+                                    m.add({title : "Library: " + library.name, onclick :onclickFn });
+                                };
+                            });
+                        }
+                    });
+
 			        return c;
 				}
 			};
