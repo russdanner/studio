@@ -6,7 +6,7 @@
 	<objectId>3121945d-1309-d31b-adb1-48b744f4ca9a</objectId>
 	<file-name>sitemap.xml</file-name>
 	<folder-name/>
-	<internal-name>sitemap</internal-name>
+	<internal-name>Sitemap</internal-name>
 	<title>Site Map</title>
 	<scripts>	<item>	<key>/scripts/pages/site-map.groovy</key>
 	<value>/scripts/pages/site-map.groovy</value>
