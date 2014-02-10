@@ -111,19 +111,22 @@
 					<span id="cstudio-wcm-search-message-span"></span>			
 					<span id="cstudio-wcm-search-result-header-count"></span>
 					<a id="cstudio-wcm-search-description-toggle-link" href="javascript:void(0)" onClick="CStudioSearch.toggleResultDetail(CStudioSearch.DETAIL_TOGGLE);"></a>
-					<span class="cstudio-wcm-search-result-header-pagination"> 
-						Show:<input type="text" 
-									class="cstudio-wcm-search-result-header-pagination-textbox" 
-									maxlength="3" 
-									value="20"
-									id="cstudio-wcm-search-item-per-page-textbox"
-									name="total"/>
-					</span>
-					<span class="cstudio-wcm-search-result-header-sort">
-						Sort:<select id="cstudio-wcm-search-sort-dropdown" name="sortBy">
-						<!-- items added via ajax -->
-						</select>
-					</span>
+					
+					<div class="filters">
+						<div class="cstudio-wcm-search-result-header-pagination"> 
+							Show:<input type="text" 
+										class="cstudio-wcm-search-result-header-pagination-textbox" 
+										maxlength="3" 
+										value="20"
+										id="cstudio-wcm-search-item-per-page-textbox"
+										name="total"/>
+						</div>
+						<div class="cstudio-wcm-search-result-header-sort">
+							Sort:<select id="cstudio-wcm-search-sort-dropdown" name="sortBy">
+							<!-- items added via ajax -->
+							</select>
+						</div>
+					</div>
 				</div>
 			</div>			
 			<div id="cstudio-wcm-search-result">
