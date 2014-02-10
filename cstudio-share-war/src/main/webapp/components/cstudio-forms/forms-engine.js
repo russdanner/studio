@@ -2056,7 +2056,7 @@ var CStudioForms = CStudioForms || function() {
         },
 
         printFieldsToXml: function(formModel, formSections, formConfig) {
-            var validFields = ['$!', 'objectGroupId', 'objectId', 'folder-name', 'createdDate', 'lastModifiedDate', 'components', 'orderDefault_f', 'placeInNav'],
+            var validFields = ['$!', 'objectGroupId', 'objectId', 'folder-name', 'createdDate', 'lastModifiedDate', 'components', 'orderDefault_f', 'placeInNav', 'rteComponents'],
                 output = '',
                 validFieldsStr, fieldRe, section;
 
