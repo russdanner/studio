@@ -169,7 +169,7 @@ CStudioForms.Controls.RTE.InsertComponent = CStudioForms.Controls.RTE.InsertComp
                                     var formSaveCb = { 
                                         success: function(searchId, selectedTOs) {
                                             var item = selectedTOs[0];
-                                            var name = item.uri;
+                                            var name = item.path;
                                             var id = name.substring(name.lastIndexOf("/")+1).replace(".xml", "");
                                         
                                             if(!model['rteComponents']) {
@@ -178,7 +178,7 @@ CStudioForms.Controls.RTE.InsertComponent = CStudioForms.Controls.RTE.InsertComp
                                         
                                             var componentItem = {   
                                                 id: id, 
-                                                contentId: name,
+                                                contentId: item.uri,
                                                 include: name
                                             };
                                         
