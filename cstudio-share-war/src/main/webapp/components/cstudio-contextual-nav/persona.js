@@ -57,7 +57,7 @@ CStudioAuthoring.ContextualNav.PersonaNavMod = CStudioAuthoring.ContextualNav.Pe
 											}
 											
 											for(var i=0; i<config.length; i++) {
-												if(config[i].name == currentProfile.username) {
+												if(config[i].name.toLowerCase() == currentProfile.username.toLowerCase()) {
 													persona = config[i];
 													break;		
 												}
@@ -94,5 +94,4 @@ CStudioAuthoring.ContextualNav.PersonaNavMod = CStudioAuthoring.ContextualNav.Pe
 		});
 	}
 }
-
 CStudioAuthoring.Module.moduleLoaded("persona", CStudioAuthoring.ContextualNav.PersonaNavMod);
