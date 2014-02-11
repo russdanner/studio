@@ -63,6 +63,15 @@ CStudioAuthoring.ContextualNav.PersonaNavMod = CStudioAuthoring.ContextualNav.Pe
 												}
 											}
 											
+											if(!persona) {
+												for(var i=0; i<config.length; i++) {
+													if(config[i].name.toLowerCase() == "anonymous") {
+														persona = config[i];
+														break;		
+													}
+												}	
+											} 
+											
 											imageEl.style.height = "26px";
 											imageEl.style.width = "26px";
 											imageEl.style.margin = "1px 5px 1px 5px";
@@ -94,4 +103,5 @@ CStudioAuthoring.ContextualNav.PersonaNavMod = CStudioAuthoring.ContextualNav.Pe
 		});
 	}
 }
+
 CStudioAuthoring.Module.moduleLoaded("persona", CStudioAuthoring.ContextualNav.PersonaNavMod);

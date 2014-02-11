@@ -115,12 +115,24 @@ CStudioAuthoring.TargetingPanel = CStudioAuthoring.TargetingPanel || {
 							var currentProfile = eval("(" + json + ")");
 							
 							for(var i=0; i<config.length; i++) {
-								if(config[i].name == currentProfile.username) {
+								if(config[i].name.toLowerCase() == currentProfile.username.toLowerCase()) {
 									carousel.activePersona = currentProfile;
 									CStudioAuthoring.TargetingPanel.selectPersona(i);
 									break;
 								}
 							}
+							
+							if(!carousel.activePersona) {
+								for(var i=0; i<config.length; i++) {
+									if(config[i].name.toLowerCase() == "anonymous") {
+										persona = config[i];
+										carousel.activePersona = {"username":"Anonymous"};
+										CStudioAuthoring.TargetingPanel.selectPersona(i);
+										break;		
+									}
+								}	
+							} 
+
 						},
 						failure: function() {
 						}
