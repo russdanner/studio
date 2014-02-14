@@ -45,14 +45,10 @@
 							<groupId>org.alfresco</groupId>
 							<artifactId>share</artifactId>
 							<excludes>
-								<!-- exclude>WEB-INF/lib/alfresco-core.jar</exclude> <exclude>WEB-INF/lib/alfresco-share.jar</exclude> 
-									<exclude>WEB-INF/lib/alfresco-jlan-embed.jar</exclude> <exclude>WEB-INF/lib/alfresco-web-framework.jar</exclude> 
-									<exclude>WEB-INF/lib/alfresco-web-framework-commons.jar</exclude> <exclude>WEB-INF/lib/alfresco-webscript-framework.jar</exclude -->
 								<exclude>WEB-INF/lib/commons-collections-3.1.jar</exclude>
 								<exclude>WEB-INF/lib/commons-fileupload-1.1.1.jar</exclude>
 								<exclude>WEB-INF/lib/commons-logging-1.1.jar</exclude>
                                 <exclude>WEB-INF/lib/commons-io-1.4.jar</exclude>
-								<!-- exclude>WEB-INF/lib/jaxen-1.1-beta-8.jar</exclude -->
 							</excludes>
 						</overlay>
 					</overlays>
@@ -182,6 +178,7 @@
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-core</artifactId>
+            <version>${alfresco.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
@@ -193,11 +190,13 @@
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-web-framework-commons</artifactId>
+            <version>${alfresco.version}</version>
             <scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-jlan-embed</artifactId>
+            <version>${alfresco.version}</version>
             <scope>compile</scope>
 		</dependency>
 		<!-- dependency> <groupId>org.alfresco</groupId> <artifactId>alfresco-share</artifactId> 
@@ -320,7 +319,7 @@
         <dependency>
             <groupId>org.craftercms</groupId>
             <artifactId>crafter-commons-utilities</artifactId>
-            <version>2.5.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
         </dependency>
 		<!-- <dependency> <groupId>xerces</groupId> <artifactId>xercesImpl</artifactId>
 			</dependency> -->
@@ -354,11 +353,6 @@
             <artifactId>google-api-services-analytics</artifactId>
             <version>v2.4-rev37-1.14.2-beta</version>
 		</dependency>
-		<!--<dependency>-->
-			<!--<groupId>com.google.gdata.analytics.meta</groupId>-->
-			<!--<artifactId>analytics-meta</artifactId>-->
-			<!--<version>2.1</version>-->
-		<!--</dependency>-->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>

@@ -253,6 +253,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -268,18 +269,21 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-web-client</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -295,6 +299,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-web-framework-commons</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -302,13 +307,6 @@
                     <artifactId>yuicompressor</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-wdr-deployment</artifactId>
-            <version>4.2.e</version>
-            <scope>provided</scope>
         </dependency>
         <!-- test dependencies -->
 
@@ -342,16 +340,19 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-mbeans</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-deployment</artifactId>
+            <version>${alfresco.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
