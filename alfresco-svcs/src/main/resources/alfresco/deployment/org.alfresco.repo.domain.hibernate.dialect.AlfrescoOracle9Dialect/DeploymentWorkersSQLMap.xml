@@ -183,16 +183,16 @@
 
     <delete id="deleteCopyToEnvironmentForSite" parameterClass="String">
         DELETE FROM cstudio_copytoenvironment
-        WHERE site = #site#;
+        WHERE site = #site#
     </delete>
 
     <delete id="deletePublishToTargetForSite" parameterClass="String">
         DELETE FROM cstudio_publishtotarget
-        WHERE site = #site#;
+        WHERE site = #site#
     </delete>
 
     <delete id="deleteDeploymentSyncHistoryForSite" parameterClass="String">
         DELETE FROM cstudio_deploymentsynchistory
-        WHERE site = #site#;
+        WHERE site = #site#
     </delete>
 </sqlMap>
