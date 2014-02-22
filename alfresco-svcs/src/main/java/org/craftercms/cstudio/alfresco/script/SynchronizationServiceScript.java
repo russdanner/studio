@@ -19,10 +19,12 @@ package org.craftercms.cstudio.alfresco.script;
 import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.apache.commons.lang.StringUtils;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmTransactionService;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
 import org.craftercms.cstudio.alfresco.service.api.ServicesConfig;
+import org.craftercms.cstudio.alfresco.service.api.SiteService;
 import org.craftercms.cstudio.alfresco.service.api.SynchronizationService;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.util.TransactionHelper;
@@ -77,9 +79,20 @@ public class SynchronizationServiceScript extends BaseProcessorExtension {
                         @Override
                         public Void execute() throws Throwable {
                             SynchronizationService synchronizationService = getServicesManager().getService(SynchronizationService.class);
-                            synchronizationService.synchronize(_servicesManager.getService(ServicesConfig.class).getRepositoryRootPath(site));
-
-                            logger.info("Synchronization of site '" + site + "' completed successfully");
+                            String siteRootPath = _servicesManager.getService(ServicesConfig.class)
+                                .getRepositoryRootPath(site);
+                            if (StringUtils.isEmpty(siteRootPath)) {
+                                SiteService siteService = _servicesManager.getService(SiteService.class);
+                                siteService.reloadSiteConfigurations();
+                                siteRootPath = _servicesManager.getService(ServicesConfig.class)
+                                    .getRepositoryRootPath(site);
+                            }
+                            if (StringUtils.isNotEmpty(siteRootPath)) {
+                                synchronizationService.synchronize(siteRootPath);
+                                logger.info("Synchronization of site '" + site + "' completed successfully");
+                            } else {
+                                logger.error("Site '" + site + "' synchronization failed. Repository root path empty");
+                            }
 
                             return null;
                         }
