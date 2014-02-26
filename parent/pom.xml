@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.craftercms</groupId>
     <artifactId>crafter-studio-parent</artifactId>
-    <version>2.3.4-SNAPSHOT</version>
+    <version>2.3.4</version>
     <packaging>pom</packaging>
     <name>Crafter Studio Parent</name>
     <description>Crafter Studio Parent</description>
@@ -545,6 +545,34 @@
     </dependencyManagement>
 
     <profiles>
+        <profile>
+            <id>JDK8</id>
+            <activation>
+                <jdk>
+                    1.8
+                </jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <additionalparam>-Xdoclint:none</additionalparam>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>enterprise</id>
             <properties>
