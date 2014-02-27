@@ -1,5 +1,5 @@
 /* ===================================================
- * Copyright 2007-2014 Crafter Software Corporation.
+ * Copyright 2007-2013 Crafter Software Corporation.
  * =================================================== */
 
 (function ($) {

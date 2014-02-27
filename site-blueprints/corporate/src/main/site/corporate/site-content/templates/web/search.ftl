@@ -66,9 +66,9 @@
 	    <div class="content arial">
 	    
 	    	<div class="box pad mt20 mb20 auto form-inline" id="insearch">
-		    	<input id="search" <#if q?exists==true>value="${q}"</#if> type="text" class="input-style" />
+		    	<input id="content-search" <#if q?exists==true>value="${q}"</#if> type="text" class="input-style" />
                 <input type="image" src="/static-assets/images/search-button-2.png"
-                       onclick="document.location = ('/search?q='+document.getElementById('search').value); return false;"
+                       onclick="document.location = ('/search?q='+document.getElementById('content-search').value); return false;"
                        alt="Search" />
 	    	</div>
 	    	
