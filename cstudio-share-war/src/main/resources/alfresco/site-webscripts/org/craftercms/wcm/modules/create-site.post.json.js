@@ -45,7 +45,7 @@ function main()
 
       repoResponse = scriptRemoteConnector.get("/cstudio/site/reload-config");
 
-      repoResponse = scriptRemoteConnector.post("/cstudio/wcm/sync/sync-site?site="+shortname, "", "application/json"); 
+       repoResponse = scriptRemoteConnector.post("/cstudio/wcm/sync/sync-site?site="+shortname, "", "application/json");
    }
 }
 
