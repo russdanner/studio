@@ -6,7 +6,7 @@
 		<path-includes/>
 		<path-excludes/>
 		<content-types>
-			<content-type name="/SITENAME/page/article" is-wcm-type="true"/>
+			<content-type name="/fixer/page/article" is-wcm-type="true"/>
 		</content-types>
 	</path>
 </content-type-path-mapping>

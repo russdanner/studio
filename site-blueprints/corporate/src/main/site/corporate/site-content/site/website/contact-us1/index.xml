@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <page>
-	<content-type>/page/contact-us</content-type>
-	<display-template>/templates/web/contact-us.ftl</display-template>
-	<merge-strategy>inherit-levels</merge-strategy>
-	<content-type>/page/contact-us</content-type>
+	<content-type>/page/contact-us</content-type>	<content-type>/page/contact-us</content-type>
 	<display-template>/templates/web/contact-us.ftl</display-template>
 	<merge-strategy>inherit-levels</merge-strategy>
 	<objectGroupId>55d0</objectGroupId>
@@ -13,7 +10,6 @@
 	<internal-name>Contact Us</internal-name>
 	<title>Strategy, technology and insight for improving Governance, Risk and Compliance in a changing global environment</title>
 	<placeInNav>true</placeInNav>
-	<orderDefault_f>6000</orderDefault_f>
 	<navLabel>Contact Us</navLabel>
 	<locations>	<item>	<title>Corporate Headquarters Europe</title>
 	<address>&lt;p&gt;75 Champs-Elysees&lt;/p&gt;
@@ -26,4 +22,7 @@
 	<phone>+1.555.555.5555</phone>
 	<email>us.info@globalintegrity.com</email>
 	</item></locations>
+	<createdDate>2/26/2014 19:56:57</createdDate>
+	<lastModifiedDate>2/27/2014 21:16:53</lastModifiedDate>
+	<orderDefault_f>1000</orderDefault_f>
 </page>
