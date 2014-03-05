@@ -60,7 +60,7 @@
 						<div class="desc">${model.author}</div>
 						<div class="desc">${model.publishDate_dt}</div>
 
-					<@componentZone id="bottomPromos1">
+					<!-- <@componentZone id="bottomPromos1">
 						<#if model.bottomPromos1?? && model.bottomPromos1.item??>
 		       				<#list model.bottomPromos1.item as module>
 		        				    <@draggableComponent component=module  >
@@ -68,7 +68,7 @@
 			        				</@draggableComponent>
 		       				</#list>
 		       			</#if>
-					</@componentZone>
+					</@componentZone> -->
 					</div>
                     
 				</div>
