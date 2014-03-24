@@ -134,6 +134,8 @@ CStudioAuthoring.Module.requireModule(
 								CStudioAdminConsole.Tool.AdminConfig.prototype.expandEditor(editor);
 							},
 							failure: function() {
+								editor.setValue("");
+								CStudioAdminConsole.Tool.AdminConfig.prototype.expandEditor(editor);
 							}
 						};
 						YAHOO.util.Connect.asyncRequest('GET', url, getConfigCb);
@@ -141,24 +143,30 @@ CStudioAuthoring.Module.requireModule(
 						var sampleTextEl = document.getElementById("sample-text");
 
 						// load sample configuration into view sample area
-						var url = '/share/proxy/alfresco/cstudio/services/content/content-at-path?path=/cstudio/config/sites/' + 
-							          CStudioAuthoringContext.site + itemSelectEl[selectedIndex].getAttribute("sample");
-						var getSampleCb = {
-							success: function(response) {
-								var sampleAreaEl = document.getElementById("sample-window");
-								sampleAreaEl.style.display = 'inline';
-								sampleEditor.setValue(response.responseText);
-								CStudioAdminConsole.Tool.AdminConfig.prototype.shrinkEditor(sampleEditor);
-								var viewSampleButtonEl = document.getElementById("view-sample-button");
-								viewSampleButtonEl.style.display = 'inline';
-								var hideSampleButtonEl = document.getElementById("hide-sample-button");
-								hideSampleButtonEl.style.display = 'none';
-								sampleAreaEl.style.display = 'none';
-							},
-							failure: function() {
-							}
-						};
-						YAHOO.util.Connect.asyncRequest('GET', url, getSampleCb);
+						var samplePath = itemSelectEl[selectedIndex].getAttribute("sample");
+						var viewSampleButtonEl = document.getElementById("view-sample-button");
+						if (samplePath != 'undefined' && samplePath != '') {
+							var url = '/share/proxy/alfresco/cstudio/services/content/content-at-path?path=/cstudio/config/sites/' + 
+								    CStudioAuthoringContext.site + itemSelectEl[selectedIndex].getAttribute("sample");
+							var getSampleCb = {
+								success: function(response) {
+									var sampleAreaEl = document.getElementById("sample-window");
+									sampleAreaEl.style.display = 'inline';
+									sampleEditor.setValue(response.responseText);
+									CStudioAdminConsole.Tool.AdminConfig.prototype.shrinkEditor(sampleEditor);
+									viewSampleButtonEl.style.display = 'inline';
+									var hideSampleButtonEl = document.getElementById("hide-sample-button");
+									hideSampleButtonEl.style.display = 'none';
+									sampleAreaEl.style.display = 'none';
+								},
+								failure: function() {
+									viewSampleButtonEl.style.display = 'none';
+								}
+							};
+							YAHOO.util.Connect.asyncRequest('GET', url, getSampleCb);
+						} else {
+							viewSampleButtonEl.style.display = 'none';
+						}
 
 					} else {
 						editAreaEl.style.display = 'none';
@@ -214,12 +222,17 @@ CStudioAuthoring.Module.requireModule(
 						failure: function() { alert('Save Failed'); } 
 					};
 					var xml = editor.getValue();
-					var url = '/share/proxy/alfresco/cstudio/wcm/config/write?path=/config/sites/' + 
-						CStudioAuthoringContext.site + itemSelectEl[selectedIndex].value;
+					var savePath = itemSelectEl[selectedIndex].value;
+					if (savePath != 'undefined' && savePath != '') {
+						var url = '/share/proxy/alfresco/cstudio/wcm/config/write?path=/config/sites/' + 
+							CStudioAuthoringContext.site + itemSelectEl[selectedIndex].value;
 
-					YAHOO.util.Connect.setDefaultPostHeader(false);
-					YAHOO.util.Connect.initHeader("Content-Type", "application/xml; charset=utf-8");
-					YAHOO.util.Connect.asyncRequest('POST', url, saveCb, xml);
+						YAHOO.util.Connect.setDefaultPostHeader(false);
+						YAHOO.util.Connect.initHeader("Content-Type", "application/xml; charset=utf-8");
+						YAHOO.util.Connect.asyncRequest('POST', url, saveCb, xml);
+					} else {
+						alert("No configuration path is defined.");
+					}
 
 				}; // end of save
 				
