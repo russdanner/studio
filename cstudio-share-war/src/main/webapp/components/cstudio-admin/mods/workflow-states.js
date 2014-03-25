@@ -26,13 +26,17 @@ YAHOO.extend(CStudioAdminConsole.Tool.WorkflowStates, CStudioAdminConsole.Tool, 
 	
 	renderJobsList: function() {
 		
-				var actions = [
+		var actions = [
 				{ name: "Set States", context: this, method: this.setStates }
-			];
-			CStudioAuthoring.ContextualNav.AdminConsoleNav.initActions(actions);
+		];
+		CStudioAuthoring.ContextualNav.AdminConsoleNav.initActions(actions);
 			
+		this.renderStatesTable();
+
+	},
+	
+	renderStatesTable: function () {
 		var stateLisEl = document.getElementById("state-list");
-		
 		stateLisEl.innerHTML = 
 		"<table id='statesTable' class='cs-statelist'>" +
 			 	"<tr>" +
@@ -70,7 +74,6 @@ YAHOO.extend(CStudioAdminConsole.Tool.WorkflowStates, CStudioAdminConsole.Tool, 
 			var serviceUri = "/proxy/alfresco/cstudio/objectstate/get-items?site="+CStudioAuthoringContext.site+"&state=ALL";
 
 			YConnect.asyncRequest("GET", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
-
 	},
 	
 	setStates: function() {
@@ -134,7 +137,12 @@ YAHOO.extend(CStudioAdminConsole.Tool.WorkflowStates, CStudioAdminConsole.Tool, 
 				var path = item.uri;
 				var serviceUri = "/proxy/alfresco/cstudio/objectstate/set-object-state?site="+CStudioAuthoringContext.site+"&path="+path+"&state="+state+"&systemprocessing="+processing;
 				
-				cb = { success:function() {}, failure: function() {} };
+				cb = { 
+						success:function() {
+							CStudioAdminConsole.Tool.WorkflowStates.prototype.renderStatesTable();
+						}, 
+						failure: function() {} 
+				};
 
 				YConnect.asyncRequest("GET", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
 			}
