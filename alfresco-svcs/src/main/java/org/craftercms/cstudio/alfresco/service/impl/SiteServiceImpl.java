@@ -730,7 +730,30 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
         return servicesConfig.getAllAvailableSites();
     }
 
-	/**
+    @Override
+    public void addConfigSpaceExportAspect(final String site) {
+        String configSpaceRoot = this._sitesConfigPath + "/" + site;
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(configSpaceRoot);
+        if (nodeRef != null) {
+            addConfigSpaceExportAspectToNodes(nodeRef);
+        }
+    }
+
+    private void addConfigSpaceExportAspectToNodes(NodeRef nodeRef) {
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+        if (fileInfo.isFolder()) {
+            List<FileInfo> children = persistenceManagerService.list(nodeRef);
+            for (FileInfo child : children) {
+                addConfigSpaceExportAspectToNodes(child.getNodeRef());
+            }
+        } else {
+            persistenceManagerService.addAspect(nodeRef, CStudioContentModel.ASPECT_CONFIGURATION_SPACE_EXPORT, null);
+        }
+    }
+
+    /**
 	 * @param environmentConfig
 	 *            the environmentConfig to set
 	 */

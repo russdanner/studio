@@ -54,6 +54,9 @@ public interface CStudioContentModel {
 	public static final QName ASPECT_IMAGE_METADATA = QName.createQName(NAMESPACE_cstudio_CORE_URI, "imageMetadata");
     public static final QName ASPECT_PREVIEWABLE = QName.createQName(NAMESPACE_cstudio_CORE_URI, "previewable");
     public static final QName ASPECT_PREVIEWABLE_DRAFT = QName.createQName(NAMESPACE_cstudio_CORE_URI, "previewableDraft");
+    public static final QName ASPECT_CONFIGURATION_SPACE_EXPORT = QName.createQName(NAMESPACE_cstudio_CORE_URI,
+        "configSpaceExport");
+
 	
 	// core web content models - aspects
 	public static final QName ASPECT_COLLABORATIVE_SANDBOX = QName.createQName(NAMESPACE_cstudio_CORE_WEB_URI, "collaborativeSandbox");
