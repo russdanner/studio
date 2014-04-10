@@ -362,6 +362,15 @@
         <property name="deployer" ref="previewDeployer" />
     </bean>
 
+    <!-- -->
+    <!-- -->
+
+    <bean id="configurationSpaceExportAspect"
+          class="org.craftercms.cstudio.alfresco.util.impl.ConfigurationSpaceExportAspect" init-method="init">
+        <property name="persistenceManagerService" ref="cstudioPersistenceManagerService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="exportPath" value="${configSpaceExport.exportPath}"/>
+    </bean>
 
     <!-- ////////////////////////////////////// -->
     <!--       Workflow                   -->
@@ -743,6 +752,7 @@
     <bean id="extract-cstudio-metadata" class="org.craftercms.cstudio.alfresco.action.ExtractCStudioMetadataActionExecutor" parent="action-executer">
         <property name="servicesManager" ref="cstudioServicesManager" />
     </bean>
+
 
     <!-- ////////////////////////////////////// -->
     <!-- Import     -->

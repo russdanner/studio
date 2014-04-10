@@ -1919,5 +1919,11 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
     public String getAdministratorUserName() {
         return AuthenticationUtil.getAdminUserName();
     }
+
+    @Override
+    public NodeRef.Status getNodeStatus(final NodeRef nodeRef) {
+        NodeService nodeService = getService(NodeService.class);
+        return nodeService.getNodeStatus(nodeRef);
+    }
 }
 

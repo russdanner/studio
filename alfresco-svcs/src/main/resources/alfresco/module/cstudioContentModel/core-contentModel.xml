@@ -331,6 +331,10 @@
             <title>Previewable Draft</title>
         </aspect>
 
+        <aspect name="cstudio-core:configSpaceExport">
+            <title>Configuration Space Export</title>
+        </aspect>
+
         <!--<aspect name="cstudio-core:deployed">-->
             <!--<title>Deployed</title>-->
             <!--<properties>-->
