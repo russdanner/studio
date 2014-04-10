@@ -167,4 +167,9 @@ public class SiteServiceScript extends BaseProcessorExtension {
     public void deleteSite(String site) {
         _servicesManager.getService(SiteService.class).deleteSite(site);
     }
+
+    public void addConfigSpaceExportAspect(String siteName) {
+        SiteService siteService = _servicesManager.getService(SiteService.class);
+        siteService.addConfigSpaceExportAspect(siteName);
+    }
 }

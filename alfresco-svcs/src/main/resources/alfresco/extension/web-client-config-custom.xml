@@ -50,6 +50,7 @@
             <aspect name="cstudio-core:hasIcon" display-label="Has Icon"/>
             <aspect name="cstudio-core:previewable" display-label="Previewable"/>
             <aspect name="cstudio-core:previewableDraft" display-label="Previewable Draft"/>
+            <aspect name="cstudio-core:configSpaceExport" display-label="Configuration Space Export"/>
         </aspects>
     </config>
 
