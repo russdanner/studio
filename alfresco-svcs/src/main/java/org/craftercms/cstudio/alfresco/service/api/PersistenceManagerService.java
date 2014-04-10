@@ -695,4 +695,6 @@ public interface PersistenceManagerService {
     public boolean isInWorkflow(String fullPath);
 
     public boolean isInWorkflow(NodeRef nodeRef);
+
+    public NodeRef.Status getNodeStatus(NodeRef nodeRef);
 }

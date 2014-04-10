@@ -69,6 +69,7 @@ var blueprintRoot = blueprintsRoot.childByNamePath(blueprintName);
 
         blueprint(siteName, blueprintSiteRoot, workRoot, "site-content.js");
 
+        authoringSiteService.addConfigSpaceExportAspect(siteName);
         authoringSiteService.initializeCache(siteName);
         authoringSiteService.createObjectStatesforNewSite(siteRoot);
         authoringSiteService.extractMetadataForNewSite(siteRoot);

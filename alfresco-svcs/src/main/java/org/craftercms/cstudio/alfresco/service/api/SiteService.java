@@ -145,4 +145,6 @@ public interface SiteService {
     public Set<String> getAllAvailableSites();
 
     String getLiveEnvironmentName(String site);
+
+    public void addConfigSpaceExportAspect(String site);
 }
