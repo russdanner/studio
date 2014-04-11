@@ -476,7 +476,11 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         Serializable scheduledDateValue = persistenceManagerService.getProperty(node, WCMWorkflowModel.PROP_LAUNCH_DATE);
         Date scheduledDate = DefaultTypeConverter.INSTANCE.convert(Date.class, scheduledDateValue);
         if (!dmDependencyTO.isSubmitted() && scheduledDate != null && scheduledDate.equals(dmDependencyTO.getScheduledDate())) {
-            return;
+            if (persistenceManagerService.isScheduled(path)) {
+                return;
+            } else {
+                submitpackage.addToPackage(dmDependencyTO);
+            }
         }
         if (!dmDependencyTO.isReference()) {
             submitpackage.addToPackage(dmDependencyTO);
