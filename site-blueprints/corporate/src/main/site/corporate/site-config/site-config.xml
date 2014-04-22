@@ -82,6 +82,9 @@
                 <pattern>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</pattern>
                 <pattern>application/vnd.ms-powerpoint</pattern>
             </pattern-group>
+            <pattern-group name="script">
+                <pattern>/scripts/([^&lt;"'\)]+)</pattern>
+            </pattern-group>
         </patterns>
 
         <exclude-paths>
@@ -92,6 +95,7 @@
             <display-in-widget-pattern>/site/components/([^&lt;]+).xml</display-in-widget-pattern>
             <display-in-widget-pattern>/static-assets/([^&lt;"'\)]+)</display-in-widget-pattern>
             <display-in-widget-pattern>/templates/([^&lt;"]+)\.ftl</display-in-widget-pattern>
+            <display-in-widget-pattern>/scripts/([^&lt;"'\)]+)</display-in-widget-pattern>
         </display-in-widget-patterns>
         <common-prototype-config>
 

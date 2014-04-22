@@ -59,14 +59,13 @@
 										<onClick>none</onClick>
 									</params>
 								</modulehook>
-                                
                                 <modulehook>
                                     <name>wcm-assets-folder</name>
                                     <showDivider>true</showDivider>
                                     <params>
                                         <label>Scripts</label>
                                         <path>/scripts</path>
-                                        <showRootItem>false</showRootItem>
+                                        <!-- showRootItem>false</showRootItem -->
                                         <onClick>none</onClick>
                                     </params>
                                 </modulehook>
