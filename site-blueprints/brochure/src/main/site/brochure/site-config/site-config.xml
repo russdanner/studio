@@ -56,6 +56,7 @@
             </pattern-group>
             <pattern-group name="asset">
                 <pattern>/static-assets/([^&lt;"'\)]+)</pattern>
+                <pattern>/scripts/([^&lt;"'\)]+)</pattern>
             </pattern-group>
             <pattern-group name="rendering-template">
                 <pattern>/templates/([^&lt;"']+)\.ftl</pattern>
@@ -80,6 +81,7 @@
             <display-in-widget-pattern>/site/components/([^&lt;]+).xml</display-in-widget-pattern>
             <display-in-widget-pattern>/static-assets/([^&lt;"'\)]+)</display-in-widget-pattern>
             <display-in-widget-pattern>/templates/([^&lt;"]+)\.ftl</display-in-widget-pattern>
+            <display-in-widget-pattern>/scripts/([^&lt;"'\)]+)</display-in-widget-pattern>
         </display-in-widget-patterns>
         <common-prototype-config>
 
