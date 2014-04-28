@@ -1,4 +1,4 @@
-//CStudioAuthoring.Utils.addCss("/components/cstudio-admin/mods/logging.css");
+CStudioAuthoring.Utils.addCss("/components/cstudio-admin/mods/bulkoperations.css");
 CStudioAdminConsole.Tool.BulkOperations = CStudioAdminConsole.Tool.BulkOperations ||  function(config, el)  {
     this.containerEl = el;
     this.config = config;
@@ -15,7 +15,7 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
 
         workareaEl.innerHTML =
             "<div id='bulk-ops'>" +
-                "</div>";
+            "</div>";
 
         var actions = [];
 
@@ -24,9 +24,8 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
         this.renderJobsList();
     },
 
-    renderJobsList: function() {
-
-        CStudioAdminConsole.Tool.BulkOperations.rename = function() {
+    renderRename: function() {
+       CStudioAdminConsole.Tool.BulkOperations.rename = function() {
             var srcPath = document.getElementById("bulk-rename-src-path").value;
             var targetPath = document.getElementById("bulk-rename-target-path").value;
             if (srcPath && targetPath) {
@@ -46,40 +45,96 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
             }
         };
 
-        CStudioAdminConsole.Tool.BulkOperations.golive = function() {
-            var path = document.getElementById("bulk-golive-path").value;
-            if (path) {
-                var serviceUri = "/proxy/alfresco/cstudio/util/bulk-golive?site="+CStudioAuthoringContext.site+"&path="+path;
-                var goLiveOpMessage = document.getElementById("bulk-golive-message");
-                var cb = {
-                    success:function() {
-                        goLiveOpMessage.innerHTML = "Bulk Go Live successful";
-                    },
-                    failure: function() {
-                        goLiveOpMessage.innerHTML = "Bulk Go Live successful";
-                    }
-                }
+        var mainEl = document.getElementById("bulk-ops");
 
-                YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
-                goLiveOpMessage.innerHTML = "Executing bulk Go Live ...";
-            }
-        };
+        mainEl.innerHTML =
+            "<div id='bulk-rename' class='bulk-op-area'>" +
+                "<p><h2>Bulk Rename</h2></p><p>" +
+                    "<div class='bulk-table'>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>Source path:" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'><input type='text' size=70 id='bulk-rename-src-path' />" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'>(e.g. /site/website/about-us/index.xml)" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>Target path:" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'><input type='text' size=70 id='bulk-rename-target-path' />" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'>(e.g. /site/website/about/index.xml)" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                " <br/>" +
+                "<input type='button' class='action-button' value='Rename' onclick='CStudioAdminConsole.Tool.BulkOperations.rename()' /></p>" +
+                "<p id='bulk-rename-message'></p>" +
+            "</div>";
 
+    },
 
-        var loggerLisEl = document.getElementById("bulk-ops");
+    renderGoLive: function() {
+         CStudioAdminConsole.Tool.BulkOperations.golive = function() {
+         	 var envSelectEl = document.getElementById("go-pub-channel");
+             var environment = envSelectEl[envSelectEl.selectedIndex].value;
+             var path = document.getElementById("bulk-golive-path").value;
+             if (path) {
+                 var serviceUri = "/proxy/alfresco/cstudio/util/bulk-golive?site=" + CStudioAuthoringContext.site
+                 	 + "&path=" + path + "&environment=" + environment;
+                 var goLiveOpMessage = document.getElementById("bulk-golive-message");
+                 var cb = {
+                     success:function() {
+                         goLiveOpMessage.innerHTML = "Bulk Go Live successful";
+                     },
+                     failure: function() {
+                         goLiveOpMessage.innerHTML = "Bulk Go Live failed";
+                     }
+                 }
 
-        loggerLisEl.innerHTML =
-            "<div id='bulk-rename'><p><h2>Bulk Rename</h2></p><p>" +
-                "Source path: <input type='text' id='bulk-rename-src-path' /><br/>" +
-                "Target path: <input type='text' id='bulk-rename-target-path' /><br/>" +
-                "<input type='button' value='Rename' onclick='CStudioAdminConsole.Tool.BulkOperations.rename()' /></p>" +
-                "<p id='bulk-rename-message'></p></div>" +
-                "<hr/>" +
-                "<div id='bulk-golive'><p><h2>Bulk Go Live</h2></p><p>" +
-                "Path to Publish: <input type'text' id='bulk-golive-path'/><br/>" +
-                "Publishing Environment: <select id='go-pub-channel'></select></br>" +
-                "<input type='button' value='Go Live' onclick='CStudioAdminConsole.Tool.BulkOperations.golive()' /></p>" +
-                "<p id='bulk-golive-message'></p></div>";
+                 YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
+                 goLiveOpMessage.innerHTML = "Executing bulk Go Live ...";
+             }
+         };
+
+        var mainEl = document.getElementById("bulk-ops");
+
+        mainEl.innerHTML =
+                "<div id='bulk-golive' class='bulk-op-area'>" +
+                    "<p><h2>Bulk Go Live</h2></p><p>" +
+                    "<div class='bulk-table'>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>Path to Publish:" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'><input type='text' size=70 id='bulk-golive-path'/>" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'>(e.g. /site/website/about/index.xml)" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bulk-table-row'>" +
+                            "<div class='bulk-table-cell'>Publishing Environment:" +
+                            "</div>" +
+                            "<div class='bulk-table-cell'><select id='go-pub-channel'></select>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                    "</br>" +
+                    "<input type='button' class='action-button' value='Go Live' onclick='CStudioAdminConsole.Tool.BulkOperations.golive()' /></p>" +
+                    "<p id='bulk-golive-message'></p>" +
+                "</div>";
 
 
         var channelsSelect = document.getElementById("go-pub-channel");
@@ -90,7 +145,7 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
                 var publishingOptions = "";
                 var channel_index = 0;
                 for (idx in channels.availablePublishChannels) {
-                    publishingOptions += "<option value='channel-'" + idx +">" + channels.availablePublishChannels[idx].name + "</option>"
+                    publishingOptions += "<option value='" + channels.availablePublishChannels[idx].name +"'>" + channels.availablePublishChannels[idx].name + "</option>"
                 }
                 channelsSelect.innerHTML = publishingOptions;
             },
@@ -100,7 +155,17 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
 
         var channelsServiceUrl = "/proxy/alfresco/cstudio/publish/get-available-publishing-channels?site=" + CStudioAuthoringContext.site;
         YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(channelsServiceUrl), publishingOptionsCB);
+    },
 
+    renderJobsList: function() {
+
+		var actions = [
+				{ name: "Rename", context: this, method: this.renderRename },
+				{ name: "Go Live", context: this, method: this.renderGoLive }
+		];
+		CStudioAuthoring.ContextualNav.AdminConsoleNav.initActions(actions);
+
+        this.renderRename();
     }
 });
 
