@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>maven-amp-plugin</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
