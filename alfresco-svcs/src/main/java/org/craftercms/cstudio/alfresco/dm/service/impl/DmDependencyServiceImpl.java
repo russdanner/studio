@@ -883,6 +883,9 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         String siteRoot = servicesConfig.getRepositoryRootPath(site);
         List<String> assets = getDependentFileNames(site, templateContent, false, servicesConfig.getAssetPatterns(site));
         List<String> templates = getDependentFileNames(site, templateContent, false, servicesConfig.getRenderingTemplatePatterns(site));
+        while (templates.contains(path)) {
+            templates.remove(path);
+        }
         Map<String, List<String>> dependency = new FastMap<String, List<String>>();
         dependency.put(DEPENDENCY_NAME_ASSET, assets);
         dependency.put(DEPENDENCY_NAME_RENDERING_TEMPLATE, templates);
@@ -920,6 +923,7 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         for (String templatePath : templates) {
 
             if (parsedTemplates.contains(templatePath)) {
+
                 continue;
             }
             String fullPath = siteRoot + templatePath;
@@ -941,6 +945,9 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         String siteRoot = servicesConfig.getRepositoryRootPath(site);
         List<String> assets = getDependentFileNames(site, styleContent, false, servicesConfig.getAssetPatterns(site));
+        while (assets.contains(path)) {
+            assets.remove(path);
+        }
         Map<String, List<String>> dependency = new FastMap<String, List<String>>();
 
         dependency.put(DEPENDENCY_NAME_ASSET, assets);
@@ -977,6 +984,9 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         String siteRoot = servicesConfig.getRepositoryRootPath(site);
         List<String> assets = getDependentFileNames(site, javascriptContent, false, servicesConfig.getAssetPatterns(site));
+        while (assets.contains(path)) {
+            assets.remove(path);
+        }
         Map<String, List<String>> dependency = new FastMap<String, List<String>>();
         dependency.put(DEPENDENCY_NAME_ASSET, assets);
         setDependencies(site, path, dependency);
