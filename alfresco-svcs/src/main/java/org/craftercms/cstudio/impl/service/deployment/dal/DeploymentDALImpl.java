@@ -71,6 +71,10 @@ public class DeploymentDALImpl implements DeploymentDAL {
     private static final String STATEMENT_DELETE_DEPLOYMENTSYNCHISTORY_FOR_SITE = "deploymentWorkers" +
         ".deleteDeploymentSyncHistoryForSite";
 
+    private static final String STATEMENT_CHECK_CTE_USERNAME_SIZE = "deploymentWorkers.checkCTEUsernameSize";
+    private static final String STATEMENT_CHECK_PTT_USERNAME_SIZE = "deploymentWorkers.checkPTTUsernameSize";
+    private static final String STATEMENT_CHECK_DSH_USERNAME_SIZE = "deploymentWorkers.checkDSHUsernameSize";
+
     public void initTable() throws DeploymentDALException {
         DataSource dataSource = _sqlMapClient.getDataSource();
         Connection connection = null;
@@ -97,6 +101,22 @@ public class DeploymentDALImpl implements DeploymentDAL {
             List<HashMap> checkTableDSH = _sqlMapClient.queryForList(STATEMENT_CHECK_DSH_TABLE_EXISTS);
             if (checkTableDSH == null || checkTableDSH.size() < 1 ) {
                 scriptRunner.runScript(Resources.getResourceAsReader(_initializeHistoryTableScriptPath));
+            }
+
+            Integer checkColumnCTEUsername = (Integer)_sqlMapClient.queryForObject(STATEMENT_CHECK_CTE_USERNAME_SIZE);
+            if (checkColumnCTEUsername < 255) {
+                scriptRunner.runScript(Resources.getResourceAsReader(_alterUsernameCTEScriptPath));
+            }
+
+            Integer checkColumnPTTUsername = (Integer)_sqlMapClient.queryForObject(STATEMENT_CHECK_PTT_USERNAME_SIZE);
+                if (checkColumnPTTUsername < 255) {
+                    scriptRunner.runScript(Resources.getResourceAsReader(_alterUsernamePTTScriptPath));
+                }
+
+
+            Integer checkColumnDSHUsername = (Integer)_sqlMapClient.queryForObject(STATEMENT_CHECK_DSH_USERNAME_SIZE);
+            if (checkColumnDSHUsername < 255) {
+                scriptRunner.runScript(Resources.getResourceAsReader(_alterUsernameDSHScriptPath));
             }
 
             connection.commit();
@@ -559,6 +579,22 @@ public class DeploymentDALImpl implements DeploymentDAL {
     public String getAddSubmissionCommentCTEScriptPath() { return _addSubmissionCommentCTEScriptPath; }
     public void setAddSubmissionCommentCTEScriptPath(String addSubmissionCommentCTEScriptPath) { this._addSubmissionCommentCTEScriptPath = addSubmissionCommentCTEScriptPath; }
 
+
+    public String getAlterUsernameCTEScriptPath() { return _alterUsernameCTEScriptPath; }
+    public void setAlterUsernameCTEScriptPath(final String alterUsernameCTEScriptPath) {
+        this._alterUsernameCTEScriptPath = alterUsernameCTEScriptPath;
+    }
+
+    public String getAlterUsernamePTTScriptPath() { return _alterUsernamePTTScriptPath; }
+    public void setAlterUsernamePTTScriptPath(final String alterUsernamePTTScriptPath) {
+        this._alterUsernamePTTScriptPath = alterUsernamePTTScriptPath;
+    }
+
+    public String getAlterUsernameDSHScriptPath() { return _alterUsernameDSHScriptPath; }
+    public void setAlterUsernameDSHScriptPath(final String alterUsernameDSHScriptPath) {
+        this._alterUsernameDSHScriptPath = alterUsernameDSHScriptPath;
+    }
+
     public int getSqlBatchMaxSize() { return _sqlBatchMaxSize; }
     public void setSqlBatchMaxSize(int sqlBatchMaxSize) { this._sqlBatchMaxSize = sqlBatchMaxSize; }
 
@@ -567,5 +603,8 @@ public class DeploymentDALImpl implements DeploymentDAL {
     protected String _initializeWorkerTablesScriptPath;
     protected String _initializeHistoryTableScriptPath;
     protected String _addSubmissionCommentCTEScriptPath;
+    protected String _alterUsernameCTEScriptPath;
+    protected String _alterUsernamePTTScriptPath;
+    protected String _alterUsernameDSHScriptPath;
     protected int _sqlBatchMaxSize;
 }

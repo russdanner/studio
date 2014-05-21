@@ -5,7 +5,7 @@ CREATE  TABLE [dbo].[cstudio_deploymentsynchistory] (
   [environment] NVARCHAR(20) NOT NULL ,
   [path] NVARCHAR(4000) NOT NULL ,
   [target] NVARCHAR(50) NOT NULL ,
-  [username] NVARCHAR(25) NOT NULL ,
+  [username] NVARCHAR(255) NOT NULL ,
   [contenttypeclass] NVARCHAR(25) NOT NULL ,
   CONSTRAINT [PK_cstudio_deploymentsynchistory] PRIMARY KEY CLUSTERED (id));
 
