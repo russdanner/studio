@@ -75,6 +75,21 @@
         select * from sys.columns where Name = N'submissioncomment' and Object_ID = Object_ID(N'[dbo].[cstudio_copytoenvironment]')
     </select>
 
+    <select id="checkCTEUsernameSize" resultClass="java.lang.Integer">
+        select character_maximum_length from information_schema.columns where table_name =
+        'cstudio_copytoenvironment' and column_name = 'username'
+    </select>
+
+    <select id="checkPTTUsernameSize" resultClass="java.lang.Integer">
+        select character_maximum_length from information_schema.columns where table_name =
+        'cstudio_publishtotarget' and column_name = 'username'
+    </select>
+
+    <select id="checkDSHUsernameSize" resultClass="java.lang.Integer">
+        select character_maximum_length from information_schema.columns where table_name =
+        'cstudio_deploymentsynchistory' and column_name = 'username'
+    </select>
+
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *
