@@ -78,6 +78,27 @@
         AND attname = 'submissioncomment'
     </select>
 
+    <select id="checkCTEUsernameSize" resultClass="java.lang.Integer">
+        SELECT character_maximum_length
+        FROM information_schema.columns
+        WHERE column_name = 'username'
+        AND table_name = 'cstudio_copytoenvironment';
+    </select>
+
+    <select id="checkPTTUsernameSize" resultClass="java.lang.Integer">
+        SELECT character_maximum_length
+        FROM information_schema.columns
+        WHERE column_name = 'username'
+        AND table_name = 'cstudio_publishtotarget';
+    </select>
+
+    <select id="checkDSHUsernameSize" resultClass="java.lang.Integer">
+        SELECT character_maximum_length
+        FROM information_schema.columns
+        WHERE column_name = 'username'
+        AND table_name = 'cstudio_deploymentsynchistory';
+    </select>
+
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *

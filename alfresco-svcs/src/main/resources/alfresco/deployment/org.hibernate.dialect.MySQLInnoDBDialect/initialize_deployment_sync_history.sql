@@ -5,7 +5,7 @@ CREATE  TABLE `cstudio_deploymentsynchistory` (
   `environment` VARCHAR(20) NOT NULL ,
   `path` TEXT NOT NULL ,
   `target` VARCHAR(50) NOT NULL ,
-  `username` VARCHAR(25) NOT NULL ,
+  `username` VARCHAR(255) NOT NULL ,
   `contenttypeclass` VARCHAR(25) NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `cs_depsynchist_site_idx` (`site` ASC) ,
