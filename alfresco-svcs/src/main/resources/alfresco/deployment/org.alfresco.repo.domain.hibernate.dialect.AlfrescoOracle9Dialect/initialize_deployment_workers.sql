@@ -4,7 +4,7 @@ CREATE  TABLE cstudio_copytoenvironment (
   environment VARCHAR(20) NOT NULL ,
   path VARCHAR(1000) NOT NULL ,
   oldpath VARCHAR(1000) ,
-  username VARCHAR(25) ,
+  username VARCHAR(255) ,
   scheduleddate DATE NOT NULL ,
   state VARCHAR(50) NOT NULL ,
   action VARCHAR(20) NOT NULL ,
@@ -28,7 +28,7 @@ CREATE  TABLE cstudio_publishtotarget (
   environment VARCHAR(20) NOT NULL ,
   path VARCHAR(1000) NOT NULL ,
   oldpath VARCHAR(1000) ,
-  username VARCHAR(25) NOT NULL ,
+  username VARCHAR(255) NOT NULL ,
   version NUMBER(19, 0) NOT NULL ,
   action VARCHAR(20) NOT NULL ,
   contenttypeclass VARCHAR(20)

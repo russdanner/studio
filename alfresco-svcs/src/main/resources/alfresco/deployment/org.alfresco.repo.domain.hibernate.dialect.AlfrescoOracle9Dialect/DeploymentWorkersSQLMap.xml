@@ -80,6 +80,18 @@
         and column_name = upper('submissioncomment')
     </select>
 
+    <select id="checkCTEUsernameSize" resultClass="java.lang.Integer">
+        SELECT CHAR_LENGTH FROM USER_TAB_COLUMNS  WHERE TABLE_NAME = 'CSTUDIO_COPYTOENVIRONMENT' AND COLUMN_NAME = 'USERNAME'
+    </select>
+
+    <select id="checkPTTUsernameSize" resultClass="java.lang.Integer">
+        SELECT CHAR_LENGTH FROM USER_TAB_COLUMNS  WHERE TABLE_NAME = 'CSTUDIO_PUBLISHTOTARGET' AND COLUMN_NAME = 'USERNAME'
+    </select>
+
+    <select id="checkDSHUsernameSize" resultClass="java.lang.Integer">
+        SELECT CHAR_LENGTH FROM USER_TAB_COLUMNS  WHERE TABLE_NAME = 'CSTUDIO_DEPLOYMENTSYNCHISTORY' AND COLUMN_NAME = 'USERNAME'
+    </select>
+
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *

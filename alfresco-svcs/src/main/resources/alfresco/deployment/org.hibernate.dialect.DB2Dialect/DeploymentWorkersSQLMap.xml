@@ -75,6 +75,18 @@
         SELECT * FROM SYSCAT.COLUMNS WHERE "TABNAME" ='cstudio_copytoenvironment' AND COLNAME = 'submissioncomment'
     </select>
 
+    <select id="checkCTEUsernameSize" resultClass="java.lang.Integer">
+        select length from sysibm.syscolumns where tbname = 'cstudio_copytoenvironment' and name = 'username'
+    </select>
+
+    <select id="checkPTTUsernameSize" resultClass="java.lang.Integer">
+        select length from sysibm.syscolumns where tbname = 'cstudio_publishtotarget' and name = 'username'
+    </select>
+
+    <select id="checkDSHUsernameSize" resultClass="java.lang.Integer">
+        select length from sysibm.syscolumns where tbname = 'cstudio_deploymentsynchistory' and name = 'username'
+    </select>
+
     <select id="getItemsReadyForDeployment" resultMap="copyToEnvironmentItemResult"
             cacheModel="deploymentWorkersCache">
         SELECT *
