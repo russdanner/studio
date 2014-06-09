@@ -180,7 +180,7 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
     public DmDependencyTO getDependencies(String site, String sub, String sandbox, String path, boolean populateUpdatedDependecinesOnly, boolean recursive) {
         List<String> paths = new FastList<String>(1);
         paths.add(path);
-        Set<String> processedDependencies = new FastSet<>();
+        Set<String> processedDependencies = new FastSet<String>();
         List<DmDependencyTO> items = getDependencyItems(site, sub, sandbox, paths, processedDependencies ,populateUpdatedDependecinesOnly, recursive, false);
         if (items.size() > 0) {
             return items.get(0);
