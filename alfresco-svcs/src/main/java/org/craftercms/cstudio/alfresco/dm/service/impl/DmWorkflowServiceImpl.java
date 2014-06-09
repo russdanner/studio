@@ -19,6 +19,7 @@ package org.craftercms.cstudio.alfresco.dm.service.impl;
 
 import javolution.util.FastList;
 import javolution.util.FastMap;
+import javolution.util.FastSet;
 import javolution.util.FastTable;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMWorkflowModel;
@@ -1181,35 +1182,43 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 
     @Override
     public boolean removeFromWorkflow(String site, String sub, String path, boolean cancelWorkflow) {
-        // remove submitted aspects from all dependent items
-        DmContentService dmContentService = getService(DmContentService.class);
-        String fullPath = dmContentService.getContentFullPath(site, path);
-        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        NodeRef node = persistenceManagerService.getNodeRef(fullPath);
-        if (node != null) {
-            //removeSubmittedAspect(site, fullPath, null, false, DmConstants.DM_STATUS_IN_PROGRESS);
-            // cancel workflow if anything is pending
-            if (cancelWorkflow) {
-                _cancelWorkflow(site, node);
-            }
+        Set<String> processedPaths = new FastSet<>();
+        return removeFromWorkflow(site, sub, path, processedPaths, cancelWorkflow);
+    }
 
-            DmDependencyService dmDependencyService = getService(DmDependencyService.class);
-            DmDependencyTO depItem = dmDependencyService.getDependencies(site, null, path, false, true);
-            DependencyRules dependencyRules = new DependencyRules(site, getServicesManager());
-            Set<DmDependencyTO> submittedDeps = dependencyRules.applySubmitRule(depItem);
-            List<String> transitionNodes = new ArrayList<String>();
-            for (DmDependencyTO dependencyTO : submittedDeps) {
-                String depFullPath = dmContentService.getContentFullPath(site, dependencyTO.getUri());
-                removeFromWorkflow(site, sub, dependencyTO.getUri(), cancelWorkflow);
-                ObjectStateService.State state = persistenceManagerService.getObjectState(depFullPath);
-                if (ObjectStateService.State.isScheduled(state) || ObjectStateService.State.isSubmitted(state)) {
-                    NodeRef nodeRef = persistenceManagerService.getNodeRef(depFullPath);
-                    transitionNodes.add(nodeRef.getId());
-                    //persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
+    protected boolean removeFromWorkflow(String site, String sub, String path, Set<String> processedPaths, boolean cancelWorkflow) {
+        // remove submitted aspects from all dependent items
+        if (!processedPaths.contains(path)) {
+            processedPaths.add(path);
+            DmContentService dmContentService = getService(DmContentService.class);
+            String fullPath = dmContentService.getContentFullPath(site, path);
+            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+            NodeRef node = persistenceManagerService.getNodeRef(fullPath);
+            if (node != null) {
+                //removeSubmittedAspect(site, fullPath, null, false, DmConstants.DM_STATUS_IN_PROGRESS);
+                // cancel workflow if anything is pending
+                if (cancelWorkflow) {
+                    _cancelWorkflow(site, node);
                 }
-            }
-            if (!transitionNodes.isEmpty()) {
-                persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
+
+                DmDependencyService dmDependencyService = getService(DmDependencyService.class);
+                DmDependencyTO depItem = dmDependencyService.getDependencies(site, null, path, false, true);
+                DependencyRules dependencyRules = new DependencyRules(site, getServicesManager());
+                Set<DmDependencyTO> submittedDeps = dependencyRules.applySubmitRule(depItem);
+                List<String> transitionNodes = new ArrayList<String>();
+                for (DmDependencyTO dependencyTO : submittedDeps) {
+                    String depFullPath = dmContentService.getContentFullPath(site, dependencyTO.getUri());
+                    removeFromWorkflow(site, sub, dependencyTO.getUri(), processedPaths, cancelWorkflow);
+                    ObjectStateService.State state = persistenceManagerService.getObjectState(depFullPath);
+                    if (ObjectStateService.State.isScheduled(state) || ObjectStateService.State.isSubmitted(state)) {
+                        NodeRef nodeRef = persistenceManagerService.getNodeRef(depFullPath);
+                        transitionNodes.add(nodeRef.getId());
+                        //persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
+                    }
+                }
+                if (!transitionNodes.isEmpty()) {
+                    persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
+                }
             }
         }
         return false;
