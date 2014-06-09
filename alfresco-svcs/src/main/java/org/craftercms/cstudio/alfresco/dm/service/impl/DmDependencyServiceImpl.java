@@ -180,7 +180,8 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
     public DmDependencyTO getDependencies(String site, String sub, String sandbox, String path, boolean populateUpdatedDependecinesOnly, boolean recursive) {
         List<String> paths = new FastList<String>(1);
         paths.add(path);
-        List<DmDependencyTO> items = getDependencyItems(site, sub, sandbox,paths,populateUpdatedDependecinesOnly, recursive, false);
+        Set<String> processedDependencies = new FastSet<>();
+        List<DmDependencyTO> items = getDependencyItems(site, sub, sandbox, paths, processedDependencies ,populateUpdatedDependecinesOnly, recursive, false);
         if (items.size() > 0) {
             return items.get(0);
         } else {
@@ -198,10 +199,14 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
      * @param recursive
      * @return dependency items
      */
-    protected List<DmDependencyTO> getDependencyItems(String site, String sub, String sandbox,List<String> paths, boolean populateUpdatedDependecinesOnly, boolean recursive, boolean isDraftContent) {
+    protected List<DmDependencyTO> getDependencyItems(String site, String sub, String sandbox, List<String> paths, Set<String> processedDependencies, boolean populateUpdatedDependecinesOnly, boolean recursive, boolean isDraftContent) {
         List<DmDependencyTO> items = new FastList<DmDependencyTO>(paths.size());
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         for (String path : paths) {
+            if (processedDependencies.contains(path)) {
+                continue;
+            }
+            processedDependencies.add(path);
             DmDependencyTO item = new DmDependencyTO();
             item.setUri(path);
             if (recursive
@@ -214,16 +219,16 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                     }
                     StringBuffer buffer = new StringBuffer(XmlUtils.convertDocumentToString(document));
                     List<String> assets = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getAssetPatterns(site));
-                    List<DmDependencyTO> assetItems = getDependencyItems(site, sub,sandbox,assets, populateUpdatedDependecinesOnly, false, false);
+                    List<DmDependencyTO> assetItems = getDependencyItems(site, sub,sandbox,assets, processedDependencies, populateUpdatedDependecinesOnly, false, false);
                     item.setAssets(assetItems);
                     List<String> components = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getComponentPatterns(site));
-                    List<DmDependencyTO> compItems = getDependencyItems(site, sub,sandbox, components, populateUpdatedDependecinesOnly, recursive, true);
+                    List<DmDependencyTO> compItems = getDependencyItems(site, sub,sandbox, components, processedDependencies, populateUpdatedDependecinesOnly, recursive, true);
                     item.setComponents(compItems);
                     List<String> documents = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getDocumentPatterns(site));
-                    List<DmDependencyTO> docItems = getDependencyItems(site, sub,sandbox, documents, populateUpdatedDependecinesOnly, recursive, false);
+                    List<DmDependencyTO> docItems = getDependencyItems(site, sub,sandbox, documents, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                     item.setDocuments(docItems);
                     List<String> templates = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getRenderingTemplatePatterns(site));
-                    List<DmDependencyTO> templateItems = getDependencyItems(site, sub,sandbox, templates, populateUpdatedDependecinesOnly, recursive, false);
+                    List<DmDependencyTO> templateItems = getDependencyItems(site, sub,sandbox, templates, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                     item.setRenderingTemplates(templateItems);
                     /*
                     List<String> levelDescriptors = getDependentLevelDescriptors(site, path, populateUpdatedDependecinesOnly, _servicesConfig.getLevelDescriptorName(site));
@@ -234,7 +239,7 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                      * get Page dependency as well
                      */
                     List<String> pages = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getPagePatterns(site));
-                    List<DmDependencyTO> pageItems = getDependencyItems(site, sub, sandbox,pages, populateUpdatedDependecinesOnly, recursive, false);
+                    List<DmDependencyTO> pageItems = getDependencyItems(site, sub, sandbox,pages, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                     item.setPages(pageItems);
 
                 } catch (AccessDeniedException e) {
@@ -273,16 +278,16 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
 
                         StringBuffer buffer = new StringBuffer(new String(theChars));
                         List<String> assets = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getAssetPatterns(site));
-                        List<DmDependencyTO> assetItems = getDependencyItems(site, sub,sandbox,assets, populateUpdatedDependecinesOnly, false, false);
+                        List<DmDependencyTO> assetItems = getDependencyItems(site, sub,sandbox,assets, processedDependencies, populateUpdatedDependecinesOnly, false, false);
                         item.setAssets(assetItems);
                         List<String> components = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getComponentPatterns(site));
-                        List<DmDependencyTO> compItems = getDependencyItems(site, sub,sandbox, components, populateUpdatedDependecinesOnly, recursive, true);
+                        List<DmDependencyTO> compItems = getDependencyItems(site, sub,sandbox, components, processedDependencies, populateUpdatedDependecinesOnly, recursive, true);
                         item.setComponents(compItems);
                         List<String> documents = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getDocumentPatterns(site));
-                        List<DmDependencyTO> docItems = getDependencyItems(site, sub,sandbox, documents, populateUpdatedDependecinesOnly, recursive, false);
+                        List<DmDependencyTO> docItems = getDependencyItems(site, sub,sandbox, documents, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                         item.setDocuments(docItems);
                         List<String> templates = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getRenderingTemplatePatterns(site));
-                        List<DmDependencyTO> templateItems = getDependencyItems(site, sub,sandbox, templates, populateUpdatedDependecinesOnly, recursive, false);
+                        List<DmDependencyTO> templateItems = getDependencyItems(site, sub,sandbox, templates, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                         item.setRenderingTemplates(templateItems);
                         /*
                         List<String> levelDescriptors = getDependentLevelDescriptors(site, path, populateUpdatedDependecinesOnly, _servicesConfig.getLevelDescriptorName(site));
@@ -293,7 +298,7 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                          * get Page dependency as well
                          */
                         List<String> pages = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getPagePatterns(site));
-                        List<DmDependencyTO> pageItems = getDependencyItems(site, sub, sandbox,pages, populateUpdatedDependecinesOnly, recursive, false);
+                        List<DmDependencyTO> pageItems = getDependencyItems(site, sub, sandbox,pages, processedDependencies, populateUpdatedDependecinesOnly, recursive, false);
                         item.setPages(pageItems);
                     } catch (ContentNotFoundException e) {
                         logger.error("Error while getting dependent file names for " + path + " in " + site, e);
