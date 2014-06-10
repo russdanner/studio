@@ -54,6 +54,13 @@
         select indexname from pg_indexes where indexname = 'cstudio_objectstate_object_idx';
     </select>
 
+    <select id="checkPathSize" resultClass="java.lang.Integer">
+        SELECT character_maximum_length
+        FROM information_schema.columns
+        WHERE column_name = 'path'
+        AND table_name = 'cstudio_objectstate';
+    </select>
+
     <select id="getObjectByStatus" resultSetType="FORWARD_ONLY"
             resultMap="objectStateResult" cacheModel="objectStateCache"  parameterClass="java.util.Map">
         SELECT object_id, site, path, state, system_processing

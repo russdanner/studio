@@ -80,6 +80,8 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
     private static final String STATEMENT_ADD_OBJECT_IDX = "objectState.addObjectIndex";
     private static final String STATEMENT_CHECK_OBJECT_IDX = "objectState.checkObjectIndex";
 
+    private static final String STATEMENT_CHECK_PATH_SIZE = "objectState.checkPathSize";
+
     protected String initializeScriptPath;
 
     public String getInitializeScriptPath() {
@@ -106,9 +108,13 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
                 ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
                 scriptRunner.runScript(Resources.getResourceAsReader(initializeScriptPath));
             } else {
-                ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
-                scriptRunner.runScript(Resources.getResourceAsReader(initializeScriptPath.replace("initialize.sql",
-                    "alter_path_column_size.sql")));
+                Integer checkColumnCTEUsername = (Integer)_sqlMapClient.queryForObject(STATEMENT_CHECK_PATH_SIZE);
+                if (checkColumnCTEUsername < 2000) {
+                    ScriptRunner scriptRunner = new ScriptRunner(connection, false, true);
+                    scriptRunner.runScript(Resources.getResourceAsReader(initializeScriptPath.replace("initialize.sql",
+                            "alter_path_column_size.sql")));
+                }
+
             }
             List<HashMap> indexCheckResult = _sqlMapClient.queryForList(STATEMENT_CHECK_OBJECT_IDX);
             if (indexCheckResult == null || indexCheckResult.size() < 1) {
