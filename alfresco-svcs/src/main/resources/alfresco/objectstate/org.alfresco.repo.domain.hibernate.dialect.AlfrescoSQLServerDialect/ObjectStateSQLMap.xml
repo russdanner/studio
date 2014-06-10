@@ -54,6 +54,11 @@
         SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[cstudio_objectstate]') AND name = N'cstudio_objectstate_object_idx'
     </select>
 
+    <select id="checkPathSize" resultClass="java.lang.Integer">
+        select character_maximum_length from information_schema.columns where table_name =
+        'cstudio_objectstate' and column_name = 'path'
+    </select>
+
     <select id="getObjectByStatus" resultSetType="FORWARD_ONLY"
             resultMap="objectStateResult" cacheModel="objectStateCache"  parameterClass="java.util.Map">
         SELECT object_id, site, path, state, system_processing

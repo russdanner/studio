@@ -41,6 +41,10 @@
         select * from user_indexes where UPPER(index_name)='CSTUDIO_OBJECTSTATE_OBJECT_IDX'
     </select>
 
+    <select id="checkPathSize" resultClass="java.lang.Integer">
+        SELECT CHAR_LENGTH FROM USER_TAB_COLUMNS  WHERE TABLE_NAME = 'CSTUDIO_OBJECTSTATE' AND COLUMN_NAME = 'PATH'
+    </select>
+
     <select id="getObjectByStatus" resultSetType="FORWARD_ONLY"
             resultMap="objectStateResult" cacheModel="objectStateCache"  parameterClass="java.util.Map">
         SELECT object_id, site, path, state, system_processing
