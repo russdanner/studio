@@ -1182,7 +1182,7 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 
     @Override
     public boolean removeFromWorkflow(String site, String sub, String path, boolean cancelWorkflow) {
-        Set<String> processedPaths = new FastSet<>();
+        Set<String> processedPaths = new FastSet<String>();
         return removeFromWorkflow(site, sub, path, processedPaths, cancelWorkflow);
     }
 
