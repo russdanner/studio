@@ -58,6 +58,10 @@
         select * FROM syscat.indexes WHERE indname = 'cstudio_objectstate_object_idx' AND ownertype = 'U' AND tabname = 'cstudio_objectstate'
     </select>
 
+    <select id="checkPathSize" resultClass="java.lang.Integer">
+        select length from sysibm.syscolumns where tbname = 'cstudio_objectstate' and name = 'path'
+    </select>
+
     <select id="getObjectByStatus" resultSetType="FORWARD_ONLY"
             resultMap="objectStateResult" cacheModel="objectStateCache"  parameterClass="java.util.Map">
         SELECT "object_id", "site", "path", "state", "system_processing"
