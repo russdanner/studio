@@ -96,6 +96,7 @@
       Alfresco.constants.URL_SERVICECONTEXT = "${url.context}/service/";
       Alfresco.constants.URL_FEEDSERVICECONTEXT = "${url.context}/feedservice/";
       Alfresco.constants.USERNAME = "${user.name!""}";
+      document.domain="${cookieDomain}";
    //]]></script>
    <@common.uriTemplate />
    <@common.htmlEditor htmlEditor="tinyMCE"/>
