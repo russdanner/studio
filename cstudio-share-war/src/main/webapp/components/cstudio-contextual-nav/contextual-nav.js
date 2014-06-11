@@ -35,7 +35,7 @@ CStudioAuthoring.ContextualNav = CStudioAuthoring.ContextualNav || {
 				CStudioAuthoring.ContextualNav.addNavContent(navContent); 
 				
 				YAHOO.util.Event.onAvailable("authoringContextNavHeader", function() {
-					
+                    document.domain=CStudioAuthoringContext.cookieDomain;
 					CStudioAuthoring.Events.contextNavReady.fire();
 				}, this);
 			},
