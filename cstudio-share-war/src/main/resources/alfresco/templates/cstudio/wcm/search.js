@@ -6,3 +6,10 @@ model.searchResultTemplates = CStudioAuthoring.Service.retrieveAvailableSearchRe
 
 model.searchFilterTemplates = CStudioAuthoring.Service.retrieveAvailableSearchFilterTemplates(site);
 
+var siteObj = CStudioAuthoring.Service.getSite(site);
+
+if(siteObj!=undefined){
+    model.cookieDomain=siteObj.cookieDomain;
+    }
+
+

@@ -9,3 +9,12 @@ else
 {
 	model.isEdit = 'false';
 }
+
+
+var site = CStudioAuthoring.Service.determineShareSite(page.url.templateArgs);
+var siteObj = CStudioAuthoring.Service.getSite(site);
+
+if(siteObj!=undefined){
+    model.cookieDomain=siteObj.cookieDomain;
+}
+
