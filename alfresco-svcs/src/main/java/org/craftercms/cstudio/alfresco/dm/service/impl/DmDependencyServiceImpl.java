@@ -93,6 +93,14 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         this._cacheManager = cacheManager;
     }
 
+    protected List<String> _ignoreDependenciesRules = new FastList<String>();
+    public List<String> getIgnoreDependenciesRules() {
+        return _ignoreDependenciesRules;
+    }
+    public void setIgnoreDependenciesRules(List<String> ignoreDependenciesRules) {
+        this._ignoreDependenciesRules = ignoreDependenciesRules;
+    }
+
     @Override
     public void register() {
         getServicesManager().registerService(DmDependencyService.class, this);
@@ -1057,10 +1065,14 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         try {
             DmTransactionService dmTransactionService = getService(DmTransactionService.class);
 	        RetryingTransactionHelper helper = dmTransactionService.getRetryingTransactionHelper();
+            final Map<String, List<String>> filteredDependencies =  new FastMap<String, List<String>>();
+            for (String type : dependencies.keySet()) {
+                filteredDependencies.put(type, applyIgnoreDependenciesRules(site, dependencies.get(type)));
+            }
 	        helper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback() {
 	            @Override
 	            public Object execute() throws Throwable {
-	                    _dependencyDaoService.setDependencies(site, path, dependencies);
+	                    _dependencyDaoService.setDependencies(site, path, filteredDependencies);
 	                    return null;
 	            }
 	        }, false, true);
@@ -1069,7 +1081,31 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
         }
     }
 
-	
+    private List<String> applyIgnoreDependenciesRules(String site, List<String> dependencies) {
+        List<String> filteredDependencies = new FastList<String>();
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        String siteRoot = servicesConfig.getRepositoryRootPath(site);
+        for (String dependency : dependencies) {
+            String dependencyFullPath = siteRoot + dependency;
+            boolean ignore = false;
+            if (!persistenceManagerService.exists(dependencyFullPath)) {
+                for (String rule : _ignoreDependenciesRules) {
+                    if (dependency.matches(rule)) {
+                        ignore = true;
+                        break;
+                    }
+                }
+            }
+            if (!ignore) {
+                filteredDependencies.add(dependency);
+            }
+        }
+        return filteredDependencies;
+     }
+
+
+
     @Override
     public void updateDependencies(String site, String path, String state) {
         String storeName = DmUtils.createStoreName(site);
