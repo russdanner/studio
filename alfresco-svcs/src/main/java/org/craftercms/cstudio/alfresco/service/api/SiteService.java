@@ -20,6 +20,7 @@ package org.craftercms.cstudio.alfresco.service.api;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
+import org.craftercms.cstudio.alfresco.to.DeploymentConfigTO;
 import org.craftercms.cstudio.alfresco.to.PublishingChannelGroupConfigTO;
 import org.craftercms.cstudio.alfresco.to.SiteTO;
 
@@ -147,4 +148,6 @@ public interface SiteService {
     String getLiveEnvironmentName(String site);
 
     public void addConfigSpaceExportAspect(String site);
+
+    public DeploymentEndpointConfigTO getPreviewDeploymentEndpoint(String site);
 }

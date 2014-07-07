@@ -19,11 +19,14 @@ package org.craftercms.cstudio.alfresco.service.impl;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.collections.CollectionUtils;
+import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
+import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.preview.DeployedPreviewFile;
 import org.craftercms.cstudio.alfresco.preview.PreviewDeployer;
 import org.craftercms.cstudio.alfresco.service.AbstractRegistrableService;
 import org.craftercms.cstudio.alfresco.service.api.CStudioNodeService;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
+import org.craftercms.cstudio.alfresco.service.api.SiteService;
 import org.craftercms.cstudio.alfresco.service.api.SynchronizationService;
 import org.craftercms.cstudio.alfresco.service.exception.ServiceException;
 import org.craftercms.cstudio.alfresco.util.PreviewDeployUtils;
@@ -72,42 +75,58 @@ public class SynchronizationServiceImpl extends AbstractRegistrableService imple
         boolean fileExists = deployedFile != null;
 
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        SiteService siteService = getServicesManager().getService(SiteService.class);
         if (nodeExists && !fileExists) {
             if (!dmFileInfo.isFolder()) {
-                PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
+                DmPathTO dmPathTO = new DmPathTO(path);
+                String site = dmPathTO.getSiteName();
+                DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+                PreviewDeployUtils.deployFile(site, path, dmFileInfo, persistenceManagerService, deployer, deploymentConfigTO);
             } else {
                 deployDir(path, dmFileInfo);
             }
         } else if (nodeExists && fileExists) {
             if (!dmFileInfo.isFolder() && deployedFile.isFile()) {
                 if (PreviewDeployUtils.isUpdated(path, dmFileInfo, deployedFile)) {
-                    PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
+                    DmPathTO dmPathTO = new DmPathTO(path);
+                    String site = dmPathTO.getSiteName();
+                    DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+                    PreviewDeployUtils.deployFile(site, path, dmFileInfo, persistenceManagerService, deployer, deploymentConfigTO);
                 }
             } else if (dmFileInfo.isFolder() && deployedFile.isDirectory()) {
                 synchronizeDir(path, dmFileInfo);
             } else {
                 // This could mean that someone deleted a dir and created a file with the same name, or vice versa.
-                PreviewDeployUtils.deleteFileOrDir(path, deployer);
+                DmPathTO dmPathTO = new DmPathTO(path);
+                String site = dmPathTO.getSiteName();
+                DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+                PreviewDeployUtils.deleteFileOrDir(site, path, deployer, deploymentConfigTO);
                 if (!dmFileInfo.isFolder()) {
-                    PreviewDeployUtils.deployFile(path, dmFileInfo, persistenceManagerService, deployer);
+                    PreviewDeployUtils.deployFile(site, path, dmFileInfo, persistenceManagerService, deployer, deploymentConfigTO);
                 } else {
                     deployDir(path, dmFileInfo);
                 }
             }
         } else if (!nodeExists && fileExists) {
-            PreviewDeployUtils.deleteFileOrDir(path, deployer);
+            DmPathTO dmPathTO = new DmPathTO(path);
+            String site = dmPathTO.getSiteName();
+            DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+            PreviewDeployUtils.deleteFileOrDir(site, path, deployer, deploymentConfigTO);
         }
     }
 
     protected void deployDir(String path, FileInfo dmFileInfo) throws IOException {
     	PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-
+        SiteService siteService = getServicesManager().getService(SiteService.class);
         List<FileInfo> childrenFileInfo = persistenceManagerService.list(dmFileInfo.getNodeRef());
         if (CollectionUtils.isNotEmpty(childrenFileInfo)) {
             for (FileInfo childFileInfo : childrenFileInfo) {
                 String childPath = path + "/" + childFileInfo.getName();
                 if (!childFileInfo.isFolder()) {
-                    PreviewDeployUtils.deployFile(childPath, childFileInfo, persistenceManagerService, deployer);
+                    DmPathTO dmPathTO = new DmPathTO(path);
+                    String site = dmPathTO.getSiteName();
+                    DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+                    PreviewDeployUtils.deployFile(site, childPath, childFileInfo, persistenceManagerService, deployer, deploymentConfigTO);
                 } else {
                     deployDir(childPath, childFileInfo);
                 }
