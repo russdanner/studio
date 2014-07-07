@@ -231,6 +231,9 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
                 }
                 config.getPublishingChannelGroupConfigs().put(pcgConfigTo.getName(), pcgConfigTo);
             }
+
+            String previewDeploymentEndpoint = root.valueOf("preview-deployment-endpoint");
+            config.setPreviewDeploymentEndpoint(previewDeploymentEndpoint);
             
 			config.setLastUpdated(new Date());
 			
@@ -278,4 +281,13 @@ public class SiteEnvironmentConfigImpl extends ConfigurableServiceBase implement
         return _siteMapping.get(site) != null;
     }
 
+    @Override
+    public String getPreviewDeploymentEndpoint(String site) {
+        checkForUpdate(site);
+        EnvironmentConfigTO config = _siteMapping.get(site);
+        if (config != null) {
+            return config.getPreviewDeploymentEndpoint();
+        }
+        return null;
+    }
 }

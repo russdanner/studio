@@ -214,6 +214,12 @@ public class SiteServiceImpl extends ConfigurableServiceBase implements SiteServ
     }
 
     @Override
+    public DeploymentEndpointConfigTO getPreviewDeploymentEndpoint(String site) {
+        String endpoint = _environmentConfig.getPreviewDeploymentEndpoint(site);
+        return getDeploymentEndpoint(site, endpoint);
+    }
+
+    @Override
     public String getLiveEnvironmentName(String site) {
         PublishingChannelGroupConfigTO pcgcTO = _environmentConfig.getLiveEnvironmentPublishingGroup(site);
         if (pcgcTO != null) {

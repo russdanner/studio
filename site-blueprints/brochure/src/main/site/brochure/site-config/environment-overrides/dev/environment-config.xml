@@ -21,6 +21,7 @@
         </channel-group>
         -->
     </publishing-channels>
+    <preview-deployment-endpoint>preview</preview-deployment-endpoint>
 	<cookie-domain>craftercms.org</cookie-domain>
 	<open-site-dropdown>false</open-site-dropdown>
 </environment-config>

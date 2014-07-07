@@ -26,11 +26,14 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.craftercms.cstudio.alfresco.constant.CStudioContentModel;
+import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.dm.constant.DmConstants;
+import org.craftercms.cstudio.alfresco.dm.to.DmPathTO;
 import org.craftercms.cstudio.alfresco.dm.util.DmUtils;
 import org.craftercms.cstudio.alfresco.preview.PreviewDeployer;
 import org.craftercms.cstudio.alfresco.service.ServicesManager;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
+import org.craftercms.cstudio.alfresco.service.api.SiteService;
 import org.craftercms.cstudio.alfresco.util.PreviewDeployUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,6 +113,7 @@ public class PreviewableDraftAspect implements NodeServicePolicies.OnAddAspectPo
 
     protected void deployFile(NodeRef nodeRef) {
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
+        SiteService siteService = getServicesManager().getService(SiteService.class);
         FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
         if (fileInfo != null) {
             String deploymentPath = DmUtils.getNodePath(persistenceManagerService, nodeRef);
@@ -127,7 +131,10 @@ public class PreviewableDraftAspect implements NodeServicePolicies.OnAddAspectPo
 
                 try {
                     if (!fileInfo.isFolder()) {
-                        PreviewDeployUtils.deployFile(deploymentPath, fileInfo, persistenceManagerService, deployer);
+                        DmPathTO dmPathTO = new DmPathTO(deploymentPath);
+                        String site = dmPathTO.getSiteName();
+                        DeploymentEndpointConfigTO deploymentConfigTO = siteService.getPreviewDeploymentEndpoint(site);
+                        PreviewDeployUtils.deployFile(site, deploymentPath, fileInfo, persistenceManagerService, deployer, deploymentConfigTO);
                     }
                 } catch (Exception e) {
                     logger.error("Error while deploying file to " + deploymentPath, e);

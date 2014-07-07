@@ -46,6 +46,8 @@ public class EnvironmentConfigTO implements TimeStamped {
 
     protected PublishingChannelGroupConfigTO _liveEnvironmentPublishingGroup = null;
 
+    protected String _previewDeploymentEndpoint = null;
+
 	
 	public String getAdminEmailAddress() {
 		return _adminEmailAddress;
@@ -185,5 +187,13 @@ public class EnvironmentConfigTO implements TimeStamped {
 
     public void setLiveEnvironmentPublishingGroup(PublishingChannelGroupConfigTO liveEnvironmentPublishingGroup) {
         this._liveEnvironmentPublishingGroup = liveEnvironmentPublishingGroup;
+    }
+
+    public String getPreviewDeploymentEndpoint() {
+        return _previewDeploymentEndpoint;
+    }
+
+    public void setPreviewDeploymentEndpoint(String previewDeploymentEndpoint) {
+        this._previewDeploymentEndpoint = previewDeploymentEndpoint;
     }
 }
