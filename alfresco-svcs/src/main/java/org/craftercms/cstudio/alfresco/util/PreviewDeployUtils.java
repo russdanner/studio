@@ -17,6 +17,7 @@
 package org.craftercms.cstudio.alfresco.util;
 
 import org.alfresco.service.cmr.model.FileInfo;
+import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.craftercms.cstudio.alfresco.preview.DeployedPreviewFile;
 import org.craftercms.cstudio.alfresco.preview.PreviewDeployer;
 import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
@@ -47,8 +48,8 @@ public class PreviewDeployUtils {
         deployer.createDirectory(path);
     }
 
-    public static void deployFile(String path, FileInfo dmFileInfo, PersistenceManagerService persistenceManagerService,
-                                  PreviewDeployer deployer) throws IOException {
+    public static void deployFile(String site, String path, FileInfo dmFileInfo, PersistenceManagerService persistenceManagerService,
+                                  PreviewDeployer deployer, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws IOException {
         Properties metaData = new Properties();
         metaData.setProperty(MOD_DATE_META_PROPERTY, Long.toString(dmFileInfo.getModifiedDate().getTime()));
 
@@ -58,7 +59,7 @@ public class PreviewDeployUtils {
 
         InputStream content = persistenceManagerService.getReader(dmFileInfo.getNodeRef()).getContentInputStream();
         try {
-            deployer.deploy(path, content, metaData);
+            deployer.deploy(site, path, content, metaData, deploymentEndpointConfigTO);
         } finally {
             try {
                 content.close();
@@ -67,12 +68,12 @@ public class PreviewDeployUtils {
         }
     }
 
-    public static void deleteFileOrDir(String path, PreviewDeployer deployer) throws IOException {
+    public static void deleteFileOrDir(String site, String path, PreviewDeployer deployer, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws IOException {
         if (logger.isDebugEnabled()) {
             logger.debug("Deleting deployed file or dir at " + path);
         }
         try {
-            deployer.delete(path);
+            deployer.delete(site, path, deploymentEndpointConfigTO);
         } catch (FileNotFoundException fnfe) {
             if (logger.isDebugEnabled()) {
                 logger.debug("File/Folder not found " + path);

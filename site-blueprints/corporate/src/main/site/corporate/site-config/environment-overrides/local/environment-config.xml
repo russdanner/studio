@@ -21,6 +21,7 @@
         </channel-group>
         -->
     </publishing-channels>
-	<cookie-domain>127.0.0.1</cookie-domain>
+    <preview-deployment-endpoint>preview</preview-deployment-endpoint>
+    <cookie-domain>127.0.0.1</cookie-domain>
 	<open-site-dropdown>false</open-site-dropdown>
 </environment-config>
