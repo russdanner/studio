@@ -101,4 +101,6 @@ public interface SiteEnvironmentConfig {
     public boolean exists(String site);
 
     PublishingChannelGroupConfigTO getLiveEnvironmentPublishingGroup(String site);
+
+    String getPreviewDeploymentEndpoint(String site);
 }

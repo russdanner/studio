@@ -23,6 +23,7 @@ import org.apache.commons.httpclient.methods.multipart.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.craftercms.cstudio.alfresco.deployment.DeploymentEndpointConfigTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,10 +114,10 @@ public class PreviewDeployer {
         FileUtils.forceMkdir(dir);
     }
 
-    public void deploy(String path, InputStream content) throws IOException {
+    public void deploy(String site, String path, InputStream content, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws IOException {
         if (remoteDeployEnabled) {
             try {
-                remoteDeploy(path, content, null, false);
+                remoteDeploy(site, path, content, null, false, deploymentEndpointConfigTO);
             } catch (Exception e) {
                 LOGGER.error("Error while deploying preview content: " + path, e);
             }
@@ -125,10 +126,10 @@ public class PreviewDeployer {
         }
     }
 
-    public void deploy(String path, InputStream content, Properties metaData) throws IOException {
+    public void deploy(String site, String path, InputStream content, Properties metaData, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws IOException {
         if (remoteDeployEnabled) {
             try {
-                remoteDeploy(path, content, metaData, false);
+                remoteDeploy(site, path, content, metaData, false, deploymentEndpointConfigTO);
             } catch (Exception e) {
                 LOGGER.error("Error while deploying preview content: " + path, e);
             }
@@ -156,18 +157,16 @@ public class PreviewDeployer {
         }
     }
 
-    protected void remoteDeploy(String path, InputStream content, Properties metaData, boolean delete) throws Exception {
+    protected void remoteDeploy(String site, String path, InputStream content, Properties metaData, boolean delete, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws Exception {
         String server = this.deployServer;
         int port = this.deployPort;
         String password = this.deployPassword;
         String target = this.deployTarget;
 
-        //int siteStartPos = path.indexOf("/wem-projects")+13;
-        String site = "";
+
         String relativePath = "";
         Matcher matcher = DM_REPO_PATH_PATTERN_STRING.matcher(path);
         if (matcher.matches()) {
-            site = matcher.group(3);
             relativePath = matcher.group(5).length() != 0 ? matcher.group(5) : "/";
         }
 
@@ -178,11 +177,18 @@ public class PreviewDeployer {
 
         try {
             String url = DEPLOYER_SERVLET_URL;
-            requestUrl = new URL("http", server, port, url);
-
             List<Part> formParts = new FastList<Part>();
-            formParts.add(new StringPart(DEPLOYER_PASSWORD_PARAM, password));
-            formParts.add(new StringPart(DEPLOYER_TARGET_PARAM, target));
+            if (deploymentEndpointConfigTO != null) {
+                requestUrl = new URL(deploymentEndpointConfigTO.getServerUrl());
+                formParts.add(new StringPart(DEPLOYER_PASSWORD_PARAM, deploymentEndpointConfigTO.getPassword()));
+                formParts.add(new StringPart(DEPLOYER_TARGET_PARAM, deploymentEndpointConfigTO.getTarget()));
+            } else {
+                requestUrl = new URL("http", server, port, url);
+                formParts.add(new StringPart(DEPLOYER_PASSWORD_PARAM, password));
+                formParts.add(new StringPart(DEPLOYER_TARGET_PARAM, target));
+            }
+
+
 
             if(delete == true) {
                 formParts.add(new StringPart(DEPLOYER_DELETED_FILES_PARAM, relativePath));
@@ -223,10 +229,10 @@ public class PreviewDeployer {
         }
     }
 
-    public void delete(String path) throws IOException {
+    public void delete(String site, String path, DeploymentEndpointConfigTO deploymentEndpointConfigTO) throws IOException {
         if (remoteDeployEnabled) {
             try {
-                remoteDeploy(path, null, null, true);
+                remoteDeploy(site, path, null, null, true, deploymentEndpointConfigTO);
             } catch (Exception e) {
                 LOGGER.error("Error while deleting preview content: " + path, e);
             }
