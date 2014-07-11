@@ -168,6 +168,7 @@
     <bean id="cstudioObjectStateDaoService" class="org.craftercms.cstudio.alfresco.objectstate.ObjectStateDAOServiceImpl"
           init-method="initIndexes">
         <property name="sqlMapClient" ref="cstudioObjectStateSqlMap" />
+        <property name="bulkOperationBatchSize" value="${objectStateDAL.bulkOperationsBatchSize}" />
         <property name="initializeScriptPath">
             <value>alfresco/objectstate/${hibernate.dialect}/initialize.sql</value>
         </property>
