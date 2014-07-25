@@ -151,7 +151,7 @@
          });
 
          // Listen on clicks for the create site link
-         Event.addListener(this.id + "-createSite-button", "click", this.onCreateSite, this, true);
+         Event.addListener(this.id + "-crafter-createSite-button", "click", this.onCreateSite, this, true);
 
          // DataSource definition
          this.widgets.dataSource = new YAHOO.util.DataSource(this.sites,
