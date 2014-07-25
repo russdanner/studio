@@ -45,7 +45,7 @@
          
          <span class="align-right yui-button-align">
             <span class="first-child">
-               <a href="#" id="${id}-createSite-button" class="theme-color-1">
+               <a href="#" id="${id}-crafter-createSite-button" class="theme-color-1">
                   <img src="${url.context}/res/components/images/site-16.png" style="vertical-align: text-bottom" />
                   ${msg("link.createSite")}</a>
             </span>
