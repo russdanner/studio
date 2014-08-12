@@ -236,10 +236,16 @@ YAHOO.extend(CStudioForms.Controls.FileName, CStudioForms.CStudioFormField, {
 
         this.defaultValue = config.defaultValue;
 
-        YAHOO.util.Event.on(inputEl, 'focus', function(evt, context) { context.form.setFocusedField(context) }, this);
-        YAHOO.util.Event.on(inputEl, 'change', this._onChange, this);
-		YAHOO.util.Event.on(inputEl, 'blur', this._onChange, this);
-        YAHOO.util.Event.on(inputEl, 'keyup', this.processKey, inputEl);
+        var Event = YAHOO.util.Event, me = this;
+        Event.on(inputEl, 'focus', function(evt, context) { context.form.setFocusedField(context) }, this);
+        Event.on(inputEl, 'change', this._onChange, this);
+        Event.on(inputEl, 'blur', this._onChange, this);
+        Event.on(inputEl, 'keyup', this.processKey, inputEl);
+        Event.on(inputEl, 'paste', function (evt, el) {
+            setTimeout(function () {
+                me.processKey(evt, el);
+            }, 100);
+        }, inputEl);
 
         for(var i=0; i<config.properties.length; i++) {
             var prop = config.properties[i];
