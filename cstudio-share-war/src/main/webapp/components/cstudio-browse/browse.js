@@ -315,8 +315,8 @@ CStudioSearch.fireSearchRequest = function(searchContext) {
 				        	else {
 				        		var extension = _item.name.substring(_item.name.lastIndexOf(".")+1);
 				        		resultTemplate = CStudioSearch.resultRenderers[extension];
-				        		
-				        		if(resultTemplate) {
+
+                                if(resultTemplate && (typeof resultTemplate !== "function")) {
 					        	 	resultsHTML = resultTemplate.render({ item: contentItem, resultId: contentItem.resultId });			        			
 				        		}
 				        		else {
