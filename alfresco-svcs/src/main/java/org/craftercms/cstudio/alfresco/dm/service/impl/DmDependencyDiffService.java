@@ -63,8 +63,10 @@ public class DmDependencyDiffService extends AbstractRegistrableService {
 			destPath = sourcePath;
 		}
 		
-		List<String> sourceDependencies = findDependencies(site,diffRequest.getSourceSandbox(),sourcePath, recursive);
-		List<String> destDependencies = findDependencies(site,diffRequest.getDestSandbox(),destPath, recursive);
+		List<String> sourceDependencies = new FastList<String>();
+        sourceDependencies = findDependencies(site,diffRequest.getSourceSandbox(),sourcePath, recursive, sourceDependencies);
+		List<String> destDependencies =  new FastList<String>();
+        destDependencies = findDependencies(site,diffRequest.getDestSandbox(),destPath, recursive, destDependencies);
 
 		//Removed dependenices
 		for(String destDependency:destDependencies){
@@ -87,14 +89,15 @@ public class DmDependencyDiffService extends AbstractRegistrableService {
 	 * 
 	 * @throws ServiceException
 	 */
-	protected List<String> findDependencies(String site, String sandbox, String relativePath, boolean isRecursive) throws ServiceException{
-		List<String> dependencies = new FastList<String>();
+	protected List<String> findDependencies(String site, String sandbox, String relativePath, boolean isRecursive, List<String> dependencies) throws ServiceException{
         DmDependencyService dmDependencyService = getService(DmDependencyService.class);
         List<String> dependenciesFromDoc = dmDependencyService.getDependencyPaths(site, relativePath);
         dependencies.addAll(dependenciesFromDoc);
         if(isRecursive){
             for(String dependency:dependenciesFromDoc){
-                dependencies.addAll(findDependencies(site, sandbox, dependency, isRecursive));
+                if (!dependencies.contains(dependency)) {
+                    dependencies.addAll(findDependencies(site, sandbox, dependency, isRecursive, dependencies));
+                }
             }
         }
 		return dependencies;
