@@ -1225,7 +1225,10 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
                 DmDependencyService dmDependencyService = getService(DmDependencyService.class);
                 PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
                 DmDependencyTO dmDependencyTO = dmDependencyService.getDependencies(site, null, parentPath, false, true);
-                List<DmDependencyTO> dmDependencyTOList = dmDependencyTO.flattenChildren();
+                List<DmDependencyTO> dmDependencyTOList = new FastList<DmDependencyTO>();
+                if (dmDependencyTO != null) {
+                    dmDependencyTOList = dmDependencyTO.flattenChildren();
+                }
                 for (DmDependencyTO dependencyTO : dmDependencyTOList) {
                     String depFullPath = getContentFullPath(site, dependencyTO.getUri());
                     NodeRef node = persistenceManagerService.getNodeRef(depFullPath);
@@ -1410,7 +1413,10 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
                 persistenceManagerService.unlock(node);
             DmDependencyService dmDependencyService = getService(DmDependencyService.class);
             DmDependencyTO dmDependencyTO = dmDependencyService.getDependencies(site, null, path, false, true);
-            List<DmDependencyTO> dmDependencyTOList = dmDependencyTO.flattenChildren();
+            List<DmDependencyTO> dmDependencyTOList = new FastList<DmDependencyTO>();
+            if (dmDependencyTO != null) {
+                dmDependencyTOList = dmDependencyTO.flattenChildren();
+            }
             for (DmDependencyTO dependencyTO : dmDependencyTOList) {
                 String depFullPath = getContentFullPath(site, dependencyTO.getUri());
                 DraftStatus draftCopyStatus = getDraftCopyStatus(depFullPath, site);

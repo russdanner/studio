@@ -1203,21 +1203,24 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
 
                 DmDependencyService dmDependencyService = getService(DmDependencyService.class);
                 DmDependencyTO depItem = dmDependencyService.getDependencies(site, null, path, false, true);
-                DependencyRules dependencyRules = new DependencyRules(site, getServicesManager());
-                Set<DmDependencyTO> submittedDeps = dependencyRules.applySubmitRule(depItem);
-                List<String> transitionNodes = new ArrayList<String>();
-                for (DmDependencyTO dependencyTO : submittedDeps) {
-                    String depFullPath = dmContentService.getContentFullPath(site, dependencyTO.getUri());
-                    removeFromWorkflow(site, sub, dependencyTO.getUri(), processedPaths, cancelWorkflow);
-                    ObjectStateService.State state = persistenceManagerService.getObjectState(depFullPath);
-                    if (ObjectStateService.State.isScheduled(state) || ObjectStateService.State.isSubmitted(state)) {
-                        NodeRef nodeRef = persistenceManagerService.getNodeRef(depFullPath);
-                        transitionNodes.add(nodeRef.getId());
-                        //persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
+                if (depItem != null) {
+                    DependencyRules dependencyRules = new DependencyRules(site, getServicesManager());
+                    Set<DmDependencyTO> submittedDeps = dependencyRules.applySubmitRule(depItem);
+                    List<String> transitionNodes = new ArrayList<String>();
+                    for (DmDependencyTO dependencyTO : submittedDeps) {
+                        String depFullPath = dmContentService.getContentFullPath(site, dependencyTO.getUri());
+                        removeFromWorkflow(site, sub, dependencyTO.getUri(), processedPaths, cancelWorkflow);
+                        ObjectStateService.State state = persistenceManagerService.getObjectState(depFullPath);
+                        if (ObjectStateService.State.isScheduled(state) || ObjectStateService.State.isSubmitted(state)) {
+                            NodeRef nodeRef = persistenceManagerService.getNodeRef(depFullPath);
+                            transitionNodes.add(nodeRef.getId());
+                            //persistenceManagerService.transition(depFullPath, ObjectStateService.TransitionEvent.SAVE);
+                        }
                     }
-                }
-                if (!transitionNodes.isEmpty()) {
-                    persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
+
+                    if (!transitionNodes.isEmpty()) {
+                        persistenceManagerService.transitionBulk(transitionNodes, ObjectStateService.TransitionEvent.SAVE, ObjectStateService.State.NEW_UNPUBLISHED_UNLOCKED);
+                    }
                 }
             }
         }
@@ -1462,14 +1465,17 @@ public class DmWorkflowServiceImpl extends AbstractRegistrableService implements
         DmDependencyService dmDependencyService = getService(DmDependencyService.class);
         DmDependencyTO dmDependencyTo = dmDependencyService.getDependencies(site, null, relativePath, false, true);
 
-        List<DmDependencyTO> pages = dmDependencyTo.getPages();
-        _addDependendenciesToSchdeuleList(site,launchDate,format,scheduledItems,comparator,subComparator,taskId,displayPatterns,filterType,pages,workFlowTasks);
+        if (dmDependencyTo != null) {
 
-        List<DmDependencyTO> components = dmDependencyTo.getComponents();
-        _addDependendenciesToSchdeuleList(site,launchDate,format,scheduledItems,comparator,subComparator,taskId,displayPatterns,filterType,components,workFlowTasks);
+            List<DmDependencyTO> pages = dmDependencyTo.getPages();
+            _addDependendenciesToSchdeuleList(site, launchDate, format, scheduledItems, comparator, subComparator, taskId, displayPatterns, filterType, pages, workFlowTasks);
 
-        List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
-        _addDependendenciesToSchdeuleList(site,launchDate,format,scheduledItems,comparator,subComparator,taskId,displayPatterns,filterType,documents,workFlowTasks);
+            List<DmDependencyTO> components = dmDependencyTo.getComponents();
+            _addDependendenciesToSchdeuleList(site, launchDate, format, scheduledItems, comparator, subComparator, taskId, displayPatterns, filterType, components, workFlowTasks);
+
+            List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
+            _addDependendenciesToSchdeuleList(site, launchDate, format, scheduledItems, comparator, subComparator, taskId, displayPatterns, filterType, documents, workFlowTasks);
+        }
 
     }
 
