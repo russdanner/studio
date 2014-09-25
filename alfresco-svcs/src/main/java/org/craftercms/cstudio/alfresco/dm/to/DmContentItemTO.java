@@ -219,6 +219,8 @@ public class DmContentItemTO implements Serializable {
 	protected boolean _isReference = false;
 	
 	protected Date _lastEditDate;
+
+    protected boolean _skipDependencies = false;
 	
 	/** additional properties map **/
 	protected Map<String, String> _properties = new FastMap<String, String>();
@@ -362,6 +364,8 @@ public class DmContentItemTO implements Serializable {
 		// copy image properties
 		this._width = item._width;
 		this._height = item._height;
+
+        this._skipDependencies = item._skipDependencies;
 	}
 	
 	public boolean isReference() {
@@ -569,6 +573,10 @@ public class DmContentItemTO implements Serializable {
 	public void setDisabled(boolean isDisabled) {
 		this._isDisabled = isDisabled;
 	}
+
+    public boolean isSkipDependencies() { return _skipDependencies; }
+
+    public void setSkipDependencies(boolean skipDependencies) { this._skipDependencies = skipDependencies; }
 	
 	public List<DmContentItemTO> getChildren() {
 		return _children;

@@ -757,6 +757,12 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
                 boolean hideInAuthoring = ContentFormatUtils.getBooleanValue(hideInAuthoringValue);
                 item.setHideInAuthoring(hideInAuthoring);
             }
+
+            String isSkipDependenciesValue = root.valueOf("//" + DmXmlConstants.ELM_SKIP_DEPENDENCIES);
+            if (isSkipDependenciesValue != null && !"".equals(isSkipDependenciesValue)) {
+                boolean skipDependencies = ContentFormatUtils.getBooleanValue(isSkipDependenciesValue);
+                item.setSkipDependencies(skipDependencies);
+            }
         }
         return content;
     }

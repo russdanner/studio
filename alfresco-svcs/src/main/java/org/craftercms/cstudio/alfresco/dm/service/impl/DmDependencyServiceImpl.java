@@ -29,6 +29,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.wcm.util.WCMWorkflowUtil;
 import org.apache.commons.lang.StringUtils;
+import org.craftercms.cstudio.alfresco.dm.constant.DmXmlConstants;
+import org.craftercms.cstudio.alfresco.util.ContentFormatUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.craftercms.cstudio.alfresco.cache.Scope;
@@ -59,6 +61,7 @@ import org.craftercms.cstudio.alfresco.to.CopyDependencyConfigTO;
 import org.craftercms.cstudio.alfresco.to.DeleteDependencyConfigTO;
 import org.craftercms.cstudio.alfresco.util.ContentUtils;
 import org.craftercms.cstudio.alfresco.util.XmlUtils;
+import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,6 +228,18 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                     if (document == null) {
                         return items;
                     }
+
+                    // Check for skipDependencies flag
+                    Element root = document.getRootElement();
+                    boolean skipDependencies = false;
+                    String isSkipDependenciesValue = root.valueOf("//" + DmXmlConstants.ELM_SKIP_DEPENDENCIES);
+                    if (isSkipDependenciesValue != null && !"".equals(isSkipDependenciesValue)) {
+                        skipDependencies = ContentFormatUtils.getBooleanValue(isSkipDependenciesValue);
+                    }
+                    if (skipDependencies) {
+                        return items;
+                    }
+
                     StringBuffer buffer = new StringBuffer(XmlUtils.convertDocumentToString(document));
                     List<String> assets = getDependentFileNames(site, buffer, populateUpdatedDependecinesOnly, servicesConfig.getAssetPatterns(site));
                     List<DmDependencyTO> assetItems = getDependencyItems(site, sub,sandbox,assets, processedDependencies, populateUpdatedDependecinesOnly, false, false);
@@ -778,6 +793,18 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
             return new FastMap<String, List<String>>();
         }
         try {
+
+            // Check for skipDependencies flag
+            Element root = document.getRootElement();
+            boolean skipDependencies = false;
+            String isSkipDependenciesValue = root.valueOf("//" + DmXmlConstants.ELM_SKIP_DEPENDENCIES);
+            if (isSkipDependenciesValue != null && !"".equals(isSkipDependenciesValue)) {
+                skipDependencies = ContentFormatUtils.getBooleanValue(isSkipDependenciesValue);
+            }
+            if (skipDependencies) {
+                return new FastMap<String, List<String>>();
+            }
+
             ServicesConfig servicesConfig = getService(ServicesConfig.class);
             PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
             String siteRoot = servicesConfig.getRepositoryRootPath(site);
@@ -1118,14 +1145,16 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
     protected void _updateDependencies(String site,String relativePath,List<WorkflowTask> workFlowTasks,String state) {
 
         DmDependencyTO dmDependencyTo = getDependencies(site, null, relativePath, false, true);
-        List<DmDependencyTO> pages = dmDependencyTo.getPages();
-        updateDependency(site,workFlowTasks,state,pages);
-        List<DmDependencyTO> components = dmDependencyTo.getComponents();
-        updateDependency(site,workFlowTasks,state,components);
-        List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
-        updateDependency(site,workFlowTasks,state,documents);
-        List<DmDependencyTO> templates = dmDependencyTo.getRenderingTemplates();
-        updateDependency(site,workFlowTasks,state,templates);
+        if (dmDependencyTo != null) {
+            List<DmDependencyTO> pages = dmDependencyTo.getPages();
+            updateDependency(site, workFlowTasks, state, pages);
+            List<DmDependencyTO> components = dmDependencyTo.getComponents();
+            updateDependency(site, workFlowTasks, state, components);
+            List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
+            updateDependency(site, workFlowTasks, state, documents);
+            List<DmDependencyTO> templates = dmDependencyTo.getRenderingTemplates();
+            updateDependency(site, workFlowTasks, state, templates);
+        }
         /*
         List<DmDependencyTO> levelDescriptors = dmDependencyTo.getLevelDescriptors();
         updateDependency(site,workFlowTasks,state,levelDescriptors);
@@ -1223,24 +1252,25 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
 		if(sourceContentPath.endsWith(DmConstants.XML_PATTERN) && dependencyPath.endsWith(DmConstants.XML_PATTERN)){
 			 List<DeleteDependencyConfigTO> deleteAssociations = getDeletePatternConfig(site, sourceContentPath,isLiveRepo);
 			 DmDependencyTO dmDependencyTo = getDependencies(site, null, dependencyPath, false, true);
-			 //TODO are pages also required?
-			 List<DmDependencyTO> dependencyTOItems = dmDependencyTo.getDirectDependencies();//documents,assets,components
-            DmContentService dmContentService = getService(DmContentService.class);
-            PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-			 for(DmDependencyTO dependency : dependencyTOItems){
-		 			String assocFilePath = dependency.getUri();
-					for (DeleteDependencyConfigTO deleteAssoc : deleteAssociations) {
-						if (assocFilePath.matches(deleteAssoc.getPattern())) {
-							String fullPath = dmContentService.getContentFullPath(site, assocFilePath);
-							NodeRef assocNode = persistenceManagerService.getNodeRef(fullPath);
-							if (assocNode != null) {
-								dependencies.add(dependency);
-								dependency.setDeleteEmptyParentFolder(deleteAssoc.isRemoveEmptyFolder());
-							}
-						}
-					}
-				}
-		
+            if (dmDependencyTo != null) {
+                //TODO are pages also required?
+                List<DmDependencyTO> dependencyTOItems = dmDependencyTo.getDirectDependencies();//documents,assets,components
+                DmContentService dmContentService = getService(DmContentService.class);
+                PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+                for (DmDependencyTO dependency : dependencyTOItems) {
+                    String assocFilePath = dependency.getUri();
+                    for (DeleteDependencyConfigTO deleteAssoc : deleteAssociations) {
+                        if (assocFilePath.matches(deleteAssoc.getPattern())) {
+                            String fullPath = dmContentService.getContentFullPath(site, assocFilePath);
+                            NodeRef assocNode = persistenceManagerService.getNodeRef(fullPath);
+                            if (assocNode != null) {
+                                dependencies.add(dependency);
+                                dependency.setDeleteEmptyParentFolder(deleteAssoc.isRemoveEmptyFolder());
+                            }
+                        }
+                    }
+                }
+            }
 		}
 		return dependencies;
 	}
@@ -1343,18 +1373,20 @@ public class DmDependencyServiceImpl extends AbstractRegistrableService implemen
                     logger.debug("Copy Pattern provided for contentType"+contentType);
                 }
                 DmDependencyTO dmDependencyTo = getDependencies(site, null, dependencyPath, false, true);
-                //TODO are pages also required?
-                List<DmDependencyTO> dependencyTOItems = dmDependencyTo.getDirectDependencies(); //documents,assets,components
-                PersistenceManagerService persistenceManagerService1 = getService(PersistenceManagerService.class);
-                for(DmDependencyTO dependency : dependencyTOItems){
-                    String assocFilePath = dependency.getUri();
-                    for (CopyDependencyConfigTO copyConfig: copyDependencyPatterns ) {
-                        if (StringUtils.isNotEmpty(copyConfig.getPattern()) &&
-                                StringUtils.isNotEmpty(copyConfig.getTarget()) && assocFilePath.matches(copyConfig.getPattern())) {
-                            fullPath = servicesConfig.getRepositoryRootPath(site) + assocFilePath;
-                            NodeRef assocNode = persistenceManagerService.getNodeRef(fullPath);
-                            if (assocNode != null) {
-                                copyDependency.put(dependency.getUri(), copyConfig.getTarget());
+                if (dmDependencyTo != null) {
+                    //TODO are pages also required?
+                    List<DmDependencyTO> dependencyTOItems = dmDependencyTo.getDirectDependencies(); //documents,assets,components
+                    PersistenceManagerService persistenceManagerService1 = getService(PersistenceManagerService.class);
+                    for (DmDependencyTO dependency : dependencyTOItems) {
+                        String assocFilePath = dependency.getUri();
+                        for (CopyDependencyConfigTO copyConfig : copyDependencyPatterns) {
+                            if (StringUtils.isNotEmpty(copyConfig.getPattern()) &&
+                                    StringUtils.isNotEmpty(copyConfig.getTarget()) && assocFilePath.matches(copyConfig.getPattern())) {
+                                fullPath = servicesConfig.getRepositoryRootPath(site) + assocFilePath;
+                                NodeRef assocNode = persistenceManagerService.getNodeRef(fullPath);
+                                if (assocNode != null) {
+                                    copyDependency.put(dependency.getUri(), copyConfig.getTarget());
+                                }
                             }
                         }
                     }
