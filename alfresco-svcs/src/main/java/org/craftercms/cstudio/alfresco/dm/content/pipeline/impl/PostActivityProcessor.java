@@ -17,6 +17,7 @@
  ******************************************************************************/
 package org.craftercms.cstudio.alfresco.dm.content.pipeline.impl;
 
+import javolution.util.FastList;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.craftercms.cstudio.alfresco.content.pipeline.api.PipelineContent;
 import org.craftercms.cstudio.alfresco.content.pipeline.impl.BaseContentProcessor;
@@ -93,7 +94,10 @@ public class PostActivityProcessor extends BaseContentProcessor {
         DmContentService dmContentService = getServicesManager().getService(DmContentService.class);
         ActivityService activityService = getServicesManager().getService(ActivityService.class);
         DmDependencyTO dependencyTO = dmDependencyService.getDependencies(site, null, relativePath, false, true);
-        List<DmDependencyTO> dependencyList = dependencyTO.flattenChildren();
+        List<DmDependencyTO> dependencyList = new FastList<DmDependencyTO>();
+        if (dependencyTO != null) {
+            dependencyList = dependencyTO.flattenChildren();
+        }
         for (DmDependencyTO dep : dependencyList) {
             if(dmContentService.matchesDisplayPattern(site, dep.getUri())){
                 extraInfo.put(DmConstants.KEY_CONTENT_TYPE, dmContentService.getContentType(site, dep.getUri()));

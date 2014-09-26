@@ -853,23 +853,26 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
         DmDependencyService dmDependencyService = getService(DmDependencyService.class);
         DmDependencyTO dmDependencyTo = dmDependencyService.getDependencies(site, null, relativePath, false, true);
 
-        List<DmDependencyTO> pages = dmDependencyTo.getPages();
-        updateWorkFlowWithDependencies(pages, site, packageRef, false);
+        if (dmDependencyTo != null) {
 
-        List<DmDependencyTO> components = dmDependencyTo.getComponents();
-        updateWorkFlowWithDependencies(components, site, packageRef, true);
+            List<DmDependencyTO> pages = dmDependencyTo.getPages();
+            updateWorkFlowWithDependencies(pages, site, packageRef, false);
 
-        List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
-        updateWorkFlowWithDependencies(documents, site, packageRef, true);
+            List<DmDependencyTO> components = dmDependencyTo.getComponents();
+            updateWorkFlowWithDependencies(components, site, packageRef, true);
 
-        List<DmDependencyTO> assets = dmDependencyTo.getAssets();
-        updateWorkFlowWithDependencies(assets, site, packageRef, true);
+            List<DmDependencyTO> documents = dmDependencyTo.getDocuments();
+            updateWorkFlowWithDependencies(documents, site, packageRef, true);
 
-        List<DmDependencyTO> templates = dmDependencyTo.getRenderingTemplates();
-        updateWorkFlowWithDependencies(templates, site, packageRef, true);
+            List<DmDependencyTO> assets = dmDependencyTo.getAssets();
+            updateWorkFlowWithDependencies(assets, site, packageRef, true);
 
-        List<DmDependencyTO> levelDescriptors = dmDependencyTo.getLevelDescriptors();
-        updateWorkFlowWithDependencies(levelDescriptors, site, packageRef, true);
+            List<DmDependencyTO> templates = dmDependencyTo.getRenderingTemplates();
+            updateWorkFlowWithDependencies(templates, site, packageRef, true);
+
+            List<DmDependencyTO> levelDescriptors = dmDependencyTo.getLevelDescriptors();
+            updateWorkFlowWithDependencies(levelDescriptors, site, packageRef, true);
+        }
     }
 
     protected void updateWorkFlowWithDependencies(List<DmDependencyTO> dependencies, String site, NodeRef packageRef, boolean isUpdateOrNew) {
