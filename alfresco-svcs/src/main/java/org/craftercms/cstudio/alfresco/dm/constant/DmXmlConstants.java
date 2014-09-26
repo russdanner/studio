@@ -49,4 +49,5 @@ public class DmXmlConstants {
     public static final String ELM_HIDE_INAUTHORING = "hideInAuthoring";
     public static final String ELM_PAGE_ID = "objectId";
     public static final String ELM_GROUP_ID= "objectGroupId";
+    public static final String ELM_SKIP_DEPENDENCIES = "skipDependencies";
 }
