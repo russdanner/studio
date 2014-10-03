@@ -261,23 +261,27 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
 
     protected void addToQueue(String site, GoLiveQueue queue, GoLiveQueue inProcessQueue, NodeRef node) throws ServiceException {
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
-        FileInfo nodeInfo = persistenceManagerService.getFileInfo(node);
-        if (nodeInfo != null && !nodeInfo.isFolder()) {
-            ObjectStateService objectStateService = getService(ObjectStateService.class);
-            ObjectStateService.State nodeState = objectStateService.getObjectState(node);
-            //add only submitted items to go live Q.
-            if (ObjectStateService.State.isSubmitted(nodeState)) {
-                DmContentItemTO to = persistenceManagerService.getContentItem(persistenceManagerService.getNodePath(node), false);
-                queue.add(to);
+        if (persistenceManagerService.exists(node)) {
+            FileInfo nodeInfo = persistenceManagerService.getFileInfo(node);
+            if (nodeInfo != null && !nodeInfo.isFolder()) {
+                ObjectStateService objectStateService = getService(ObjectStateService.class);
+                ObjectStateService.State nodeState = objectStateService.getObjectState(node);
+                //add only submitted items to go live Q.
+                if (ObjectStateService.State.isSubmitted(nodeState)) {
+                    DmContentItemTO to = persistenceManagerService.getContentItem(persistenceManagerService.getNodePath(node), false);
+                    queue.add(to);
+                }
+            } else {
+                List<FileInfo> children = persistenceManagerService.list(node);
+                for (FileInfo child : children) {
+                    addToQueue(site, queue, inProcessQueue, child.getNodeRef());
+                }
             }
+            if (inProcessQueue != null)
+                addToInProcess(site, inProcessQueue, node);
         } else {
-            List<FileInfo> children = persistenceManagerService.list(node);
-            for (FileInfo child : children) {
-                addToQueue(site, queue, inProcessQueue, child.getNodeRef());
-            }
+            persistenceManagerService.deleteObjectState(node.getId());
         }
-        if (inProcessQueue != null)
-            addToInProcess(site, inProcessQueue, node);
     }
 
 
