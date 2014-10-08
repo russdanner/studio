@@ -161,7 +161,7 @@
    	   summary=#summary#,
    	   modified_date=#modifiedDate#,
    	   content_type=#contentType#
-   	   where content_id = #contentId# and post_user_id=#userId#
+   	   where content_id = #contentId# and post_user_id=#userId# and site_network=#siteNetwork#
       ]]>     
    </update>
    
