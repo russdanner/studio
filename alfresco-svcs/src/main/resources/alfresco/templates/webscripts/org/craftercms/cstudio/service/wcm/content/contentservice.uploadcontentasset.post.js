@@ -63,5 +63,8 @@ var filename = null;
         }
 		var result = dmContentService.writeContentAsset(site, path, filename, content,
 				isImage, allowedWidth, allowedHeight, allowLessSize, draft, unlock, systemAsset);
+		var siteConfigStr = authoringSiteService.getSiteConfig(site, null);
+		var siteConfig = eval("(" + siteConfigStr + ")");
+        model.cookieDomain = siteConfig.site.cookieDomain;
 		model.result = result;
 	}
