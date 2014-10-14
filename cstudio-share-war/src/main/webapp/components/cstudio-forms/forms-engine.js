@@ -1059,6 +1059,10 @@ var CStudioForms = CStudioForms || function() {
             YDom.addClass(formButtonContainerEl, "cstudio-form-controls-button-container");
             formControlBarEl.appendChild(formButtonContainerEl);
 
+            function reloadParentWindow() {
+                window.parent.location.reload();
+            }
+
             var beforeUnloadFn = function(e){
                 if(showWarnMsg){
                     var evt = e || window.event;
@@ -1066,7 +1070,7 @@ var CStudioForms = CStudioForms || function() {
                     YAHOO.util.Event.stopEvent(evt);
                     return message;
                 }
-            }
+            };
 
             var unloadFn = function(e){
                 if(_notifyServer){
@@ -1076,7 +1080,7 @@ var CStudioForms = CStudioForms || function() {
                         CStudioAuthoring.Service.unlockContentItemSync(CStudioAuthoringContext.site, entityId);
                     }
                 }
-            }
+            };
 
             var cancelFn = function() {
                 if(showWarnMsg){
@@ -1101,7 +1105,7 @@ var CStudioForms = CStudioForms || function() {
                                                         success: function() {
                                                             _notifyServer = false;
                                                             if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                                                window.parent.location = window.parent.location;
+                                                                reloadParentWindow();
                                                             }
                                                             else {
                                                                 window.close();
@@ -1113,9 +1117,8 @@ var CStudioForms = CStudioForms || function() {
                                                 } else {
                                                     _notifyServer = false;
                                                     if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                                        window.parent.location = window.parent.location;
-                                                    }
-                                                    else {
+                                                        reloadParentWindow();
+                                                    } else {
                                                         window.close();
                                                     }
                                                 }
@@ -1127,9 +1130,8 @@ var CStudioForms = CStudioForms || function() {
                                     } else {
                                         _notifyServer = false;
                                         if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                                            window.parent.location = window.parent.location;
-                                        }
-                                        else {
+                                            reloadParentWindow();
+                                        } else {
                                             window.close();
                                         }
                                     }
@@ -1144,9 +1146,8 @@ var CStudioForms = CStudioForms || function() {
                     dialogEl.dialog.show();
                 }else{
                     if((iceId && iceId !="") || (iceComponent && iceComponent != "")) {
-                        window.parent.location = window.parent.location;
-                    }
-                    else {
+                        reloadParentWindow();
+                    } else {
                         window.close();
                     }
                 }
@@ -1196,7 +1197,7 @@ var CStudioForms = CStudioForms || function() {
                  }
                  */
 
-// This is really the right thing to do but previewable doesn't come through
+                // This is really the right thing to do but previewable doesn't come through
                 var contentTypeCb = {
                     success: function(type) {
                         if(type.previewable && type.previewable == "true") {
@@ -1223,8 +1224,7 @@ var CStudioForms = CStudioForms || function() {
                 YAHOO.util.Event.addListener(window, "beforeunload", beforeUnloadFn, this);
                 YAHOO.util.Event.addListener(window, "unload",unloadFn, this);
                 YAHOO.util.Event.addListener(cancelButtonEl, "click", cancelFn, this);
-            }
-            else {
+            } else {
                 var closeButtonEl = document.createElement("input");
                 YDom.addClass(closeButtonEl, "cstudio-form-control-button ");
                 YDom.addClass(closeButtonEl, "cstudio-button");
