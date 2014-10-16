@@ -78,7 +78,7 @@ public class DeploymentEndpointConfigImpl extends ConfigurableServiceBase implem
                 endpointConfig.setSiteId(siteId);
 
                 String sendMetadataStr = endpointElm.valueOf(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_SEND_METADATA);
-                boolean sendMetadataVal = (StringUtils.isNotEmpty(sendMetadataStr)) && Boolean.getBoolean(sendMetadataStr);
+                boolean sendMetadataVal = (StringUtils.isNotEmpty(sendMetadataStr)) && Boolean.parseBoolean(sendMetadataStr);
                 endpointConfig.setSendMetadata(sendMetadataVal);
 
                 List<Element> excludePatternElms = endpointElm.selectNodes(CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_EXCLUDE_PATTERN + "/" + CStudioXmlConstants.DOCUMENT_ELM_ENDPOINT_PATTERN);
