@@ -398,6 +398,7 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
                                 targetItem.setIncludePattern(endpoint.getIncludePattern());
                                 targetItem.setBucketSize(endpoint.getBucketSize());
                                 targetItem.setSiteId(endpoint.getSiteId());
+                                targetItem.setSendMetadata(endpoint.isSendMetadata());
                                 targets.add(targetItem);
                                 
                                 targetMap.put(endpoint.getName(), targetItem);
