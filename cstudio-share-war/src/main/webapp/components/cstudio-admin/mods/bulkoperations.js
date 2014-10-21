@@ -157,11 +157,59 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
         YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(channelsServiceUrl), publishingOptionsCB);
     },
 
+    renderDelete: function() {
+        CStudioAdminConsole.Tool.BulkOperations.bulkdelete = function() {
+            var path = document.getElementById("bulk-delete-path").value;
+            if (path) {
+                var serviceUri = "/proxy/alfresco/cstudio/util/bulk-delete?site=" + CStudioAuthoringContext.site
+                    + "&path=" + path;
+                var deleteOpMessage = document.getElementById("bulk-delete-message");
+                var cb = {
+                    success:function() {
+                        deleteOpMessage.innerHTML = "Bulk Delete successful";
+                    },
+                    failure: function() {
+                        deleteOpMessage.innerHTML = "Bulk Delete failed";
+                    }
+                }
+
+                YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
+                deleteOpMessage.innerHTML = "Executing bulk Delete ...";
+            }
+        };
+
+        var mainEl = document.getElementById("bulk-ops");
+
+        mainEl.innerHTML =
+            "<div id='bulk-delete' class='bulk-op-area'>" +
+            "<p><h2>Bulk Delete</h2></p><p>" +
+            "<div class='bulk-table'>" +
+            "<div class='bulk-table-row'>" +
+            "<div class='bulk-table-cell'>Path to Delete:" +
+            "</div>" +
+            "<div class='bulk-table-cell'><input type='text' size=70 id='bulk-delete-path'/>" +
+            "</div>" +
+            "</div>" +
+            "<div class='bulk-table-row'>" +
+            "<div class='bulk-table-cell'>" +
+            "</div>" +
+            "<div class='bulk-table-cell'>(e.g. /site/website/about/index.xml)" +
+            "</div>" +
+            "</div>" +
+            "</div>" +
+            "</br>" +
+            "<input type='button' class='action-button' value='Delete' onclick='CStudioAdminConsole.Tool.BulkOperations.bulkdelete()' /></p>" +
+            "<p id='bulk-delete-message'></p>" +
+            "</div>";
+
+    },
+
     renderJobsList: function() {
 
 		var actions = [
 				{ name: "Rename", context: this, method: this.renderRename },
-				{ name: "Go Live", context: this, method: this.renderGoLive }
+				{ name: "Go Live", context: this, method: this.renderGoLive },
+                { name: "Delete", context: this, method: this.renderDelete }
 		];
 		CStudioAuthoring.ContextualNav.AdminConsoleNav.initActions(actions);
 
