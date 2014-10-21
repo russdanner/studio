@@ -252,4 +252,43 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             }
         }
     }
+
+    @Override
+    public void bulkDelete(String site, String path) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Starting Bulk Delete for path " + path + " site " + site);
+        }
+        List<String> childrenPaths = new ArrayList<String>();
+        childrenPaths.add(path);
+        PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
+        ServicesConfig servicesConfig = getService(ServicesConfig.class);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), path);
+        if (nodeRef != null) {
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+            if (!fileInfo.isFolder()) {
+                childrenPaths.add(path);
+            }
+            if (path.endsWith("/" + DmConstants.INDEX_FILE) && persistenceManagerService.hasAspect(nodeRef, CStudioContentModel.ASPECT_RENAMED)) {
+                getAllMandatoryChildren(site, path, childrenPaths);
+            } else {
+                if (fileInfo.isFolder()) {
+                    getAllMandatoryChildren(site, path, childrenPaths);
+                }
+            }
+        }
+        Date launchDate = new Date();
+        String approver = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Deleting " + childrenPaths.size() + " items");
+        }
+        try {
+            deploymentService.delete(site, childrenPaths, approver, launchDate);
+        } catch (DeploymentException e) {
+            logger.error("Error while running bulk Delete operation", e);
+        } finally {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Finished Bulk Delete for path " + path + " site " + site);
+            }
+        }
+    }
 }
