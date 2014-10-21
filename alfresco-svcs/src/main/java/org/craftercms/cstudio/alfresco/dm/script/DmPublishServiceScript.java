@@ -84,4 +84,21 @@ public class DmPublishServiceScript extends BaseProcessorExtension {
         }
 
     }
+
+    public void bulkDelete(String site, String path) {
+        String id = site + ":" + path;
+        GeneralLockService generalLockService = servicesManager.getService(GeneralLockService.class);
+        if (!generalLockService.tryLock(id)) {
+            generalLockService.lock(id);
+            generalLockService.unlock(id);
+            return;
+        }
+        try {
+            DmPublishService dmPublishService = getServicesManager().getService(DmPublishService.class);
+            dmPublishService.bulkDelete(site, path);
+        } finally {
+            generalLockService.unlock(id);
+        }
+
+    }
 }
