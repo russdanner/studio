@@ -74,7 +74,7 @@ public class CheckImageSizeProcessor extends PathMatchProcessor {
         PersistenceManagerService persistenceManagerService = getServicesManager().getService(PersistenceManagerService.class);
         String mimetype = persistenceManagerService.guessMimetype(name);
         //String isImage = content.getProperty(WcmConstants.KEY_IS_IMAGE);
-        boolean process = (StringUtils.isEmpty(mimetype)) ? false : mimetype.startsWith("image/");
+        boolean process = (StringUtils.isEmpty(mimetype)) ? false : mimetype.startsWith("image/") && !StringUtils.equalsIgnoreCase(mimetype, "image/svg+xml");
         if (process) {
             String allowLessSize = content.getProperty(DmConstants.KEY_ALLOW_LESS_SIZE);
             boolean lessSize = ContentFormatUtils.getBooleanValue(allowLessSize);
