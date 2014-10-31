@@ -158,6 +158,14 @@ var CStudioForms = CStudioForms || function() {
         focusIn: function() {
         },
 
+        /**
+        * A temp fix for many controls calling renderValidation with 2 params
+        * This should be merged into one method
+        **/
+        renderValidation: function(onOff, valid) {
+            renderValidation(onOff);
+        },
+
         renderValidation: function(onOff) {
             var valid = true;
 
@@ -1851,14 +1859,16 @@ var CStudioForms = CStudioForms || function() {
 
                                     if(!field.constraints) {
                                         field.constraints = [];
+                                    } else {
+                                        if(!field.constraints.length) {
+                                            if (!field.constraints.constraint) {
+                                                field.constraints = [];
+                                            } else {
+                                                field.constraints = [field.constraints.constraint];
+                                            }
+                                        }
                                     }
 
-                                    if(field.constraints && !field.constraints.constraint) {
-                                        field.constraints = [];
-                                    }
-                                    else if(!field.constraints.length) {
-                                        field.constraints = [field.constraints.constraint];
-                                    }
 
                                     if(field.type == "repeat") {
                                         processFieldsFn(field);
