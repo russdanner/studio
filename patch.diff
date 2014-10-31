@@ -1,0 +1,165 @@
+From d62b1e7d4904bdf82b633df7224e4c35dac381b3 Mon Sep 17 00:00:00 2001
+From: Hyanghee Lim <hlim@rivetlogic.com>
+Date: Fri, 31 Oct 2014 12:22:50 -0400
+Subject: [PATCH] CRAFTERCMS-894: added pattern to input control
+
+---
+ .../components/cstudio-admin/mods/content-types.js |  4 +-
+ .../components/cstudio-forms/controls/input.js     | 46 ++++++++++++++++++----
+ .../components/cstudio-forms/forms-engine.js       | 22 ++++++++---
+ 3 files changed, 57 insertions(+), 15 deletions(-)
+
+diff --git a/cstudio-share-war/src/main/webapp/components/cstudio-admin/mods/content-types.js b/cstudio-share-war/src/main/webapp/components/cstudio-admin/mods/content-types.js
+index e2ac042..44a2374 100644
+--- a/cstudio-share-war/src/main/webapp/components/cstudio-admin/mods/content-types.js
++++ b/cstudio-share-war/src/main/webapp/components/cstudio-admin/mods/content-types.js
+@@ -1358,7 +1358,7 @@ CStudioAdminConsole.PropertySheet.prototype = {
+ 		for(var i=0; i<constraints.length; i++) {
+ 			var constraint = constraints[i];
+ 
+-			var itemConstraint;
++			var itemConstraint = null;
+ 			for(var j=0; j<item.constraints.length; j++) {
+ 				if(item.constraints[j].name == constraint.name) {
+ 					itemConstraint = item.constraints[j];
+@@ -1904,7 +1904,7 @@ CStudioAdminConsole.Tool.ContentTypes.FormDefMain = {
+ 			if(constraint) {
+ 				xml +=  "\t\t\t\t\t\t<constraint>\r\n"+
+ 						"\t\t\t\t\t\t\t<name>" + constraint.name + "</name>\r\n" + 
+-						"\t\t\t\t\t\t\t<value>" + constraint.value + "</value>\r\n" + 
++						"\t\t\t\t\t\t\t<value><![CDATA[" + constraint.value + "]]></value>\r\n" +
+ 					    "\t\t\t\t\t\t\t<type>"+ constraint.type +"</type>\r\n"+
+ 					    "\t\t\t\t\t\t</constraint>\r\n"; 
+ 			}
+diff --git a/cstudio-share-war/src/main/webapp/components/cstudio-forms/controls/input.js b/cstudio-share-war/src/main/webapp/components/cstudio-forms/controls/input.js
+index d894af9..06c19ab 100644
+--- a/cstudio-share-war/src/main/webapp/components/cstudio-forms/controls/input.js
++++ b/cstudio-share-war/src/main/webapp/components/cstudio-forms/controls/input.js
+@@ -6,6 +6,7 @@ function(id, form, owner, properties, constraints, readonly)  {
+ 	this.properties = properties;
+ 	this.constraints = constraints;
+ 	this.inputEl = null;
++	this.patternErrEl = null;
+ 	this.countEl = null;
+ 	this.required = false;
+ 	this.value = "_not-set";
+@@ -24,21 +25,46 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
+ 
+ 	_onChange: function(evt, obj) {
+ 		obj.value = obj.inputEl.value;
+-		
++
++		var validationExist = false;
++		var validationResult = true;
+ 		if(obj.required) {
+ 			if(obj.inputEl.value == "") {
+ 				obj.setError("required", "Field is Required");
+-				obj.renderValidation(true, false);
++				validationExist = true;
++				validationResult = false;
+ 			}
+ 			else {
+ 				obj.clearError("required");
+-				obj.renderValidation(true, true);
++				validationExist = true;
+ 			}
+ 		}
+-		else {
+-			obj.renderValidation(false, true);
+-		}			
+ 
++        if (!validationExist || validationExist && validationResult) {
++            for(var i=0; i<obj.constraints.length; i++) {
++                var constraint = obj.constraints[i];
++                if(constraint.name == 'pattern') {
++                   var regex = constraint.value;
++                   if (obj.inputEl.value.match(regex)) {
++                      // only when there is no other validation mark it as passed
++                      obj.clearError("pattern");
++                      YAHOO.util.Dom.removeClass(obj.patternErrEl, 'on');
++                      validationExist = true;
++                   } else {
++                        if (obj.inputEl.value != '') {
++                            YAHOO.util.Dom.addClass(obj.patternErrEl, 'on');
++                        }
++                        obj.setError("pattern", "The value entered is not allowed in this field.");
++                        validationExist = true;
++                        validationResult = false;
++                   }
++                   break;
++                }
++            }
++        }
++        // actual validation is checked by # of errors
++        // renderValidation does not require the result being passed
++	    obj.renderValidation(validationExist, validationResult);
+ 		obj.owner.notifyValidation();
+ 		obj.form.updateModel(obj.id, obj.getValue());
+ 	},
+@@ -141,7 +167,12 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
+ 			controlWidgetContainerEl.appendChild(countEl);
+ 			this.countEl = countEl;
+ 			
+-			
++        var patternErrEl = document.createElement("div");
++        patternErrEl.innerHTML = "The value entered is not allowed in this field.";
++        YAHOO.util.Dom.addClass(patternErrEl, 'cstudio-form-control-input-url-err');
++        controlWidgetContainerEl.appendChild(patternErrEl);
++        this.patternErrEl = patternErrEl;
++
+ 		YAHOO.util.Event.on(inputEl, 'keyup', this.count, countEl);
+ 		YAHOO.util.Event.on(inputEl, 'keypress', this.count, countEl);
+ 		YAHOO.util.Event.on(inputEl, 'mouseup', this.count, countEl);
+@@ -184,6 +215,7 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
+ 	getSupportedConstraints: function() {
+ 		return [
+ 			{ label: "Required", name: "required", type: "boolean" },
++			{ label: "Match Pattern", name: "pattern", type: "string" },
+ 		];
+ 	}
+ 
+diff --git a/cstudio-share-war/src/main/webapp/components/cstudio-forms/forms-engine.js b/cstudio-share-war/src/main/webapp/components/cstudio-forms/forms-engine.js
+index 2b3d9ae..c6aa7e3 100644
+--- a/cstudio-share-war/src/main/webapp/components/cstudio-forms/forms-engine.js
++++ b/cstudio-share-war/src/main/webapp/components/cstudio-forms/forms-engine.js
+@@ -158,6 +158,14 @@ var CStudioForms = CStudioForms || function() {
+         focusIn: function() {
+         },
+ 
++        /**
++        * A temp fix for many controls calling renderValidation with 2 params
++        * This should be merged into one method
++        **/
++        renderValidation: function(onOff, valid) {
++            renderValidation(onOff);
++        },
++
+         renderValidation: function(onOff) {
+             var valid = true;
+ 
+@@ -1851,14 +1859,16 @@ var CStudioForms = CStudioForms || function() {
+ 
+                                     if(!field.constraints) {
+                                         field.constraints = [];
++                                    } else {
++                                        if(!field.constraints.length) {
++                                            if (!field.constraints.constraint) {
++                                                field.constraints = [];
++                                            } else {
++                                                field.constraints = [field.constraints.constraint];
++                                            }
++                                        }
+                                     }
+ 
+-                                    if(field.constraints && !field.constraints.constraint) {
+-                                        field.constraints = [];
+-                                    }
+-                                    else if(!field.constraints.length) {
+-                                        field.constraints = [field.constraints.constraint];
+-                                    }
+ 
+                                     if(field.type == "repeat") {
+                                         processFieldsFn(field);
+-- 
+1.8.4.2
+
