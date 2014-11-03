@@ -6,6 +6,7 @@ function(id, form, owner, properties, constraints, readonly)  {
 	this.properties = properties;
 	this.constraints = constraints;
 	this.inputEl = null;
+	this.patternErrEl = null;
 	this.countEl = null;
 	this.required = false;
 	this.value = "_not-set";
@@ -24,21 +25,46 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 
 	_onChange: function(evt, obj) {
 		obj.value = obj.inputEl.value;
-		
+
+		var validationExist = false;
+		var validationResult = true;
 		if(obj.required) {
 			if(obj.inputEl.value == "") {
 				obj.setError("required", "Field is Required");
-				obj.renderValidation(true, false);
+				validationExist = true;
+				validationResult = false;
 			}
 			else {
 				obj.clearError("required");
-				obj.renderValidation(true, true);
+				validationExist = true;
 			}
 		}
-		else {
-			obj.renderValidation(false, true);
-		}			
 
+        if (!validationExist || validationExist && validationResult) {
+            for(var i=0; i<obj.constraints.length; i++) {
+                var constraint = obj.constraints[i];
+                if(constraint.name == 'pattern') {
+                   var regex = constraint.value;
+                   if (obj.inputEl.value.match(regex)) {
+                      // only when there is no other validation mark it as passed
+                      obj.clearError("pattern");
+                      YAHOO.util.Dom.removeClass(obj.patternErrEl, 'on');
+                      validationExist = true;
+                   } else {
+                        if (obj.inputEl.value != '') {
+                            YAHOO.util.Dom.addClass(obj.patternErrEl, 'on');
+                        }
+                        obj.setError("pattern", "The value entered is not allowed in this field.");
+                        validationExist = true;
+                        validationResult = false;
+                   }
+                   break;
+                }
+            }
+        }
+        // actual validation is checked by # of errors
+        // renderValidation does not require the result being passed
+	    obj.renderValidation(validationExist, validationResult);
 		obj.owner.notifyValidation();
 		obj.form.updateModel(obj.id, obj.getValue());
 	},
@@ -141,7 +167,12 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 			controlWidgetContainerEl.appendChild(countEl);
 			this.countEl = countEl;
 			
-			
+        var patternErrEl = document.createElement("div");
+        patternErrEl.innerHTML = "The value entered is not allowed in this field.";
+        YAHOO.util.Dom.addClass(patternErrEl, 'cstudio-form-control-input-url-err');
+        controlWidgetContainerEl.appendChild(patternErrEl);
+        this.patternErrEl = patternErrEl;
+
 		YAHOO.util.Event.on(inputEl, 'keyup', this.count, countEl);
 		YAHOO.util.Event.on(inputEl, 'keypress', this.count, countEl);
 		YAHOO.util.Event.on(inputEl, 'mouseup', this.count, countEl);
@@ -184,6 +215,7 @@ YAHOO.extend(CStudioForms.Controls.Input, CStudioForms.CStudioFormField, {
 	getSupportedConstraints: function() {
 		return [
 			{ label: "Required", name: "required", type: "boolean" },
+			{ label: "Match Pattern", name: "pattern", type: "string" },
 		];
 	}
 

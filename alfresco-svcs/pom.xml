@@ -19,6 +19,14 @@
         <skipTests>true</skipTests>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>AlfrescoRepo</id>
+            <url>https://maven.alfresco.com/nexus/content/repositories/releases/</url>
+            <name>Alfresco Repositry</name>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>

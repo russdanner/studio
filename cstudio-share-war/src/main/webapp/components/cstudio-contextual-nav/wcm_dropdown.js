@@ -311,8 +311,15 @@ CStudioAuthoring.ContextualNav.WcmDropDown = CStudioAuthoring.ContextualNav.WcmD
 								modules[0] = menuItems[j].modulehooks.moduleHook;
 							}
 	
-	                        for (k = 0, c = modules.length; k < c; k++)
-	                            this.initDropdownModule( modules[k] );
+                            CStudioAuthoring.Service.lookupAuthoringRole(CStudioAuthoringContext.site, CStudioAuthoringContext.user, {
+                                success: function(userRoles) {
+    	                            for (k = 0, c = modules.length; k < c; k++)
+	                                    this.initDropdownModule( userRoles, modules[k] );
+                                },
+                                failure: function() {
+                                },
+                                initDropdownModule: this.initDropdownModule
+                            });
 	                    }
 	                }
 	            },
@@ -320,80 +327,74 @@ CStudioAuthoring.ContextualNav.WcmDropDown = CStudioAuthoring.ContextualNav.WcmD
 	            /**
 	             * initialize a dropdown module
 	             */
-	            initDropdownModule: function(module) {
-	            	var dropdownInnerEl = YDom.get("acn-dropdown-menu-inner");
-					var moduleContainerEl = document.createElement("div");
-					
-					if(module.showDivider && module.showDivider == "true") {
-						if(!module.params || !module.params.roles) {
-							YDom.addClass(moduleContainerEl, "acn-parent");
-						}
-						else {
-							
-							var roles = (module.params.roles.length) ? module.params.roles : [module.params.roles.role];
-		
-							CStudioAuthoring.Service.lookupAuthoringRole(CStudioAuthoringContext.site, CStudioAuthoringContext.user, {
-								success: function(userRoles) {
-									var allowed = false;
-									var userRoles = userRoles.roles;
-									
-									for(var j=0; j < userRoles.length; j++) {
-										var userRole = userRoles[j];
-									
-										for(var i=0; i < roles.length; i++) {
-											var role = roles[i];
-										
-											if(userRole == role) {
-												allowed = true;
-												break;
-											}
-										}
-									}
-							
-									if(allowed == true) {
-										YDom.addClass(moduleContainerEl, "acn-parent");
-									}
-								},
-								failure: function() {
-									
-								}
-							});
-						}
+	            initDropdownModule: function(userRoles, module) {
+	                var allowed = false;
+					if(!module.params || !module.params.roles) {
+					    allowed = true;
+					} else {
+                        var roles = (module.params.roles.length) ? module.params.roles : [module.params.roles.role];
+                        if (roles.length == 0 || roles[0] == undefined) {
+                            allowed = true;
+                        }
+                        else {
+                            var allowed = false;
+                            var userRoles = userRoles.roles;
+                            for(var j=0; j < userRoles.length; j++) {
+                                var userRole = userRoles[j];
+
+                                for(var i=0; i < roles.length; i++) {
+                                    var role = roles[i];
+
+                                    if(userRole == role) {
+                                        allowed = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
 					}
-					// THIS CODE ABOVE will be removed when we make the entire nav aware of the users roles and centralize the permissions
-					
-					dropdownInnerEl.appendChild(moduleContainerEl);
-					
-					module.containerEl = moduleContainerEl;
-	
-	                var self = this,
-	                    cb = {
-	                        moduleLoaded: function(moduleName, moduleClass, moduleConfig) {
-	                            try {
-	                                moduleClass.initialize(moduleConfig);
-	                            } catch (e) {
-	                                // in preview, this function undefined raises error -- unlike dashboard.
-	                                // I agree, not a good solution!
-	                            }
-	                        }
-	                    };
-	                (module.name == "wcm-root-folder") && (cb.once = function(){
-	                	try {
-		                    CStudioAuthoring.ContextualNav.WcmRootFolder.treePathOpenedEvt.subscribe(function(evtType, aArgs){
-		                        if (aArgs[0] == aArgs[1]) {
-		                            // number of instaces == number of times event has fired
-		                            self.handleScroll = true;
-		                            self.oPreferences.visible && self.updateScrollPosition(true);
-		                        }
-		                    });
-	                	} catch(ex) {}
-	                });
-	                CStudioAuthoring.Module.requireModule(
-	                    module.name,
-	                    '/components/cstudio-contextual-nav/wcm-site-dropdown-mods/' + module.name + ".js",
-	                    module,
-	                    cb
-	                );
+					if (allowed) {
+                        var dropdownInnerEl = YDom.get("acn-dropdown-menu-inner");
+                        var moduleContainerEl = document.createElement("div");
+                        if(module.showDivider && module.showDivider == "true") {
+                            YDom.addClass(moduleContainerEl, "acn-parent");
+                        }
+
+                        // THIS CODE ABOVE will be removed when we make the entire nav aware of the users roles and centralize the permissions
+
+                        dropdownInnerEl.appendChild(moduleContainerEl);
+
+                        module.containerEl = moduleContainerEl;
+
+                        var self = this,
+                            cb = {
+                                moduleLoaded: function(moduleName, moduleClass, moduleConfig) {
+                                    try {
+                                        moduleClass.initialize(moduleConfig);
+                                    } catch (e) {
+                                        // in preview, this function undefined raises error -- unlike dashboard.
+                                        // I agree, not a good solution!
+                                    }
+                                }
+                            };
+                             (module.name == "wcm-root-folder") && (cb.once = function(){
+                            try {
+                                CStudioAuthoring.ContextualNav.WcmRootFolder.treePathOpenedEvt.subscribe(function(evtType, aArgs){
+                                    if (aArgs[0] == aArgs[1]) {
+                                        // number of instaces == number of times event has fired
+                                        self.handleScroll = true;
+                                        self.oPreferences.visible && self.updateScrollPosition(true);
+                                    }
+                                });
+                            } catch(ex) {}
+                        });
+                        CStudioAuthoring.Module.requireModule(
+                            module.name,
+                            '/components/cstudio-contextual-nav/wcm-site-dropdown-mods/' + module.name + ".js",
+                            module,
+                            cb
+                        );
+					}
 	            },
 
                 refreshDropdown: function () {
@@ -414,6 +415,7 @@ CStudioAuthoring.ContextualNav.WcmDropDown = CStudioAuthoring.ContextualNav.WcmD
                     // Re-initialise the dropdown (refresh)
                     CStudioAuthoring.ContextualNav.WcmSiteDropdown.init();
                 }
+
 	        }
 	    });
 	    CStudioAuthoring.Events.widgetScriptLoaded.fire("wcm-site-dropdown");
