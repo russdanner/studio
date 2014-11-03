@@ -3321,10 +3321,59 @@ body.masked {
  	display: none;
 }
 
-#preview-tools-panel-container_c.yui-panel-container span.yui-carousel-button {
- 	display: none;
+<#-- CRAFTERCMS-844 -->
+
+#preview-tools-panel-container #container.yui-carousel {
+margin: 0 auto;
 }
 
+#preview-tools-panel-container_c.yui-panel-container span.yui-carousel-button {
+display: inline-block;
+width: 50%;
+}
+
+#preview-tools-panel-container_c.yui-panel-container span.yui-carousel-button button {
+display: inline-block;
+padding: 5px;
+font-size: 1em;
+line-height: 1em;
+margin: 0;
+width: 100%;
+border-radius: 0;
+background-color: #aaa;
+}
+
+#preview-tools-panel-container_c.yui-panel-container span.yui-carousel-first-button button {
+border-right: 1px solid #fff;
+border-top-left-radius: 5px;
+}
+
+#preview-tools-panel-container_c.yui-panel-container span.yui-carousel-next-button button {
+border-left: 1px solid #fff;
+border-top-right-radius: 5px;
+}
+
+#preview-tools-panel-container_c.yui-panel-container div#preview-tools-panel-container.yui-module div div.expanded div.acn-accordion-panel div div#container.yui-carousel-visible div.yui-carousel-nav ul {
+display:none;
+}
+
+#preview-tools-panel-container_c .yui-carousel-nav {
+margin-top: 5px;
+}
+
+#preview-tools-panel-container #container.yui-carousel.less-than-max-items .yui-carousel-nav {
+display: none;
+}
+
+#preview-tools-panel-container #container.yui-carousel .yui-carousel-content {
+left: 0;
+}
+
+#craftercmspersonacarousel {
+margin-top: 0;
+}
+
+<#-- /CRAFTERCMS-844 -->
 
 #preview-tools-panel-container_c.yui-panel-container div#preview-tools-panel-container.yui-module div div.expanded div.acn-accordion-panel div div#container.yui-carousel-visible div.yui-carousel-nav ul {
 	display:none;
