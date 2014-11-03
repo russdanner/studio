@@ -1358,7 +1358,7 @@ CStudioAdminConsole.PropertySheet.prototype = {
 		for(var i=0; i<constraints.length; i++) {
 			var constraint = constraints[i];
 
-			var itemConstraint;
+			var itemConstraint = null;
 			for(var j=0; j<item.constraints.length; j++) {
 				if(item.constraints[j].name == constraint.name) {
 					itemConstraint = item.constraints[j];
@@ -1904,7 +1904,7 @@ CStudioAdminConsole.Tool.ContentTypes.FormDefMain = {
 			if(constraint) {
 				xml +=  "\t\t\t\t\t\t<constraint>\r\n"+
 						"\t\t\t\t\t\t\t<name>" + constraint.name + "</name>\r\n" + 
-						"\t\t\t\t\t\t\t<value>" + constraint.value + "</value>\r\n" + 
+						"\t\t\t\t\t\t\t<value><![CDATA[" + constraint.value + "]]></value>\r\n" +
 					    "\t\t\t\t\t\t\t<type>"+ constraint.type +"</type>\r\n"+
 					    "\t\t\t\t\t\t</constraint>\r\n"; 
 			}
