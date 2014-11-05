@@ -142,7 +142,7 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
             Common = WcmDashboardWidgetCommon;
 
         var header = [
-            Common.getSortableRow("internalName", widgetId, "Page Name", "minimize"),
+            Common.getSelectAllHeader("internalName", widgetId, "Page Name", "minimize"),
             Common.getSimpleRow("edit", widgetId, "Edit", "minimize"),
             Common.getSortableRow("browserUri", widgetId, "URL", "maximize"),
             '<th id="fullUri" class="width0"></th>',
@@ -192,6 +192,7 @@ CStudioAuthoringWidgets.MyRecentActivityDashboard = CStudioAuthoringWidgets.MyRe
         itemNameForDisplay = CStudioAuthoring.Utils.replaceWithASCIICharacter(itemNameForDisplay);
 
         // TODO Use TemplateAgent + TemplateHolder
+        var editHtml = "";
        	if(!item.deleted && item.uri.indexOf(".xml") != -1) {
             WcmDashboardWidgetCommon.insertEditLink(item, editLinkId);
        	}
