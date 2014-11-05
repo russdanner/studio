@@ -45,7 +45,7 @@ CStudioAuthoringWidgets.RecentlyMadeLiveDashboard = CStudioAuthoringWidgets.Rece
 	
 		var widgetId = this._self.widgetId;
 		
-		var header = WcmDashboardWidgetCommon.getDefaultSortRow("eventDate",widgetId,"Made Live Date","minimize")+
+		var header = WcmDashboardWidgetCommon.getSelectAllHeader("eventDate",widgetId,"Made Live Date","minimize")+
                      WcmDashboardWidgetCommon.getSimpleRow("edit",widgetId,"Edit","minimize")+
 		             WcmDashboardWidgetCommon.getSimpleRow("browserUri",widgetId,"URL","maximize")+
                      WcmDashboardWidgetCommon.getSimpleRow("endpoint",widgetId,"Endpoint","minimize")+
