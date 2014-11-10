@@ -167,8 +167,9 @@ CStudioAuthoring.TargetingPanel = CStudioAuthoring.TargetingPanel || {
 		
 			reportContainerEl.style.position = "fixed";
 			reportContainerEl.style.width = "800px";
-			reportContainerEl.style.height = "300px";
+			reportContainerEl.style.minHeight = "250px";
 			reportContainerEl.style.top = "100px";
+			reportContainerEl.style.paddingBottom = "20px";
 		
 			var x = (window.innerWidth / 2) - (reportContainerEl.offsetWidth / 2) - 400;
 			reportContainerEl.style.left = x+"px";
