@@ -312,16 +312,61 @@ WcmDashboardWidgetCommon.init = function(instance) {
 			
 			        
 			        WcmDashboardWidgetCommon.toggleWidget(widgetId, pageId, state);
-			
-			
-			        var checkboxClick = function(event, matchedEl) {
-			            if (instance.onCheckedClickHandler) {
-			                instance.onCheckedClickHandler(event, matchedEl);
-			            }
-			            else {
-			                WcmDashboardWidgetCommon.selectItem(matchedEl, matchedEl.checked);
-			            }
-			        };
+
+
+                    var checkboxClick = function(event, matchedEl) {
+
+                        var isSelectAll = YDom.hasClass(matchedEl, 'select-all-check');
+                        var table = YDom.getAncestorByTagName(matchedEl, 'table');
+                        var checks = YDom.getElementsByClassName('dashlet-item-check', 'input', table);
+
+                        if (isSelectAll) {
+
+                            var checkAll = matchedEl.checked;
+
+                            for (var i = 0, l = checks.length; i < l; ++i) {
+                                checks[i].checked = checkAll;
+                                // TODO need to include onCheckedClickHandler here?
+                                setTimeout((function (check, checkAll) {
+                                    return function () {
+                                        WcmDashboardWidgetCommon.selectItem(
+                                            check, checkAll);
+                                    }
+                                })(checks[i], checkAll));
+                            }
+
+                        } else {
+
+                            var allItemsChecked = true;
+                            var check = YDom.getElementsBy(function (el) {
+                                return YDom.hasClass(el, 'select-all-check');
+                            }, 'input', table)[0];
+
+                            if (check) {
+
+                                if (!matchedEl.checked) {
+                                    check.checked = false;
+                                } else {
+
+                                    for (var i = 0, l = checks.length; i < l; ++i) {
+                                        allItemsChecked = allItemsChecked && checks[i].checked;
+                                        if (!allItemsChecked) break;
+                                    }
+
+                                    check.checked = allItemsChecked;
+
+                                }
+
+                            }
+
+                            if (instance.onCheckedClickHandler) {
+                                instance.onCheckedClickHandler(event, matchedEl);
+                            } else {
+                                WcmDashboardWidgetCommon.selectItem(matchedEl, matchedEl.checked);
+                            }
+
+                        }
+                    };
 			
 			        var editClick = function(event, matchedEl) {
 			            WcmDashboardWidgetCommon.editItem(matchedEl, matchedEl.checked);
@@ -468,6 +513,19 @@ WcmDashboardWidgetCommon.getSimpleRow = function(prefix, widgetId, rowTitle, cla
               '</span>' +
               '</th>';
     return row;
+};
+
+WcmDashboardWidgetCommon.getSelectAllHeader = function(prefix, widgetId, rowTitle, classes) {
+    return (
+        '<th id=\"' + prefix + '-' + widgetId + '\" class=\"' + classes + '\">' +
+        '<input type="checkbox" class="select-all-check" /> ' +
+        '<span>' +
+        '<a href="javascript:void(0);" id=\"sort' + prefix + '-' + widgetId + '\">' + rowTitle + '</a>' +
+        '<span class="wcm-widget-margin"/>' +
+        '</span>' +
+        '<span id=\"sortIcon-' + prefix + '-' + widgetId + '\" class=\"ttSortDesc wcm-go-live-sort-columns-' + widgetId + '\" style=\"display:none\"></span>' +
+        '</th>'
+        );
 };
 
 WcmDashboardWidgetCommon.getSortableRow = function(prefix, widgetId, rowTitle, classes) {

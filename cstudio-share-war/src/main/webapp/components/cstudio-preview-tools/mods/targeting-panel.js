@@ -18,140 +18,142 @@ CStudioAuthoring.TargetingPanel = CStudioAuthoring.TargetingPanel || {
 	},
 	
 	firstExpand: function(containerEl, config) {
+        CStudioAuthoring.Service.lookupConfigurtion(
+            CStudioAuthoringContext.site,
+            "/targeting/personas/personas-config.xml",
+            {
+                success: function(config) {
 
-		CStudioAuthoring.Service.lookupConfigurtion(
-				CStudioAuthoringContext.site, 
-				"/targeting/personas/personas-config.xml", 
-				{
-					success: function(config) {
-						var userRotateHtml = "<div id='preview-tools-panel-persona-selected' ></div><div id='preview-tools-panel-persona-selected-title' ></div><div id='container'><ol id=''> </ol> </div>";
+                    var userRotateHtml = [
+                        '<div id="preview-tools-panel-persona-selected"></div>',
+                        '<div id="preview-tools-panel-persona-selected-title"></div>',
+                        '<div id="container"><ol></ol></div>'
+                    ].join('');
 
-                        userRotateContainerEl = document.createElement("div");
-                        userRotateContainerEl.innerHTML = userRotateHtml;
-						containerEl.appendChild(userRotateContainerEl);
+                    userRotateContainerEl = document.createElement("div");
+                    userRotateContainerEl.innerHTML = userRotateHtml;
+                    containerEl.appendChild(userRotateContainerEl);
 
-						var sliderEl = document.getElementById('container');
-						
-						var personalListEl = document.createElement("OL");
-						personalListEl.id = "craftercmspersonacarousel";
-						sliderEl.appendChild(personalListEl);
-						
-						if(!config.length) {
-							config = [config.persona];
-						}
-						
-						for(var i=0; i<config.length; i++) {
-							var personaEl = document.createElement("LI");
-							var personaImgEl = document.createElement("IMG");
-							personaImgEl.style.height = "50px";
-							personaImgEl.style.width = "50px";
+                    var sliderEl = document.getElementById('container');
 
-							personaEl.appendChild(personaImgEl);
+                    var personalListEl = document.createElement("ol");
+                    personalListEl.id = "craftercmspersonacarousel";
+                    sliderEl.appendChild(personalListEl);
 
-							personaEl.personaName = config[i].name;
-							personaEl.personaDescription = config[i].description;
-							
-							if(config[i].settings) {
-								if(config[i].settings.property) {
-									if(config[i].settings.property.length) {
-										
-									}
-									else {
-										personaEl.personaProps = [];
-									}
-								}
-								else {
-									personaEl.personaProps = [];
-								}								
-							}
-							else {
-								personaEl.personaProps = [];
-							}
+                    if (!config.length) {
+                        config = [config.persona];
+                    }
 
-							personaEl.personaDescription = config[i].description;
-							personaImgEl.src = CStudioAuthoringContext.baseUri + '/proxy/alfresco-noauth/cstudio/services/content/content-at-path?path=/cstudio/config/sites/' + CStudioAuthoringContext.site + "/targeting/personas/thumbs/"+config[i].thumb;
-							
-							personalListEl.appendChild(personaEl);
-						}
+                    for(var i=0; i < config.length; i++) {
 
-						
-						
-						var spotlightEl = document.getElementById('preview-tools-panel-persona-selected');
-						var spotlightTitleEl = document.getElementById('preview-tools-panel-persona-selected-title');
+                        var personaEl = document.createElement("li");
+                        var personaImgEl = document.createElement("img");
 
-					    var carousel = new YAHOO.widget.Carousel(sliderEl, {
-					      isCircular: true,
-					      numVisible: 4
-					    });
+                        personaImgEl.style.height = "50px";
+                        personaImgEl.style.width = "50px";
 
-						carousel.parentControl = this;
-						var getImageFn = function(parent) {
-							var el = parent.firstChild;
-  							while (el) {  
-    							if (el.nodeName.toUpperCase() == "IMG") { 	
-							      return el.src.replace(/_s\.jpg$/, "_m.jpg");
-    							}
-    							el = el.nextSibling;
-  							}
-							
-							return "";
-						};	
+                        personaEl.appendChild(personaImgEl);
 
-						CStudioAuthoring.TargetingPanel.carousel = carousel;
-						carousel.getImageFn = getImageFn;
-						carousel.spotlightTitleEl = spotlightTitleEl;
-						carousel.spotlightEl = spotlightEl;
-						carousel.personas = config;
-						carousel.on("itemSelected", CStudioAuthoring.TargetingPanel.selectPersona);
-						 
-					    carousel.render();
-					    carousel.show();
+                        personaEl.personaName = config[i].name;
+                        personaEl.personaDescription = config[i].description;
 
+                        if(config[i].settings) {
+                            if(config[i].settings.property) {
+                                if(config[i].settings.property.length) {
 
-					
-					var getCurrentCallback = {
-						success: function(oResponse) {
-							var json = oResponse.responseText;
-							var currentProfile = eval("(" + json + ")");
-							
-							for(var i=0; i<config.length; i++) {
-								if(config[i].name.toLowerCase() == currentProfile.username.toLowerCase()) {
-									carousel.activePersona = currentProfile;
-									CStudioAuthoring.TargetingPanel.selectPersona(i);
-									break;
-								}
-							}
-							
-							if(!carousel.activePersona) {
-								for(var i=0; i<config.length; i++) {
-									if(config[i].name.toLowerCase() == "anonymous") {
-										persona = config[i];
-										carousel.activePersona = {"username":"Anonymous"};
-										CStudioAuthoring.TargetingPanel.selectPersona(i);
-										break;		
-									}
-								}	
-							} 
+                                } else {
+                                    personaEl.personaProps = [];
+                                }
+                            } else {
+                                personaEl.personaProps = [];
+                            }
+                        } else {
+                            personaEl.personaProps = [];
+                        }
 
-						},
-						failure: function() {
-						}
-					};
-					
-					var serviceUri = CStudioAuthoring.Service.createEngineServiceUri("/api/1/profile/get");
-					YConnect.asyncRequest('GET', serviceUri, getCurrentCallback);
+                        personaEl.personaDescription = config[i].description;
+                        personaImgEl.src = CStudioAuthoringContext.baseUri + '/proxy/alfresco-noauth/cstudio/services/content/content-at-path?path=/cstudio/config/sites/' + CStudioAuthoringContext.site + "/targeting/personas/thumbs/"+config[i].thumb;
+
+                        personalListEl.appendChild(personaEl);
+                    }
+
+                    var spotlightEl = document.getElementById('preview-tools-panel-persona-selected');
+                    var spotlightTitleEl = document.getElementById('preview-tools-panel-persona-selected-title');
+
+                    var numVisible = 4;
+                    var carousel = new YAHOO.widget.Carousel(sliderEl, {
+                        isCircular: true,
+                        numVisible: numVisible
+                    });
+
+                    if (config.length < numVisible) {
+                        YAHOO.util.Dom.addClass(sliderEl, 'less-than-max-items');
+                    }
+
+                    carousel.parentControl = this;
+                    var getImageFn = function(parent) {
+                        var el = parent.firstChild;
+                        while (el) {
+                            if (el.nodeName.toUpperCase() == "IMG") {
+                                return el.src.replace(/_s\.jpg$/, "_m.jpg");
+                            }
+                            el = el.nextSibling;
+                        }
+                        return "";
+                    };
+
+                    CStudioAuthoring.TargetingPanel.carousel = carousel;
+                    carousel.getImageFn = getImageFn;
+                    carousel.spotlightTitleEl = spotlightTitleEl;
+                    carousel.spotlightEl = spotlightEl;
+                    carousel.personas = config;
+                    carousel.on("itemSelected", CStudioAuthoring.TargetingPanel.selectPersona);
+
+                    carousel.render();
+                    carousel.show();
+
+                    var getCurrentCallback = {
+                        success: function(oResponse) {
+                            var json = oResponse.responseText;
+                            var currentProfile = eval("(" + json + ")");
+
+                            for(var i=0; i<config.length; i++) {
+                                if(config[i].name.toLowerCase() == currentProfile.username.toLowerCase()) {
+                                    carousel.activePersona = currentProfile;
+                                    CStudioAuthoring.TargetingPanel.selectPersona(i);
+                                    break;
+                                }
+                            }
+
+                            if(!carousel.activePersona) {
+                                for(var i=0; i<config.length; i++) {
+                                    if(config[i].name.toLowerCase() == "anonymous") {
+                                        persona = config[i];
+                                        carousel.activePersona = {"username":"Anonymous"};
+                                        CStudioAuthoring.TargetingPanel.selectPersona(i);
+                                        break;
+                                    }
+                                }
+                            }
+
+                        },
+                        failure: function() {
+                        }
+                    };
+
+                    var serviceUri = CStudioAuthoring.Service.createEngineServiceUri("/api/1/profile/get");
+                    YConnect.asyncRequest('GET', serviceUri, getCurrentCallback);
 
 
-					},
-				
-					failure: function() {
-					},
-				
-					context: this
-				});	
+                },
+
+                failure: function() {
+                },
+
+                context: this
+            });
 	},
-	
-	
+
 	expand: function(containerEl, config) {
 		var reportContainerEl = document.getElementById("cstudioPreviewAnalyticsOverlay");
 							
@@ -165,8 +167,9 @@ CStudioAuthoring.TargetingPanel = CStudioAuthoring.TargetingPanel || {
 		
 			reportContainerEl.style.position = "fixed";
 			reportContainerEl.style.width = "800px";
-			reportContainerEl.style.height = "300px";
+			reportContainerEl.style.minHeight = "250px";
 			reportContainerEl.style.top = "100px";
+			reportContainerEl.style.paddingBottom = "20px";
 		
 			var x = (window.innerWidth / 2) - (reportContainerEl.offsetWidth / 2) - 400;
 			reportContainerEl.style.left = x+"px";
