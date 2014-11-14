@@ -168,4 +168,6 @@ public interface ContentRepository {
     void lockItem(String site, String path);
 
     void unLockItem(String site, String path);
+
+    int numberOfChildren(String site, String path);
 }
