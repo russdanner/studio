@@ -221,7 +221,10 @@ public class PublishingManagerImpl implements PublishingManager {
                             sbDeletedFiles.append(item.getPath());
                         }
                         if (item.getPath().endsWith("/" + _indexFile)) {
-                            sbDeletedFiles.append(FILES_SEPARATOR).append(item.getPath().replace("/" + _indexFile, ""));
+                            String folderPath = item.getPath().replace("/" + _indexFile, "");
+                            if (_contentRepository.numberOfChildren(site, folderPath) < 1) {
+                                sbDeletedFiles.append(FILES_SEPARATOR).append(folderPath);
+                            }
                         }
                     } else {
 
