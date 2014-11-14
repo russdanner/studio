@@ -680,7 +680,7 @@ public class DmRenameServiceImpl extends AbstractRegistrableService implements D
         }
         //change last modified property to the current user
         persistenceManagerService.setProperty(node, CStudioContentModel.PROP_LAST_MODIFIED_BY, user);
-        if (srcFullPath.endsWith(DmConstants.INDEX_FILE)) {
+        if (srcFullPath.endsWith(DmConstants.INDEX_FILE) && oldPath.endsWith(DmConstants.INDEX_FILE)) {
             // if the file is index.xml, update child contnets
             String parentNodePath = DmUtils.getParentUrl(srcFullPath);
             NodeRef parent = persistenceManagerService.getNodeRef(parentNodePath);

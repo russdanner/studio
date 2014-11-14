@@ -673,6 +673,18 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         }
     }
 
+    @Override
+    public int numberOfChildren(String site, String path) {
+        PersistenceManagerService persistenceManagerService = _servicesManager.getService(PersistenceManagerService.class);
+        String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
+        NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
+        if (nodeRef != null) {
+            List<FileInfo> children = persistenceManagerService.list(nodeRef);
+            return children.size();
+        }
+        return 0;
+    }
+
     /** dmContentService getter */
     public DmContentService getDmContentService() { return _dmContentService; }
     /** dmContentService setter */
