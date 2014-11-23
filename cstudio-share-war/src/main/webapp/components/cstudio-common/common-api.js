@@ -3400,7 +3400,7 @@ YConnect.failureEvent.subscribe(function() {
                     serviceUri = serviceUri + "&draft=true";
                 }
 
-                if (populateDependencies != undefined && !populateDependencies) {
+                if (populateDependencies == undefined || !populateDependencies) {
                     serviceUri = serviceUri + "&populateDependencies=false";
                 }
 
@@ -3431,7 +3431,7 @@ YConnect.failureEvent.subscribe(function() {
 
 				var serviceUri = this.lookupFoldersServiceUri + "?site=" + site + "&path=" + path + "&depth=" + depth + "&order=" + order;
 
-                if (populateDependencies != undefined && !populateDependencies) {
+                if (populateDependencies == undefined || !populateDependencies) {
                     serviceUri = serviceUri + "&populateDependencies=false";
                 }
 
