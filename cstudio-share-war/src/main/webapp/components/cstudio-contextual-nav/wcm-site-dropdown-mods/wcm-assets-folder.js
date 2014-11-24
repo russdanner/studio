@@ -225,15 +225,18 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             }
         }
 
-        for (var i=0; i<treeItems.length; i++) {
-            var treeNodeTO = this.createTreeNodeTransferObject(treeItems[i]);
 
-            if(treeNodeTO.isContainer) {
-                treeNodeTO.style = "acn-parent-folder no-preview";
-            }
+        var notContainers = [];
+        var fn = function (treeNodeTO) {
 
             var treeNode = this.drawTreeItem(treeNodeTO, root);
+            var labelId = root.children[i] ? root.children[i].labelElId : treeNode.labelElId;
+
             treeNode.instance = instance;
+
+            if (treeNodeTO.isContainer) {
+                treeNodeTO.style = "acn-parent-folder no-preview";
+            }
 
             if(pathToOpenTo != null && treeNode != null) {
                 if(CStudioAuthoring.Utils.endsWith(treeNodeTO.path, currentLevelPath)) {
@@ -242,11 +245,23 @@ CStudioAuthoring.ContextualNav.WcmAssetsFolder = CStudioAuthoring.ContextualNav.
             }
 
             treeNodes.push(treeNode);
-            if(root.children[i]) {
-                treeNodesLabels.push(root.children[i].labelElId);
+            treeNodesLabels.push(labelId);
+
+        };
+
+        for (var i = 0; i < treeItems.length; i++) {
+
+            var treeNodeTO = this.createTreeNodeTransferObject(treeItems[i]);
+            if (treeNodeTO.isContainer) {
+                fn.call(this, treeNodeTO);
             } else {
-                treeNodesLabels.push(treeNode.labelElId);
+                notContainers.push(treeNodeTO);
             }
+
+        }
+
+        for (i = 0; i < notContainers.length; ++i) {
+            fn.call(this, notContainers[i]);
         }
 
         if(nodeToOpen) {
