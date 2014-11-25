@@ -40,7 +40,7 @@ CStudioAuthoringWidgets.ApprovedScheduledItemsDashboard = CStudioAuthoringWidget
 	this.renderItemsHeading = function() {
 	
 		var widgetId = this._self.widgetId;
-		var header = WcmDashboardWidgetCommon.getDefaultSortRow("eventDate",widgetId,"Go Live Date","minimize")+
+		var header = WcmDashboardWidgetCommon.getSelectAllHeader("eventDate",widgetId,"Go Live Date","minimize")+
                      WcmDashboardWidgetCommon.getSimpleRow("edit",widgetId,"Edit","minimize")+
 		             WcmDashboardWidgetCommon.getSimpleRow("browserUri",widgetId,"URL","maximize")+
 		             "<th id='fullUri' class='width0'></th>"+
