@@ -106,7 +106,7 @@ CStudioAuthoringWidgets.GoLiveQueueDashboard = CStudioAuthoringWidgets.GoLiveQue
             Common = WcmDashboardWidgetCommon;
 
         var header = [
-            Common.getSortableRow("internalName", widgetId, "Page Name", "minimize"),
+            Common.getSelectAllHeader("internalName", widgetId, "Page Name", "minimize"),
             Common.getSimpleRow("edit", widgetId, "Edit", "minimize"),
             Common.getSortableRow("browserUri", widgetId, "URL", "maximize"),
             '<th id="fullUri" class="width0"></th>',
