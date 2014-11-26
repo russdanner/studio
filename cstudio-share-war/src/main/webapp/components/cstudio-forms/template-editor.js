@@ -29,7 +29,8 @@ CStudioAuthoring.Module.requireModule(
 						    + "/proxy/alfresco/cstudio/wcm/content/get-content" 
 							+ "?site=" + CStudioAuthoringContext.site 
 							+ "&path=" + templatePath 
-							+ "&edit=true";
+							+ "&edit=true"
+							+ '&timestamp=' + Date.now();
 					
 						var getContentCb = {
 							success: function(response) {
