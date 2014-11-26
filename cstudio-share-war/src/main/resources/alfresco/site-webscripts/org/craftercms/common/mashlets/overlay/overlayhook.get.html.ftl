@@ -51,7 +51,7 @@
                 },
                 failure: function() {}
             };
-            CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, currentPage, callback);
+            CStudioAuthoring.Service.lookupContentItem(CStudioAuthoringContext.site, currentPage, callback, false, true);
         });
 
 })();
