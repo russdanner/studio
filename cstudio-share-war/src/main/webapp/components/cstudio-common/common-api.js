@@ -3617,7 +3617,7 @@ YConnect.failureEvent.subscribe(function() {
 			 */
 			lookupContentType: function(site, type, callback) {
 
-				var serviceUri = this.lookupContentTypeServiceUri + "?site=" + site + "&type=" + type;
+				var serviceUri = this.lookupContentTypeServiceUri + "?site=" + site + "&type=" + type + '&timestamp=' + Date.now();
 
 				var serviceCallback = {
 					success: function(oResponse) {
