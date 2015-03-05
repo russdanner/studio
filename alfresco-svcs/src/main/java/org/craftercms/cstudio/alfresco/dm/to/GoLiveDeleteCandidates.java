@@ -16,9 +16,9 @@
  */
 package org.craftercms.cstudio.alfresco.dm.to;
 
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.craftercms.cstudio.alfresco.dm.service.api.DmContentService;
+import org.craftercms.cstudio.alfresco.service.api.PersistenceManagerService;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,15 +45,16 @@ public class GoLiveDeleteCandidates {
 
     protected DmContentService _dmContentService;
 
-    protected AVMService _avmService;
+    protected PersistenceManagerService _persistenceManagerService;
 
     protected String _site;
 
     //protected String _sub;
 
-    public GoLiveDeleteCandidates(String site, DmContentService dmContentService){
+    public GoLiveDeleteCandidates(String site, DmContentService dmContentService, PersistenceManagerService persistenceManagerService){
         this._dmContentService = dmContentService;
         this._site = site;
+        this._persistenceManagerService = persistenceManagerService;
         //this._sub = sub;
     }
 
@@ -82,12 +83,12 @@ public class GoLiveDeleteCandidates {
     public boolean addDependency(String uri){
 
         String fullPath = _dmContentService.getContentFullPath(_site, uri);
-        AVMNodeDescriptor node = _avmService.lookup(-1, fullPath);
+        NodeRef node = _persistenceManagerService.getNodeRef(fullPath);
         if(node!=null){
             if(!_dmContentService.isNew(_site, uri)){
-                _liveDependencyItems.add(node.getPath());
+                _liveDependencyItems.add(fullPath);
             }
-            _dependencies.add(node.getPath());
+            _dependencies.add(fullPath);
             return true;
         }
         return false;
@@ -100,7 +101,7 @@ public class GoLiveDeleteCandidates {
      */
     public void addDependencyParentFolder(String uri){
         String parentFolderPath = _dmContentService.getContentFullPath(_site, uri);
-        AVMNodeDescriptor node = _avmService.lookup(-1, parentFolderPath);
+        NodeRef node = _persistenceManagerService.getNodeRef(parentFolderPath);
         if(node!=null){
             if(!_dmContentService.isNew(_site, uri)){
                 for (Iterator iterator = _liveDependencyItems.iterator(); iterator.hasNext();) {
@@ -109,9 +110,9 @@ public class GoLiveDeleteCandidates {
                         iterator.remove();
                     }
                 }
-                _liveDependencyItems.add(node.getPath());
+                _liveDependencyItems.add(parentFolderPath);
             }
-            _dependencies.add(node.getPath());
+            _dependencies.add(parentFolderPath);
         }
     }
 

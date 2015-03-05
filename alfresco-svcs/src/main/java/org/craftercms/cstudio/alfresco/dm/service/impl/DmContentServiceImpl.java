@@ -1730,7 +1730,7 @@ public class DmContentServiceImpl extends AbstractRegistrableService implements 
         List<String> items = new FastList<String>();
         String fullPath = _getFullPathToDelete(site, relativePath);
         NodeRef contentNode = persistenceManagerService.getNodeRef(fullPath);
-        GoLiveDeleteCandidates deletedItems = new GoLiveDeleteCandidates(site, this);
+        GoLiveDeleteCandidates deletedItems = new GoLiveDeleteCandidates(site, this, persistenceManagerService);
         if (contentNode != null) {
             childDeleteItems(site, contentNode, deletedItems);
             //update summary for all uri's delete

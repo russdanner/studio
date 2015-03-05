@@ -393,11 +393,15 @@ public class DmSimpleWorkflowServiceImpl extends DmWorkflowServiceImpl {
                     for (String liveDependency : liveDependencyItems) {
                         DmPathTO pathTO = new DmPathTO(liveDependency);
                         submitpackage.addToPackage(pathTO.getRelativePath());
+                        if (!itemsToDelete.contains(pathTO.getRelativePath())) {
+                            itemsToDelete.add(pathTO.getRelativePath());
+                        }
                     }
                     submitPackPaths = submitpackage.getPaths();
                     
                     deleteOperation = new PreSubmitDeleteOperation(this, new HashSet<String>(itemsToDelete), context, rescheduledUris);
                     removeChildFromSubmitPackForDelete(submitPackPaths);
+
                     for (String deleteCandidate : allItems) {
                         //_cacheManager.invalidateAndRemoveFromQueue(deleteCandidate, site);
                     }
