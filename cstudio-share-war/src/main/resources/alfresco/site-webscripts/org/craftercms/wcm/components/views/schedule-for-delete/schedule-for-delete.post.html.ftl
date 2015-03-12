@@ -15,26 +15,9 @@
 
     <h1 class="view-title">Submit for deletion</h1>
     <div class="view-caption">
-        When would you like the checked item(s) to be deleted?
+        <span>The following checked items will be deleted:</span>
     </div>
 
-    <div class="view-block">
-        <div class="">
-            <input id="now" type="radio" name="timing" class="asap" checked /> As soon as possible.
-        </div>
-        <div>
-            <input id="settime" type="radio" name="timing" class="at-requested-time" /> At the requested time:
-
-            <input id="datepicker" class="date-picker water-marked" value="Date..." default="Date..." />
-            <input id="timepicker" class="time-picker water-marked" value="Time..." default="Time..." />
-            <div class="timeButtonContainer" style="float:none;vertical-align:middle;display:inline-block;">
-            <input id="timeIncrementButton" type="submit" value=""/>
-            <input id="timeDecrementButton" type="submit" value=""/>
-            </div>
-
-            <span class=""><span id="timeZone">EST</span> (<a href="javascript:" class="scheduling-policy">Scheduling Policy</a>)</span>
-        </div>
-    </div>
     <div class="view-block">
         <input class="email-notify" type="checkbox" checked /> Email me when my items are deleted
     </div>
