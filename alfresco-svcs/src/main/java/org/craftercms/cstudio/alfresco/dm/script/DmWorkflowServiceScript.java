@@ -1054,4 +1054,16 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
         toReturn.put("items", jsonItems);
         return toReturn;
     }
+
+    /**
+     * delete the submitted items and submit to workflow
+     *
+     * @param site
+     * @param request
+     * @throws ServiceException
+     * @return call result
+     */
+    public ResultTO submitToDelete(String site, String request) throws ServiceException {
+        return submitForApproval(site, null, request, true);
+    }
 }

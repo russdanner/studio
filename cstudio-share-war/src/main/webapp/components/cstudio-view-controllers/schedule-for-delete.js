@@ -25,7 +25,7 @@
     Delete = CStudioAuthoring.ViewController.ScheduleForDelete;
     YAHOO.extend(Delete, CStudioAuthoring.ViewController.BaseDelete, {
 
-        actions: [".schedule-for-delete", ".scheduling-policy"],
+        actions: [".schedule-for-delete"],
         events: ["hideRequest","showRequest"],
 
         initialise: function(usrCfg) {
@@ -126,7 +126,7 @@
                 //set height 20px lesser to accomadate space for dependency warning string.
                 oBodyDiv.style.height = "178px";
             }
-            this.getComponent("table.dependencies-table").innerHTML = html.join("");
+            this.getComponent("div.dependencies-listing").innerHTML = '<table class="dependencies-table">' + html.join("") + '</table>';
             items.length && this.initCheckRules();
             this.updateSubmitButton();
         },
@@ -154,7 +154,7 @@
             eachfn(checks, function(i, check){
                 if (check.checked && !check.disabled) {
                     var parsed = JSON.parse(decodeURIComponent(
-                            check.getAttribute("json")));
+                        check.getAttribute("json")));
                     parsed.submittedForDeletion = true;
                     checkedItems.push(parsed);
                 }
@@ -162,10 +162,9 @@
             return checkedItems;
         },
         getData: function() {
-            var asapChecked = this.getComponent("input.asap").checked;
             return JSON.stringify({
-                now: asapChecked,
-                scheduledDate: asapChecked ? "1900-01-01T00:00:00" : this._getScheduledDateData(),
+                now: true,
+                scheduledDate: "1900-01-01T00:00:00",
                 sendEmail: this.getComponent("input.email-notify").checked,
                 items: this._getItemsData()
             });
@@ -186,17 +185,18 @@
         },
 
         scheduleForDeleteActionClicked: function(btn, evt) {
-            if (this.getComponent("input.at-requested-time").checked) {
-                var dateValue = this.getComponent("input.date-picker").value;
-                var timeValue = this.getComponent("input.time-picker").value;
-                if (dateValue == 'Date...' || timeValue == 'Time...' || timeValue == '') {
-                    alert('Please provide a date and/or time');
-                    return false;
-                }
-            }
+            /*
+             if (this.getComponent("input.at-requested-time").checked) {
+             var dateValue = this.getComponent("input.date-picker").value;
+             var timeValue = this.getComponent("input.time-picker").value;
+             if (dateValue == 'Date...' || timeValue == 'Time...' || timeValue == '') {
+             alert('Please provide a date and/or time');
+             return false;
+             }
+             }*/
 
-            CStudioAuthoring.Utils.showLoadingImage("schedulefordelete");			
-			this.disableActions();
+            CStudioAuthoring.Utils.showLoadingImage("schedulefordelete");
+            this.disableActions();
             this.fire("submitStart");
             var data = this.getData(),
                 _this = this;
@@ -207,7 +207,7 @@
                 url: CStudioAuthoringContext.baseUri + "/proxy/alfresco/cstudio/wcm/workflow/submit-to-delete?deletedep=true&site="+CStudioAuthoringContext.site,
                 callback: {
                     success: function(oResponse) {
-						CStudioAuthoring.Utils.hideLoadingImage("schedulefordelete");
+                        CStudioAuthoring.Utils.hideLoadingImage("schedulefordelete");
                         _this.enableActions();
                         var oResp = JSON.parse(oResponse.responseText);
                         _this.afterSubmit(oResp.message);
@@ -216,7 +216,7 @@
                     },
                     failure: function(oResponse) {
                         CStudioAuthoring.Utils.hideLoadingImage("schedulefordelete");
-						var oResp = JSON.parse(oResponse.responseText);
+                        var oResp = JSON.parse(oResponse.responseText);
                         _this.enableActions();
                         _this.fire("submitEnd", oResp);
                     }
