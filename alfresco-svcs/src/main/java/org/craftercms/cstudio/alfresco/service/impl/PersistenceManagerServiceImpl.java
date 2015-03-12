@@ -415,6 +415,10 @@ public class PersistenceManagerServiceImpl extends AbstractRegistrableService im
             if (!StringUtils.isEmpty(submissionComment)) {
                 contentItemTO.setSubmissionComment(submissionComment);
             }
+            Boolean submittedForDelete = DefaultTypeConverter.INSTANCE.convert(Boolean.class, nodeProperties.get(CStudioContentModel.PROP_WEB_WF_SUBMITTEDFORDELETION));
+            if (submittedForDelete != null) {
+                contentItemTO.setSubmittedForDeletion(submittedForDelete);
+            }
         }
         boolean isScheduled = ObjectStateService.State.isScheduled(objectState);
         contentItemTO.setScheduled(isScheduled);
