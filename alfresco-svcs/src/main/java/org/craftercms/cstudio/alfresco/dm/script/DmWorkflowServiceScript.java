@@ -342,7 +342,7 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
                 // _avmService.getNodeProperty(-1, fullPath,
                 // CStudioContentModel.PROP_WEB_WF_SEND_EMAIL);
                 Serializable sendEmailValue = persistenceManagerService.getProperty(persistenceManagerService.getNodeRef(fullPath), CStudioContentModel.PROP_WEB_WF_SEND_EMAIL);
-                boolean sendEmail = (sendEmailValue != null) ? Boolean.getBoolean(sendEmailValue.toString()) : false;
+                boolean sendEmail = (sendEmailValue != null) ? Boolean.parseBoolean(sendEmailValue.toString()) : false;
                 submittedItem.setSendEmail(sendEmail);
 
                 String user = item.getString(JSON_KEY_USER);
@@ -1053,5 +1053,17 @@ public class DmWorkflowServiceScript extends BaseProcessorExtension {
         }
         toReturn.put("items", jsonItems);
         return toReturn;
+    }
+
+    /**
+     * delete the submitted items and submit to workflow
+     *
+     * @param site
+     * @param request
+     * @throws ServiceException
+     * @return call result
+     */
+    public ResultTO submitToDelete(String site, String request) throws ServiceException {
+        return submitForApproval(site, null, request, true);
     }
 }

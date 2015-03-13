@@ -92,6 +92,16 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
         this.initializeScriptPath = initializeScriptPath;
     }
 
+    protected int bulkOperationBatchSize = 500;
+
+    public int getBulkOperationBatchSize() {
+        return bulkOperationBatchSize;
+    }
+
+    public void setBulkOperationBatchSize(int bulkOperationBatchSize) {
+        this.bulkOperationBatchSize = bulkOperationBatchSize;
+    }
+
     @Override
     public void initIndexes() {
         DataSource dataSource = _sqlMapClient.getDataSource();
@@ -236,19 +246,14 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
 
     @Override
     public void setSystemProcessingBulk(List<String> objectIds, boolean isSystemProcessing) {
-    	// TODO CodeRev: Looking at this method makes me wonder how we know when partial is done?
-    	// TODO CodeRev: there is no demarcation of done... 
-    	// TODO CodeRev: also, What is special about batch sizes of 1500?
     	if (objectIds != null && !objectIds.isEmpty()) {
-            if (objectIds.size() < 1500) {
-                // TODO CodeRev: What? Can we have a comment about what decision is being made here?
-                // TODO CodeRev: Shouldn't 1500 be configurable... what does it do?
+            if (objectIds.size() < bulkOperationBatchSize) {
                 setSystemProcessingBulkPartial(objectIds, isSystemProcessing);
             } else {
                 List<List<String>> partitions = new FastList<List<String>>();
                 for (int i = 0; i < objectIds.size();) {
-                    partitions.add(objectIds.subList(i, Math.min(i + 1500, objectIds.size())));
-                    i = (i + 1) * 1500;
+                    partitions.add(objectIds.subList(i, Math.min(i + bulkOperationBatchSize, objectIds.size())));
+                    i = (i + 1) * bulkOperationBatchSize;
                 }
                 for (List<String> part : partitions) {
                     setSystemProcessingBulkPartial(part, isSystemProcessing);
@@ -327,15 +332,13 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
     @Override
     public void deleteObjectStatesForPaths(String site, List<String> paths) {
         if (paths != null && !paths.isEmpty()) {
-            if (paths.size() < 1500) {
-                // TODO CodeRev: What? Can we have a comment about what decision is being made here?
-                // TODO CodeRev: Shouldn't 1500 be configurable... what does it do?
+            if (paths.size() < bulkOperationBatchSize) {
                 deleteObjectStatesForPathsPartial(site, paths);
             } else {
                 List<List<String>> partitions = new FastList<List<String>>();
                 for (int i = 0; i < paths.size();) {
-                    partitions.add(paths.subList(i, Math.min(i + 1500, paths.size())));
-                    i = (i + 1) * 1500;
+                    partitions.add(paths.subList(i, Math.min(i + bulkOperationBatchSize, paths.size())));
+                    i = (i + 1) * bulkOperationBatchSize;
                 }
                 for (List<String> part : partitions) {
                     deleteObjectStatesForPathsPartial(site, part);
@@ -427,16 +430,15 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
 
     @Override
     public List<ObjectStateTO> getObjectStates(List<String> objectIds) {
-    	// TODO CodeRev: previous comment about batches applies here
         if (objectIds != null && !objectIds.isEmpty()) {
-            if (objectIds.size() < 1500) {
+            if (objectIds.size() < bulkOperationBatchSize) {
                 return getObjectStatesPartial(objectIds);
             } else {
                 List<List<String>> partitions = new FastList<List<String>>();
                 List<ObjectStateTO> result = new FastList<ObjectStateTO>();
                 for (int i = 0; i < objectIds.size();) {
-                    partitions.add(objectIds.subList(i, Math.min(i + 1500, objectIds.size())));
-                    i = (i + 1) * 1500;
+                    partitions.add(objectIds.subList(i, Math.min(i + bulkOperationBatchSize, objectIds.size())));
+                    i = (i + 1) * bulkOperationBatchSize;
                 }
                 for (List<String> part : partitions) {
                     result.addAll(getObjectStatesPartial(part));
@@ -477,15 +479,14 @@ public class ObjectStateDAOServiceImpl implements ObjectStateDAOService {
 
     @Override
     public void setObjectStateBulk(List<String> objectIds, ObjectStateService.State state) {
-    	// TODO CodeRev: previous comment about batches applies here
         if (objectIds != null && !objectIds.isEmpty()) {
-            if (objectIds.size() < 1500) {
+            if (objectIds.size() < bulkOperationBatchSize) {
                 setObjectStateBulkPartial(objectIds, state);
             } else {
                 List<List<String>> partitions = new FastList<List<String>>();
                 for (int i = 0; i < objectIds.size();) {
-                    partitions.add(objectIds.subList(i, Math.min(i + 1500, objectIds.size())));
-                    i = (i + 1) * 1500;
+                    partitions.add(objectIds.subList(i, Math.min(i + bulkOperationBatchSize, objectIds.size())));
+                    i = (i + 1) * bulkOperationBatchSize;
                 }
                 for (List<String> part : partitions) {
                     setObjectStateBulkPartial(part, state);

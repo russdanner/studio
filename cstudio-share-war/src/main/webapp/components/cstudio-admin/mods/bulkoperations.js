@@ -4,7 +4,7 @@ CStudioAdminConsole.Tool.BulkOperations = CStudioAdminConsole.Tool.BulkOperation
     this.config = config;
     this.types = [];
     return this;
-}
+};
 
 /**
  * Overarching class that drives the content type tools
@@ -40,7 +40,7 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
                     failure: function() {
                         renameOpMessage.innerHTML = "Bulk rename failed";
                     }
-                }
+                };
                 YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
                 renameOpMessage.innerHTML = "Executing bulk rename ...";
             }
@@ -48,20 +48,41 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
 
         CStudioAdminConsole.Tool.BulkOperations.golive = function() {
             var path = document.getElementById("bulk-golive-path").value;
+            var envSelectEl = document.getElementById("go-pub-channel");
+            var environment = envSelectEl[envSelectEl.selectedIndex].text;
             if (path) {
-                var serviceUri = "/proxy/alfresco/cstudio/util/bulk-golive?site="+CStudioAuthoringContext.site+"&path="+path;
+                var serviceUri = "/proxy/alfresco/cstudio/util/bulk-golive?site="+CStudioAuthoringContext.site+"&path="+path  + "&environment=" + environment;;
                 var goLiveOpMessage = document.getElementById("bulk-golive-message");
                 var cb = {
                     success:function() {
                         goLiveOpMessage.innerHTML = "Bulk Go Live successful";
                     },
                     failure: function() {
-                        goLiveOpMessage.innerHTML = "Bulk Go Live successful";
+                        goLiveOpMessage.innerHTML = "Bulk Go Live failed!";
                     }
-                }
+                };
 
                 YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
                 goLiveOpMessage.innerHTML = "Executing bulk Go Live ...";
+            }
+        };
+
+        CStudioAdminConsole.Tool.BulkOperations.bulkdelete = function() {
+            var path = document.getElementById("bulk-delete-path").value;
+            if (path) {
+                var serviceUri = "/proxy/alfresco/cstudio/util/bulk-delete?site="+CStudioAuthoringContext.site+"&path="+path;
+                var goLiveOpMessage = document.getElementById("bulk-delete-message");
+                var cb = {
+                    success:function() {
+                        goLiveOpMessage.innerHTML = "Bulk Delete successful";
+                    },
+                    failure: function() {
+                        goLiveOpMessage.innerHTML = "Bulk Go Live Failed!";
+                    }
+                };
+
+                YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(serviceUri), cb);
+                goLiveOpMessage.innerHTML = "Executing bulk Delete ...";
             }
         };
 
@@ -79,7 +100,12 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
                 "Path to Publish: <input type'text' id='bulk-golive-path'/><br/>" +
                 "Publishing Environment: <select id='go-pub-channel'></select></br>" +
                 "<input type='button' value='Go Live' onclick='CStudioAdminConsole.Tool.BulkOperations.golive()' /></p>" +
-                "<p id='bulk-golive-message'></p></div>";
+                "<p id='bulk-golive-message'></p></div>" +
+                "<hr/>" +
+                "<div id='bulk-delete'><p><h2>Bulk Delete</h2></p><p>" +
+                "Path to Delete: <input type'text' id='bulk-delete-path'/><br/>" +
+                "<input type='button' value='Delete' onclick='CStudioAdminConsole.Tool.BulkOperations.bulkdelete()' /></p>" +
+                "<p id='bulk-delete-message'></p></div>";
 
 
         var channelsSelect = document.getElementById("go-pub-channel");
@@ -96,7 +122,7 @@ YAHOO.extend(CStudioAdminConsole.Tool.BulkOperations, CStudioAdminConsole.Tool, 
             },
             failure: function() {
             }
-        }
+        };
 
         var channelsServiceUrl = "/proxy/alfresco/cstudio/publish/get-available-publishing-channels?site=" + CStudioAuthoringContext.site;
         YConnect.asyncRequest("POST", CStudioAuthoring.Service.createServiceUri(channelsServiceUrl), publishingOptionsCB);
