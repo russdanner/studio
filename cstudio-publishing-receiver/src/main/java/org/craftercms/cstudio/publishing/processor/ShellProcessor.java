@@ -268,6 +268,5 @@ public class ShellProcessor implements PublishingProcessor {
 		}
 		return mergeTo;
 	}
-
-	
+    	
 }
