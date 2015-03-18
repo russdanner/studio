@@ -499,19 +499,21 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                                 }
                             };
                             var content = CStudioAuthoring.SelectedContent.getSelectedContent()[0];
-                            option.onclick = function() {
-                                YDom.get("duplicate-loading").style.display = "block";
-                                CStudioAuthoring.Operations.duplicateContent(
-                                    CStudioAuthoringContext.site,
-                                    content.uri,
-                                    duplicateContentCallback);
-                            };
+                            if (!(content.contentType === "" || content.contentType === undefined)) {
+                                option.onclick = function () {
+                                    YDom.get("duplicate-loading").style.display = "block";
+                                    CStudioAuthoring.Operations.duplicateContent(
+                                        CStudioAuthoringContext.site,
+                                        content.uri,
+                                        duplicateContentCallback);
+                                };
 
 // THIS CHECK IS NOT NEEDED
 //if(content.document || content.component) { // for doc and components disable dupe link
 // isRelevant = false;
 //}
-                            _this.createNavItem(option, isBulk, isAdmin, isRelevant, !isWrite);
+                                _this.createNavItem(option, isBulk, isAdmin, isRelevant, !isWrite);
+                            }
                         }
                     }
                 },
