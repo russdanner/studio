@@ -500,16 +500,17 @@ CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.Contextual
                             };
                             var content = CStudioAuthoring.SelectedContent.getSelectedContent()[0];
                             option.onclick = function() {
-                                YDom.get("duplicate-loading").style.display = "block";                      
+                                YDom.get("duplicate-loading").style.display = "block";
                                 CStudioAuthoring.Operations.duplicateContent(
-                                        CStudioAuthoringContext.site,
-                                        content.uri,
-                                        duplicateContentCallback);
+                                    CStudioAuthoringContext.site,
+                                    content.uri,
+                                    duplicateContentCallback);
                             };
-        
-                            if(content.document || content.component) { // for doc and components disable dublicate link
-                                isRelevant = false;
-                            } 
+
+// THIS CHECK IS NOT NEEDED
+//if(content.document || content.component) { // for doc and components disable dupe link
+// isRelevant = false;
+//}
                             _this.createNavItem(option, isBulk, isAdmin, isRelevant, !isWrite);
                         }
                     }
