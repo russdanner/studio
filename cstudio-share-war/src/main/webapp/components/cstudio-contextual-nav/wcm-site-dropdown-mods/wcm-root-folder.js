@@ -1217,6 +1217,9 @@
                                                 if (!isFolder) {
                                                     p_aArgs.addItems([ menuItems.changeTemplateOption ]);
                                                 }
+                                                if (isDeleteAllowed) {
+                                                    p_aArgs.addItems([ menuItems.deleteOption ]);
+                                                }
                                             } else {
                                                 p_aArgs.addItems([ menuItems.viewOption ]);
                                                 p_aArgs.addItems([ menuItems.newContentOption ]);
