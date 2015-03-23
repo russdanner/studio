@@ -445,36 +445,45 @@ YConnect.failureEvent.subscribe(function() {
             },
 
             deleteContent: function(items) {
-                var controller, view;
-                if (CStudioAuthoring.Utils.isAdmin()) {
-                    controller = "viewcontroller-delete";
-                    view = CStudioAuthoring.Service.getDeleteView;
-                } else {
-                    controller = "viewcontroller-schedulefordelete";
-                    view = CStudioAuthoring.Service.getScheduleForDeleteView;
-                }
-                CStudioAuthoring.Operations._showDialogueView({
-                    fn: view,
-                    controller: controller,
-                    callback: function(dialogue) {
-                        this.loadDependencies(items);
-                        this.on("submitComplete", function(evt, args){
-                            var reloadFn = function(){
-                                window.location.reload();
-                            };
-                            dialogue.hideEvent.subscribe(reloadFn);
-                            dialogue.destroyEvent.subscribe(reloadFn);
-                        });
-                        // Admin version of the view does not have this events
-                        // but then the call is ignored
-                        this.on("hideRequest", function(evt, args){
-                            dialogue.hide();
-                        });
-                        this.on("showRequest", function(evt, args){
-                            dialogue.show();
-                        });
+                getPermissionSucess = {
+                    success: function(response) {
+                        var controller, view;
+                        if (CStudioAuthoring.Service.isDeleteAllowed(response.permissions)) {
+                            controller = "viewcontroller-delete";
+                            view = CStudioAuthoring.Service.getDeleteView;
+                        } else {
+                            controller = "viewcontroller-schedulefordelete";
+                           ` view = CStudioAuthoring.Service.getScheduleForDeleteView;
+                        }
+                        CStudioAuthoring.Operations._showDialogueView({
+                            fn: view,
+                            controller: controller,
+                            callback: function(dialogue) {
+                                this.loadDependencies(items);
+                                this.on("submitComplete", function(evt, args){
+                                    var reloadFn = function(){
+                                        window.location.reload();
+                                    };
+                                    dialogue.hideEvent.subscribe(reloadFn);
+                                    dialogue.destroyEvent.subscribe(reloadFn);
+                                });
+                                // Admin version of the view does not have this events
+                                // but then the call is ignored
+                                this.on("hideRequest", function(evt, args){
+                                    dialogue.hide();
+                                });
+                                this.on("showRequest", function(evt, args){
+                                    dialogue.show();
+                                });
+                            }
+                        }, true);
                     }
-                }, true);
+                };
+
+                CStudioAuthoring.Service.getUserPermissions(
+                    CStudioAuthoringContext.site,
+                    items[0].uri,
+                    getPermissionSucess);
 			},
             viewSchedulingPolicy: function(callback) {
                 CStudioAuthoring.Operations._showDialogueView({
