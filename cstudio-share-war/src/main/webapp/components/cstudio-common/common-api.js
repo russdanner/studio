@@ -453,7 +453,7 @@ YConnect.failureEvent.subscribe(function() {
                             view = CStudioAuthoring.Service.getDeleteView;
                         } else {
                             controller = "viewcontroller-schedulefordelete";
-                           ` view = CStudioAuthoring.Service.getScheduleForDeleteView;
+                            view = CStudioAuthoring.Service.getScheduleForDeleteView;
                         }
                         CStudioAuthoring.Operations._showDialogueView({
                             fn: view,
