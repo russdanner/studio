@@ -173,7 +173,6 @@ public class DmPublishServiceImpl extends AbstractRegistrableService implements 
             logger.debug("Starting Bulk Go Live for path " + path + " site " + site);
         }
         List<String> childrenPaths = new ArrayList<String>();
-        childrenPaths.add(path);
         PersistenceManagerService persistenceManagerService = getService(PersistenceManagerService.class);
         ServicesConfig servicesConfig = getService(ServicesConfig.class);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(servicesConfig.getRepositoryRootPath(site), path);
