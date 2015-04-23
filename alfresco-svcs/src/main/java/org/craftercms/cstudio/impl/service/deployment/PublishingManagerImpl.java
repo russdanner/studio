@@ -237,8 +237,9 @@ public class PublishingManagerImpl implements PublishingManager {
                         }
 
                         LOGGER.debug("Get content for \"{0}\" , site \"{1}\"", item.getPath(), item.getSite());
-                        InputStream input = _contentRepository.getContent(site, null, item.getEnvironment(), item.getPath());
+                        InputStream input =  null;
                         try {
+                            input = _contentRepository.getContent(site, null, item.getEnvironment(), item.getPath());
                             if (input == null || input.available() < 0) {
                                 if (!_contentRepository.isFolder(site, item.getPath()) && _contentRepository.contentExists(site, item.getPath())) {
                                     baps = null;
@@ -253,6 +254,18 @@ public class PublishingManagerImpl implements PublishingManager {
                             }
                         } catch (IOException err) {
                             LOGGER.error("Error reading input stream for content at path: " + item.getPath() + " site: " + item.getSite());
+                            if (_contentRepository.contentExists(site, item.getPath())) {
+                                baps = null;
+                                stringPart = null;
+                                filePart = null;
+                                formParts = null;
+                                throw new ContentNotFoundForPublishingException(site, target.getName(), item.getPath());
+                            } else {
+                                // Content does not exist - skip deploying file
+                                continue;
+                            }
+                        } catch (Throwable err) {
+                            LOGGER.error("Error getting content from path: " + item.getPath() + " site: " + item.getSite());
                             if (_contentRepository.contentExists(site, item.getPath())) {
                                 baps = null;
                                 stringPart = null;
