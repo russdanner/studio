@@ -265,7 +265,7 @@ public class PublishingManagerImpl implements PublishingManager {
                                 continue;
                             }
                         } catch (Throwable err) {
-                            LOGGER.error("Error getting content from path: " + item.getPath() + " site: " + item.getSite());
+                            LOGGER.error("Error getting content from path: " + item.getPath() + " site: " + item.getSite(), err);
                             if (_contentRepository.contentExists(site, item.getPath())) {
                                 baps = null;
                                 stringPart = null;
