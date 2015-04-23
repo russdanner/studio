@@ -245,11 +245,14 @@ public class AlfrescoContentRepository extends AbstractContentRepository {
         String rootPath = SITE_REPO_ROOT_PATTERN.replaceAll(SITE_REPLACEMENT_PATTERN, site);
         NodeRef nodeRef = persistenceManagerService.getNodeRef(rootPath, path);
         if (nodeRef != null) {
-            DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
-            if (isMajorVersion) {
-                dmVersionService.createNextMajorVersion(site, path, submissionComment);
-            } else {
-                dmVersionService.createNextMinorVersion(site, path);
+            FileInfo fileInfo = persistenceManagerService.getFileInfo(nodeRef);
+            if (!fileInfo.isFolder()) {
+                DmVersionService dmVersionService = _servicesManager.getService(DmVersionService.class);
+                if (isMajorVersion) {
+                    dmVersionService.createNextMajorVersion(site, path, submissionComment);
+                } else {
+                    dmVersionService.createNextMinorVersion(site, path);
+                }
             }
         }
     }
