@@ -601,9 +601,8 @@ CStudioAuthoring.Module.requireModule("publish-dialog", "/components/cstudio-dia
                             dialog.show();
                             me.dialog = dialog;
 
-                            var items = CStudioAuthoring.SelectedContent.getSelectedContent();
-                            for(var i=0; i<items.length; i++) {
-                                if(items[i].submittedForDeletion==true) {
+                            for(var i=0; i<contentItems.length; i++) {
+                                if(contentItems[i].submittedForDeletion==true) {
                                     document.getElementById("globalSetToDateTime").disabled = true;
                                     document.getElementById("schedulingSelection").style.display = "none";
                                     break;
