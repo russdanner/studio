@@ -2,7 +2,7 @@
  * Active Content Plugin
  */
 CStudioAuthoring.ContextualNav.WcmActiveContentMod = CStudioAuthoring.ContextualNav.WcmActiveContentMod || (function () {
-
+ 
     var filePermissions = { "fileLen" : 0 },               // Cache the file permissions for the files selected
         permissionAggregateCounter = {};    // Keep a counter of all the permissions from the selected files
 
