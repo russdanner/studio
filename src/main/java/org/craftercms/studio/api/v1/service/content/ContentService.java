@@ -125,9 +125,9 @@ public interface ContentService {
      * @param site     - the project ID
      * @param fromPath the source path
      * @param toPath   the target path to copy content to
-     * @return true if successful
+     * @return new path if success, null if failure
      */
-    boolean copyContent(String site, String fromPath, String toPath);
+    String copyContent(String site, String fromPath, String toPath);
 
     /**
      * move content fromPath to toPath
@@ -135,9 +135,11 @@ public interface ContentService {
      * @param site     - the project ID
      * @param fromPath the source path
      * @param toPath   the target path to copy content to
-     * @return true if successful
+     * @return new path if success, null if failure
      */
-    boolean moveContent(String site, String fromPath, String toPath);
+    String moveContent(String site, String fromPath, String toPath);
+
+    String moveContent(String site, String fromPath, String toPath, String newName);
 
     /**
      * get the tree of content items (metadata) beginning at a root
@@ -153,8 +155,6 @@ public interface ContentService {
      * @param fullPath - the full path to root at
      */
     ContentItemTO getContentItemTree(String fullPath, int depth);
-
-    boolean moveContent(String site, String fromPath, String toPath, String newName);
 
     /**
      * get the content item (metadata) at a specific path

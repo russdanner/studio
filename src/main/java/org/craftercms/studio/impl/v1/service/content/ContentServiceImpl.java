@@ -461,42 +461,147 @@ public class ContentServiceImpl implements ContentService {
     }
 
     @Override
-    public boolean copyContent(String site, String fromPath, String toPath) {
-        return _contentRepository.copyContent(expandRelativeSitePath(site, fromPath),
-                expandRelativeSitePath(site, toPath));
+    public String copyContent(String site, String fromPath, String toPath) {
+        boolean opSuccess = false;
+
+        String copyPath = constructNewPathforCutCopy(fromPath, toPath);
+        String copyPathOnly = copyPath.substring(0, copyPath.lastIndexOf("/"));
+
+        logger.info("copying file for site {0} from {1} to {2}, new name is {3}", site, fromPath, toPath, copyPath);
+        // come up with a new object ID and group ID for the object
+
+        // update the file name / folder values
+
+        // get the dependencies for the item 
+
+        // for each page specific item, call copy
+
+        // write the item
+
+        // TODO: Review
+        // WHY DO WE NEED A COPY OP AT THE REPO
+        //  - DEEP COPIES / BULK COPIES
+        //
+        // Need to discuss the potential of pulling certain data out of the model from here on out
+        // These values and to some degree our structure take away our ability to do bulk operations
+        // Object ID/Group ID
+        // Create Date, Last Modified DAte
+        // Filename
+        // Folder
+        opSuccess = _contentRepository.copyContent(
+            expandRelativeSitePath(site, fromPath),
+            expandRelativeSitePath(site, copyPathOnly));
+
+        String sessionTicket = securityProvider.getCurrentToken();
+        RepositoryEventContext repositoryEventContext = new RepositoryEventContext(sessionTicket);
+        RepositoryEventMessage message = new RepositoryEventMessage();
+
+        message.setSite(site);
+        message.setPath(copyPath);
+        message.setRepositoryEventContext(repositoryEventContext);
+
+        previewSync.syncPath(site, copyPath, repositoryEventContext);
+
+        return copyPath;
     }
 
     @Override
-    public boolean moveContent(String site, String fromPath, String toPath) {
-        boolean toRet = _contentRepository.moveContent(expandRelativeSitePath(site, fromPath),
-                expandRelativeSitePath(site, toPath));
+    public String moveContent(String site, String fromPath, String toPath) {
+        boolean opSuccess = false;
+
+        String movePath = constructNewPathforCutCopy(fromPath, toPath);
+        String movePathOnly = movePath.substring(0, movePath.lastIndexOf("/"));
+
+        logger.info("move file for site {0} from {1} to {2}, new name is {3}", site, fromPath, toPath, movePath);
+
+        opSuccess = _contentRepository.moveContent(
+            expandRelativeSitePath(site, fromPath),
+            expandRelativeSitePath(site, movePathOnly));
+
+        String sessionTicket = securityProvider.getCurrentToken();
+        RepositoryEventContext repositoryEventContext = new RepositoryEventContext(sessionTicket);
 
         RepositoryEventMessage message = new RepositoryEventMessage();
         message.setSite(site);
-        message.setPath(toPath);
+        message.setPath(movePath);
         message.setOldPath(fromPath);
-        String sessionTicket = securityProvider.getCurrentToken();
-        RepositoryEventContext repositoryEventContext = new RepositoryEventContext(sessionTicket);
         message.setRepositoryEventContext(repositoryEventContext);
+
         repositoryReactor.notify(EBusConstants.REPOSITORY_MOVE_EVENT, Event.wrap(message));
-        return toRet;
+        
+        // note this was not here before 
+        // assume notify takes care of this but was bot previously applied to copy
+        previewSync.syncPath(site, movePath, repositoryEventContext);
+
+        return movePath;
     }
 
     @Override
-    public boolean moveContent(String site, String fromPath, String toPath, String newName) {
-        boolean toRet = _contentRepository.moveContent(expandRelativeSitePath(site, fromPath),
-                expandRelativeSitePath(site, toPath), newName);
+    public String moveContent(String site, String fromPath, String toPath, String newName) {
+        // Not sure why we need this method. Just a helper for a special case?
+        return moveContent(site, fromPath, toPath+"/"+ newName);
+        // boolean opSuccess = false;
 
-        RepositoryEventMessage message = new RepositoryEventMessage();
-        message.setSite(site);
-        message.setPath(toPath + "/" + newName);
-        message.setOldPath(fromPath);
-        String sessionTicket = securityProvider.getCurrentToken();
-        RepositoryEventContext repositoryEventContext = new RepositoryEventContext(sessionTicket);
-        message.setRepositoryEventContext(repositoryEventContext);
-        repositoryReactor.notify(EBusConstants.REPOSITORY_MOVE_EVENT, Event.wrap(message));
-        return toRet;
+        // String movePath = constructNewPathforCutCopy(fromPath, toPath);
+        // String movePathOnly = movePath.substring(0, movePath.lastIndexOf("/"));
+
+        // logger.info("move file for site {0} from {1} to {2}, new name is {3}", site, fromPath, toPath, movePath);
+
+        // opSuccess = _contentRepository.moveContent(expandRelativeSitePath(site, fromPath),
+        //         expandRelativeSitePath(site, toPath), newName);
+
+        // RepositoryEventMessage message = new RepositoryEventMessage();
+        // message.setSite(site);
+        // message.setPath(toPath + "/" + newName);
+        // message.setOldPath(fromPath);
+        // String sessionTicket = securityProvider.getCurrentToken();
+        // RepositoryEventContext repositoryEventContext = new RepositoryEventContext(sessionTicket);
+        // message.setRepositoryEventContext(repositoryEventContext);
+        // repositoryReactor.notify(EBusConstants.REPOSITORY_MOVE_EVENT, Event.wrap(message));
+        // return movePath;
     }
+
+
+    protected String constructNewPathforCutCopy(String fromPath, String toPath) {
+
+        // The following rules apply to content under the site folder
+        // Example 1
+        // fromPath: "/site/website/search/index.xml"
+        // toPath:   "/site/website/products/index.xml"
+        // newPath:  "/site/website/products/search/index.xml" 
+
+        String fromPathOnly = fromPath.substring(0, fromPath.lastIndexOf("/"));
+        String fromFileNameOnly = fromPath.substring(fromPath.lastIndexOf("/")+1);
+        boolean fromFileIsIndex = ("index.xml".equals(fromFileNameOnly));
+        logger.info("cut/copy name rules FROM: {0}, {1}", fromPathOnly, fromFileNameOnly);
+
+        if(fromFileIsIndex==true) {
+            fromFileNameOnly = fromPathOnly.substring(fromPathOnly.lastIndexOf("/")+1);
+            fromPathOnly = fromPathOnly.substring(0, fromPathOnly.lastIndexOf("/"));
+            logger.info("cut/copy name rules INDEX FROM: {0}, {1}", fromPathOnly, fromFileNameOnly);
+        }
+
+        String newPathOnly = toPath.substring(0, toPath.lastIndexOf("/"));
+        String newFileNameOnly = toPath.substring(toPath.lastIndexOf("/")+1);
+        boolean newFileIsIndex = ("index.xml".equals(newFileNameOnly));
+        logger.info("cut/copy name rules TO: {0}, {1}", newPathOnly, newFileNameOnly);
+
+        if(newFileIsIndex==true) {
+            newFileNameOnly = newPathOnly.substring(newPathOnly.lastIndexOf("/")+1);
+            newPathOnly = newPathOnly.substring(0, newPathOnly.lastIndexOf("/"));
+            logger.info("cut/copy name rules INDEX TO: {0}, {1}", newPathOnly, newFileNameOnly);
+        }
+
+ 
+        String opDestPath = (fromFileIsIndex) 
+            ? newPathOnly + "/" + newFileNameOnly + "/" + fromFileNameOnly +  "/index.xml" 
+            : newPathOnly + "/" + fromFileNameOnly;
+
+        return opDestPath;
+    }
+
+
+
 
     protected ContentItemTO createNewContentItemTO(String site, String contentPath) {
         ContentItemTO item = new ContentItemTO();
